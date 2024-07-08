@@ -1,0 +1,143 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Adam Automotive - Website For Luxury Used Cars</title>
+  <link rel="icon" href="{% static 'images/logo.png' %}">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Poppins:200,300,400,500,600,700,800&display=swap"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="{% static 'css/open-iconic-bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/animate.css' %}">
+
+  <link rel="stylesheet" href="{% static 'css/owl.carousel.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/owl.theme.default.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/magnific-popup.css' %}">
+
+  <link rel="stylesheet" href="{% static 'css/aos.css' %}">
+
+  <link rel="stylesheet" href="{% static 'css/ionicons.min.css' %}">
+
+  <link rel="stylesheet" href="{% static 'css/bootstrap-datepicker.css' %}">
+  <link rel="stylesheet" href="{% static 'css/jquery.timepicker.css' %}">
+
+
+  <link rel="stylesheet" href="{% static 'css/flaticon.css' %}">
+  <link rel="stylesheet" href="{% static 'css/icomoon.css' %}">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
+    <div class="container">
+      <a class="navbar-brand">Adam&nbsp;<span>Automotive</span></a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav"
+        aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="oi oi-menu"></span> Menu
+      </button>
+
+      <div class="collapse navbar-collapse" id="ftco-nav">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item active"><a href="" class="nav-link">Home</a></li>
+          <li class="nav-item"><a href="" class="nav-link">About</a></li>
+          <li class="nav-item"><a href="" class="nav-link">Cars Collection</a></li>
+          <li class="nav-item"><a href="" class="nav-link">Contact</a></li>
+          <li class="nav-item"><a href="{% url 'login'%}" class="nav-link">Login</a></li>
+            </li>
+          </ul>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="hero-wrap ftco-degree-bg"
+    style="background-image: url('{% static 'images/carn.jpeg' %}');"
+    data-stellar-background-ratio="0.5">
+    <div class="overlay"></div>
+    <div class="container">
+      <div class="row no-gutters slider-text justify-content-start align-items-center justify-content-center">
+        <div class="col-lg-8 ftco-animate">
+          <div class="text w-100 text-center mb-md-5 pb-md-5">
+            <h1 class="mb-4">Here We Give Wings For Your Dream Car</h1>
+            <p style="font-size: 18px;">Dream is not that which you see while sleeping it is something that does not let
+              you sleep.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="ftco-section ftco-about" id="ab">
+    <div class="container">
+      <div class="row no-gutters">
+        <div class="col-md-6 p-md-5 img img-2 d-flex justify-content-center align-items-center"
+          style="background-image: url({% static 'images/about.jpg' %});">
+        </div>
+        <div class="col-md-6 wrap-about ftco-animate">
+          <div class="heading-section heading-section-white pl-md-5">
+            <span class="subheading">About us</span>
+            <h2 class="mb-4">Welcome to Adam Automotive</h2>
+
+            <p>Before we get ahead of ourselves, we want to welcome you to Adam Automotive. While nothing can
+              replace the on-the-lot experience.
+              We appreciate you taking the time today to visit our website. Our goal is to give you an
+              interactive tour of our used car inventory, as well as allow you to conveniently get the best option or
+              apply for financing.
+              The search for a used luxury car is filled with high expectations. Undoubtedly, that has a
+              lot to do with the vehicles you are considering, but at Harman Motors, we think you should also have
+              pretty high expectations for your dealership.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <br>
+  <footer class="ftco-footer ftco-bg-dark ftco-section">
+    <div class="container">
+      <div class="row mb-5">
+        <div class="col-md">
+          <div class="ftco-footer-widget mb-4">
+            <h2 class="ftco-heading-2"><a href="#" class="logo">Adam&nbsp;<span>Automotive</span></a></h2>
+            <p>Money may not buy happiness, but I'd rather cry in a Jaguar than on a bus.</p>
+            <ul class="ftco-footer-social list-unstyled float-md-left float-lft mt-5">
+              <li class="ftco-animate"><a href="https://twitter.com/"><span class="icon-twitter"></span></a></li>
+              <li class="ftco-animate"><a href="https://www.facebook.com/"><span class="icon-facebook"></span></a></li>
+              <li class="ftco-animate"><a href="https://www.instagram.com/"><span class="icon-instagram"></span></a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md" id="con">
+          <div class="ftco-footer-widget mb-4 ml-md-5">
+            <h2 class="ftco-heading-2">Information</h2>
+            <ul class="list-unstyled">
+              <li><a href="" class="py-2 d-block">About</a></li>
+              <li><a href="" class="py-2 d-block">Terms and Conditions</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md">
+          <div class="ftco-footer-widget mb-4">
+            <h2 class="ftco-heading-2">Timing</h2>
+            <ul class="list-unstyled">
+              <li><a class="py-2 d-block">Monday-Sunday</a></li>
+              <li><a class="py-2 d-block">Working Hours: 9am-10pm</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md">
+          <div class="ftco-footer-widget mb-4">
+            <h2 class="ftco-heading-2">Have a Questions?</h2>
+            <div class="block-23 mb-3">
+              <ul>
+                <li><a><span class="icon icon-map-marker"></span><span class="text">Adam Towers,
+                    Edappally
+                    Kochi ,
+                    Kerala - 683544
+                  </span></a></li>

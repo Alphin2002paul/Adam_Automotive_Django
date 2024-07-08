@@ -1,0 +1,189 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Sign Up | Adam Automotive</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{% static 'css1/css/style.css' %}">
+    
+    <style>
+        .blur-background {
+            position: fixed;
+            top: -12px;
+            left: -12px;
+            width: 103%;
+            height: 104%;
+            background-image: url({% static 'images/car2.jpeg' %});
+            background-size: cover;
+            filter: blur(8px); /* Adjust the blur intensity as needed */
+            z-index: -1;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body class="img" style="height: 826px;">
+<div class="blur-background"></div>
+<section class="ftco-section">
+    <div class="container1">
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center mb-1">
+                <h2 class="heading-section">Sign Up</h2>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="login-wrap p-0">
+                    <h3 class="mb-4 text-center">Don't have an account?</h3>
+                    <form method="post" action="" class="signin-form">
+                        {% csrf_token %}
+
+                        <div class="form-group">
+                            <input type="text" id="name" class="form-control" name="name" placeholder="Your Name" required>
+                            <span id="text1" style="margin-left:50px" class="error"></span>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="email" class="form-control" name="email" placeholder="Email Address" required>
+                            <span id="text2" style="margin-left:50px" class="error"></span>
+                        </div>
+                        <div class="form-group">
+                            <input type="number" id="phone" class="form-control" name="phone" placeholder="Phone Number" required>
+                            <span id="text3" style="margin-left:50px" class="error"></span>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="username" class="form-control" name="username" placeholder="Username" required>
+                            <span id="text4" style="margin-left:50px" class="error"></span>
+                        </div>
+                        <div class="form-group">
+                            <input id="password-field" type="password" class="form-control" name="password" placeholder="Password" required>
+                            <span id="text5" style="margin-left:50px"  class="error"></span>
+                        </div>
+                        <div class="form-group">
+                            <input id="confirm-password-field" type="password" class="form-control" name="confirm_password" placeholder="Confirm Password" required>
+                            <span id="text6" style="margin-left:50px" class="error" style="position: absolute;margin-top: -21px;"></span>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="" style="width: 100%; padding: 10px 20px; border-radius: 50px; background-color: white; color: black; border: none; cursor: pointer; transition: background-color 0.3s ease, color 0.3s ease;"
+                            onmouseover="this.style.backgroundColor='black'; this.style.color='white';"
+                            onmouseout="this.style.backgroundColor='white'; this.style.color='black';">
+                        Sign Up
+                    </button>
+                    
+
+                        </div>
+                        <div class="form-group d-md-flex">
+                           <div class="w-50">
+                                <!-- <label class="checkbox-wrap checkbox-primary">Remember Me
+                                    <input type="checkbox" name="remember" checked>
+                                    <span class="checkmark"></span>
+                                </label>-->
+                            </div>
+                            <div class="w-50 text-md-right">
+                               
+                            </div>
+                        </div>
+                    </form>
+                    <p class="w-100 text-center">&mdash; Or Sign In With &mdash;</p>
+                    <div class="social d-flex text-center">
+                        <a href="#" class="px-2 py-2 mr-md-1 rounded"><span class="fa fa-google mr-2"></span> Google</a>
+                        <a href="{% url 'login' %}" class="px-2 py-2 ml-md-1 rounded"><span class="fa fa-sign-in mr-2"></span> Signin</a>
+                    </div>
+                  </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script src="{% static 'js/popper.js' %}"></script>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+<script src="{% static 'js/main.js' %}"></script>
+<script src="https://code.jquery.com/jquery-3.6.3.js" integrity="sha256-nQLuAZGRRcILA+6dMBOvcRh5Pe310sBpanc6+QBmyVM=" crossorigin="anonymous"></script>
+<script>
+    $(document).ready(function() {
+        $("#text1").hide();
+        $("#text2").hide();
+        $("#text3").hide();
+        $("#text4").hide();
+        $("#text5").hide();
+        $("#text6").hide();
+
+        var regexEmail = /^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/;
+        var regexPhone = /^[0-9]{10}$/;
+
+        $("#name").keyup(function() {
+            var name = $(this).val();
+            if (name.length < 3) {
+                $("#text1").show().text("Name must be at least 3 characters long.");
+            } else {
+                $("#text1").hide();
+            }
+        });
+
+        $("#email").keyup(function() {
+            var email = $(this).val();
+            if (!email.match(regexEmail)) {
+                $("#text2").show().text("Invalid email format.");
+            } else {
+                $("#text2").hide();
+                $.ajax({
+                    url: 'ajaxcheck.php',
+                    type: 'post',
+                    data: { email: email },
+                    success: function(data) {
+                        if (data > 0) {
+                            $("#text2").show().text("Email already taken.");
+                        } else {
+                            $("#text2").hide();
+                        }
+                    }
+                });
+            }
+        });
+
+        $("#phone").keyup(function() {
+            var phone = $(this).val();
+            if (!phone.match(regexPhone)) {
+                $("#text3").show().text("Invalid phone number.");
+            } else {
+                $("#text3").hide();
+            }
+        });
+
+        $("#username").keyup(function() {
+            var username = $(this).val();
+            if (username.length < 3) {
+                $("#text4").show().text("Username must be at least 3 characters long.");
+            } else {
+                $("#text4").hide();
+            }
+        });
+
+        $("#password-field").keyup(function() {
+            var password = $(this).val();
+            if (password.length < 6) {
+                $("#text5").show().text("Password must be at least 6 characters long.");
+            } else {
+                $("#text5").hide();
+            }
+        });
+
+        $("#confirm-password-field").keyup(function() {
+            var password = $("#password-field").val();
+            var confirmPassword = $(this).val();
+            if (password !== confirmPassword) {
+                $("#text6").show().text("Passwords do not match.");
+            } else {
+                $("#text6").hide();
+            }
+        });
+    });
+</script>
+</body>
+</html>
