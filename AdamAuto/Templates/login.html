@@ -1,4 +1,6 @@
 {% load static %}
+{% load socialaccount %}
+{% providers_media_js %}
 <!doctype html>
 <html lang="en">
 <head>
@@ -105,13 +107,7 @@
                         <a href="{% url 'register' %}" class="signup-button px-2 py-2 ml-md-1 rounded">
                           <span class="fa fa-user-plus mr-2"></span> Sign up
                         </a>
-                        <div id="g_id_onload"
-                             data-client_id="494374506084-ukum4g7kucrt0ttriagb7klchm5jpaim.apps.googleusercontent.com"
-                             data-context="signin"
-                             data-ux_mode="redirect"
-                             data-login_uri="http://localhost:8000/auth-receiver"
-                             data-itp_support="true">
-                        </div>
+                        <a href="{% provider_login_url 'google' %}">Login with google</a>
                         
                         <div class="g_id_signin" data-type="standard"></div>
                       </div>
