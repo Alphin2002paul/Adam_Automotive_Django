@@ -62,7 +62,7 @@
                   Hi, {{ user.username }}
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink" style="margin-left:-50px">
-                  <a class="dropdown-item" href="">Account Details</a>
+                  <a class="dropdown-item" href="{% url 'account_dtl'%}">Account Details</a>
                   <a class="dropdown-item" href="{% url 'logout'%}">Logout</a>
                   <!-- Add more options as needed, such as profile settings -->
                 </div>

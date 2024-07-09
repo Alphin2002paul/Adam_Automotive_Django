@@ -12,7 +12,8 @@ urlpatterns = [
     path('request_password_reset/', views.request_password_reset, name='request_password_reset'),
     path('reset_password_confirm/<str:uidb64>/<str:token>/', views.reset_password_confirm, name='reset_password_confirm'),
     path('logout',views.logout,name="logout"),
-
+    path('main/',views.main,name='main'),
+    path('account_dtl/',views.account_dtl,name='account_dtl'),
     path('auth-receiver', views.auth_receiver, name='auth_receiver'),
 ]
 

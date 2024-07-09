@@ -8,6 +8,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login,logout,get_user_model
 from django.contrib.auth import get_backends
+from django.contrib.auth.decorators import login_required
 
 from .models import User
 import random
@@ -22,7 +23,7 @@ token_generator = CustomTokenGenerator()
 def login_view(request):
     user=request.user
     if user.is_authenticated:
-        return render(request, 'main.html')
+        return redirect('main')
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
@@ -30,7 +31,7 @@ def login_view(request):
         try:
             user = users.objects.get(username=username, password=password)
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            return render(request, 'main.html')
+            return redirect('main')
         except users.DoesNotExist:
             return HttpResponse("Invalid username or password.")
     
@@ -39,8 +40,16 @@ def login_view(request):
 def index(request):
     return render(request, 'index.html')
 
+@login_required
+def main(request):
+    return render(request, 'main.html')
+
 def forgetpass(request):
     return render(request, 'forgetpass.html')
+
+@login_required
+def account_dtl(request):
+    return render(request, 'account_dtl.html')
 
 def generate_otp():
     return random.randint(100000, 999999)
@@ -49,7 +58,8 @@ def generate_otp():
 
 def register(request):
     if request.method == 'POST':
-        name = request.POST['name']
+        fname = request.POST['name']
+        lname=request.POST['name1']
         phone = request.POST['phone']
         email = request.POST['email']
         username = request.POST['username']
@@ -59,7 +69,8 @@ def register(request):
             otp = generate_otp()
             request.session['otp'] = otp
             request.session['user_details'] = {
-                'name': name,
+                'first_name': fname,
+                'last_name':lname,
                 'phone': phone,
                 'email': email,
                 'username': username,
@@ -97,7 +108,8 @@ def verify_otp(request):
         if otp == str(session_otp):
             try:
                 user = users.objects.create(
-                    first_name=user_details['name'],
+                    first_name=user_details['first_name'],
+                    last_name=user_details['last_name'],
                     email=user_details['email'],
                     username=user_details['username'],
                     password=user_details['password'],
