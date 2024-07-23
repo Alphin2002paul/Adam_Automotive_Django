@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from . import views
 from django.contrib.auth import views as auth_views
-
+from .views import check_email
 urlpatterns = [
     path('admin/', admin.site.urls),  # Admin interface at the root level
     path('', views.index, name='index'),
@@ -14,6 +14,8 @@ urlpatterns = [
     path('logout',views.logout,name="logout"),
     path('main/',views.main,name='main'),
     path('account_dtl/',views.account_dtl,name='account_dtl'),
+    path('account_edit/',views.account_edit,name='account_edit'),
     path('auth-receiver', views.auth_receiver, name='auth_receiver'),
+    path('check_email/', check_email, name='check_email'),
 ]
 

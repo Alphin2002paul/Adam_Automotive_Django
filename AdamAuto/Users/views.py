@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login,logout,get_user_model
 from django.contrib.auth import get_backends
 from django.contrib.auth.decorators import login_required
+from .decorators import nocache
 
 from .models import User
 import random
@@ -25,11 +26,11 @@ def login_view(request):
     if user.is_authenticated:
         return redirect('main')
     if request.method == 'POST':
-        username = request.POST['username']
+        email = request.POST['email']
         password = request.POST['password']
 
         try:
-            user = users.objects.get(username=username, password=password)
+            user = users.objects.get(email=email, password=password)
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect('main')
         except users.DoesNotExist:
@@ -41,6 +42,7 @@ def index(request):
     return render(request, 'index.html')
 
 @login_required
+@nocache
 def main(request):
     return render(request, 'main.html')
 
@@ -48,8 +50,13 @@ def forgetpass(request):
     return render(request, 'forgetpass.html')
 
 @login_required
+@nocache
 def account_dtl(request):
     return render(request, 'account_dtl.html')
+@login_required
+@nocache
+def account_edit(request):
+    return render(request, 'account_edit.html')
 
 def generate_otp():
     return random.randint(100000, 999999)
@@ -236,3 +243,14 @@ def main_view(request):
 def auth_receiver(request):
     # Handle post-authentication redirect logic here if needed
     return redirect('main')
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.models import User  # Adjust this to your user model if needed
+
+@csrf_exempt  # This decorator is used for simplicity, but it's better to use CSRF tokens in production.
+def check_email(request):
+    if request.method == 'POST':
+        email = request.POST.get('email', '')
+        email_exists = User.objects.filter(email=email).exists()
+        return JsonResponse({'exists': email_exists})
+    return JsonResponse({'exists': False})

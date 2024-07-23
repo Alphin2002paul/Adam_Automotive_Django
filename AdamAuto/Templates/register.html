@@ -28,6 +28,18 @@
             color: red;
             font-size: 14px;
         }
+        .form-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            flex: 1;
+            margin-right: 10px;
+        }
+        .form-group:last-child {
+            margin-right: 0;
+        }
     </style>
 </head>
 <body class="img" style="height: 826px;">
@@ -46,43 +58,52 @@
                     <form method="post" action="" class="signin-form">
                         {% csrf_token %}
 
-                        <div class="form-group">
-                            <input type="text" id="name" class="form-control" name="name" placeholder="First Name" required>
-                            <span id="text1" style="margin-left:50px" class="error"></span>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="text" id="name" class="form-control" name="name" placeholder="First Name" required>
+                                <span id="text1" class="error"></span>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" id="name1" class="form-control" name="name1" placeholder="Last Name" required>
+                                <span id="text1" class="error"></span>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <input type="text" id="name1" class="form-control" name="name1" placeholder="Last Name" required>
-                            <span id="text1" style="margin-left:50px" class="error"></span>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="email" id="email" class="form-control" name="email" placeholder="Email Address" required>
+                                <span id="text2" class="error"></span>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" id="phone" class="form-control" name="phone" placeholder="Phone Number" required>
+                                <span id="text3" class="error"></span>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <input type="email" id="email" class="form-control" name="email" placeholder="Email Address" required>
-                            <span id="text2" style="margin-left:50px" class="error"></span>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="text" id="username" class="form-control" name="username" placeholder="Username" required>
+                                <span id="text4" class="error"></span>
+                            </div>
+                            <div class="form-group">
+                                <input id="password-field" type="password" class="form-control" name="password" placeholder="Password" required>
+                                <span id="text5" class="error"></span>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <input type="number" id="phone" class="form-control" name="phone" placeholder="Phone Number" required>
-                            <span id="text3" style="margin-left:50px" class="error"></span>
-                        </div>
-                        <div class="form-group">
-                            <input type="text" id="username" class="form-control" name="username" placeholder="Username" required>
-                            <span id="text4" style="margin-left:50px" class="error"></span>
-                        </div>
-                        <div class="form-group">
-                            <input id="password-field" type="password" class="form-control" name="password" placeholder="Password" required>
-                            <span id="text5" style="margin-left:50px"  class="error"></span>
-                        </div>
+                        
                         <div class="form-group">
                             <input id="confirm-password-field" type="password" class="form-control" name="confirm_password" placeholder="Confirm Password" required>
-                            <span id="text6" style="margin-left:50px" class="error" style="position: absolute;margin-top: -21px;"></span>
+                            <span id="text6" class="error"></span>
                         </div>
+                        
                         <div class="form-group">
                             <button type="submit" class="" style="width: 100%; padding: 10px 20px; border-radius: 50px; background-color: white; color: black; border: none; cursor: pointer; transition: background-color 0.3s ease, color 0.3s ease;"
                             onmouseover="this.style.backgroundColor='black'; this.style.color='white';"
-                            onmouseout="this.style.backgroundColor='white'; this.style.color='black';">
-                        Sign Up
-                    </button>
-                    
-
+                            onmouseout="this.style.backgroundColor='white'; this.style.color='black';"id="register">
+                            Sign Up
+                        </button>
                         </div>
+                        
                         <div class="form-group d-md-flex">
                            <div class="w-50">
                                 <!-- <label class="checkbox-wrap checkbox-primary">Remember Me
@@ -112,82 +133,137 @@
 <script src="https://code.jquery.com/jquery-3.6.3.js" integrity="sha256-nQLuAZGRRcILA+6dMBOvcRh5Pe310sBpanc6+QBmyVM=" crossorigin="anonymous"></script>
 <script>
     $(document).ready(function() {
+        var mode1 = 1;
+        var mode2 = 1;
+        var mode3 = 1;
+        var mode4 = 1;
+        var mode5 = 1;
+        var mode6 = 1;
+    
         $("#text1").hide();
         $("#text2").hide();
         $("#text3").hide();
         $("#text4").hide();
         $("#text5").hide();
         $("#text6").hide();
-
+    
         var regexEmail = /^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/;
-        var regexPhone = /^[0-9]{10}$/;
-
+        var regexPhone = /^\(\d{3}\) \d{3}-\d{4}$/;
+        var regexPassword = /^(?=.*[A-Z])(?=.*[\W_]).{6,}$/;
+        var regexUsername = /^(?=.*[\W_]).{5,}$/;
+    
         $("#name").keyup(function() {
             var name = $(this).val();
             if (name.length < 3) {
-                $("#text1").show().text("Name must be at least 3 characters long.");
+                $("#text1").show().text("At least 3 characters long.");
+                mode1 = 0;
             } else {
                 $("#text1").hide();
+                mode1 = 1;
             }
+            checkRegisterButton();
         });
-
-        $("#email").keyup(function() {
-            var email = $(this).val();
-            if (!email.match(regexEmail)) {
-                $("#text2").show().text("Invalid email format.");
-            } else {
-                $("#text2").hide();
-                $.ajax({
-                    url: 'ajaxcheck.php',
-                    type: 'post',
-                    data: { email: email },
-                    success: function(data) {
-                        if (data > 0) {
-                            $("#text2").show().text("Email already taken.");
-                        } else {
-                            $("#text2").hide();
-                        }
-                    }
-                });
-            }
-        });
-
-        $("#phone").keyup(function() {
+    
+      
+    
+        $("#phone").on('input', function() {
             var phone = $(this).val();
-            if (!phone.match(regexPhone)) {
-                $("#text3").show().text("Invalid phone number.");
+            if (!regexPhone.test(phone)) {
+                $("#text3").show().text("Invalid phone number. Format: (123) 456-7890");
+                mode3 = 0;
             } else {
                 $("#text3").hide();
+                mode3 = 1;
             }
+            checkRegisterButton();
         });
-
-        $("#username").keyup(function() {
+    
+        $("#username").on('input', function() {
             var username = $(this).val();
-            if (username.length < 3) {
-                $("#text4").show().text("Username must be at least 3 characters long.");
+            if (!regexUsername.test(username)) {
+                $("#text4").show().text("Username must be at least 5 characters long and contain at least one special character.");
+                mode4 = 0;
             } else {
                 $("#text4").hide();
+                mode4 = 1;
             }
+            checkRegisterButton();
         });
-
-        $("#password-field").keyup(function() {
+    
+        $("#password-field").on('input', function() {
             var password = $(this).val();
-            if (password.length < 6) {
-                $("#text5").show().text("Password must be at least 6 characters long.");
+            if (!regexPassword.test(password)) {
+                $("#text5").show().text("Password must be at least 6 characters long, contain at least one special character, and one capital letter.");
+                mode5 = 0;
             } else {
                 $("#text5").hide();
+                mode5 = 1;
             }
+            checkRegisterButton();
         });
-
+    
         $("#confirm-password-field").keyup(function() {
             var password = $("#password-field").val();
             var confirmPassword = $(this).val();
             if (password !== confirmPassword) {
                 $("#text6").show().text("Passwords do not match.");
+                mode6 = 0;
             } else {
                 $("#text6").hide();
+                mode6 = 1;
+            }
+            checkRegisterButton();
+        });
+    
+        function checkRegisterButton() {
+            if (mode1 === 1 && mode2 === 1 && mode3 === 1 && mode4 === 1 && mode5 === 1 && mode6 === 1) {
+                $("#register").prop('disabled', false);
+            } else {
+                $("#register").prop('disabled', true);
+            }
+        }
+    
+        $("#register").on('click', function(event) {
+            if (mode1 === 1 && mode2 === 1 && mode3 === 1 && mode4 === 1 && mode5 === 1 && mode6 === 1) {
+                // Allow form submission
+            } else {
+                // Prevent form submission
+                event.preventDefault();
             }
         });
+    });
+    $(document).ready(function() {
+        var regexEmail = /^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/;
+        var mode2 = 1;  // Initialize mode2 as 1
+    
+        $("#email").keyup(function() {
+            var email = $(this).val();
+            if (!email.match(regexEmail)) {
+                $("#text2").show().text("Invalid email format.");
+                mode2 = 0;
+            } else {
+                $("#text2").hide();
+                $.ajax({
+                    url: '/check_email/',  // URL to the Django view
+                    type: 'post',
+                    data: { email: email },
+                    success: function(response) {
+                        if (response.exists) {
+                            $("#text2").show().text("Email already taken.");
+                            mode2 = 0;
+                        } else {
+                            $("#text2").hide();
+                            mode2 = 1;
+                        }
+                        checkRegisterButton();
+                    }
+                });
+            }
+        });
+    
+        function checkRegisterButton() {
+            // Implement your button enabling/disabling logic here
+        }
     });
 </script>
 </body>
