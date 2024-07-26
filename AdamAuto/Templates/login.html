@@ -87,8 +87,6 @@
                             onmouseout="this.style.backgroundColor='white'; this.style.color='black';">
                         Sign In
                     </button>
-                    
-
                         </div>
                         <div class="form-group d-md-flex">
                            <div class="w-50">
@@ -118,7 +116,13 @@
         </div>
     </div>
 </section>
-
+{% if messages %}
+{% for message in messages %}
+    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+        {{ message }}
+    </div>
+{% endfor %}
+{% endif %}
 <script src="{% static 'js/jquery.min.js' %}"></script>
 <script src="{% static 'js/popper.js' %}"></script>
 <script src="{% static 'js/bootstrap.min.js' %}"></script>

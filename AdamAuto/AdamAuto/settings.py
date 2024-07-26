@@ -78,8 +78,12 @@ WSGI_APPLICATION = 'AdamAuto.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME':'adamautodb',
+        'USER':'adamauto',
+        'PASSWORD':'adamauto',
+        'HOST':'localhost',
+        'PORT':'3306',
     }
 }
 
@@ -142,7 +146,7 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 )
-SITE_ID = 3
+SITE_ID = 4
 
 
 

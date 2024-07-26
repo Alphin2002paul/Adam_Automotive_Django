@@ -1,8 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from . import views
-from django.contrib.auth import views as auth_views
-from .views import check_email
+
 urlpatterns = [
     path('admin/', admin.site.urls),  # Admin interface at the root level
     path('', views.index, name='index'),
@@ -11,11 +10,12 @@ urlpatterns = [
     path('verify-otp/', views.verify_otp, name='verify_otp'),
     path('request_password_reset/', views.request_password_reset, name='request_password_reset'),
     path('reset_password_confirm/<str:uidb64>/<str:token>/', views.reset_password_confirm, name='reset_password_confirm'),
-    path('logout',views.logout,name="logout"),
+    path('logout',views.logout_view,name="logout"),
     path('main/',views.main,name='main'),
     path('account_dtl/',views.account_dtl,name='account_dtl'),
     path('account_edit/',views.account_edit,name='account_edit'),
     path('auth-receiver', views.auth_receiver, name='auth_receiver'),
-    path('check_email/', check_email, name='check_email'),
+    path('check_email/', views.check_email, name='check_email'),
+    path('check_username/', views.check_username, name='check_username'),
 ]
 

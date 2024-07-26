@@ -148,9 +148,10 @@
         $("#text6").hide();
     
         var regexEmail = /^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/;
-        var regexPhone = /^\(\d{3}\) \d{3}-\d{4}$/;
+        var regexPhone = /^[789]\d{9}$/;
         var regexPassword = /^(?=.*[A-Z])(?=.*[\W_]).{6,}$/;
-        var regexUsername = /^(?=.*[\W_]).{5,}$/;
+        var regexUsername = /^.{5,12}$/; // At least 5 characters
+
     
         $("#name").keyup(function() {
             var name = $(this).val();
@@ -164,12 +165,10 @@
             checkRegisterButton();
         });
     
-      
-    
         $("#phone").on('input', function() {
             var phone = $(this).val();
             if (!regexPhone.test(phone)) {
-                $("#text3").show().text("Invalid phone number. Format: (123) 456-7890");
+                $("#text3").show().text("Invalid phone number");
                 mode3 = 0;
             } else {
                 $("#text3").hide();
@@ -185,9 +184,25 @@
                 mode4 = 0;
             } else {
                 $("#text4").hide();
-                mode4 = 1;
+                $.ajax({
+                    url: '/check_username/',  // URL to the Django view
+                    type: 'post',
+                    data: {
+                        username: username,
+                        csrfmiddlewaretoken: '{{ csrf_token }}' // Include CSRF token
+                    },
+                    success: function(response) {
+                        if (response.exists) {
+                            $("#text4").show().text("Username already taken.");
+                            mode4 = 0;
+                        } else {
+                            $("#text4").hide();
+                            mode4 = 1;
+                        }
+                        checkRegisterButton();
+                    }
+                });
             }
-            checkRegisterButton();
         });
     
         $("#password-field").on('input', function() {
@@ -232,6 +247,7 @@
             }
         });
     });
+    
     $(document).ready(function() {
         var regexEmail = /^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/;
         var mode2 = 1;  // Initialize mode2 as 1
@@ -246,7 +262,10 @@
                 $.ajax({
                     url: '/check_email/',  // URL to the Django view
                     type: 'post',
-                    data: { email: email },
+                    data: {
+                        email: email,
+                        csrfmiddlewaretoken: '{{ csrf_token }}' // Include CSRF token
+                    },
                     success: function(response) {
                         if (response.exists) {
                             $("#text2").show().text("Email already taken.");
