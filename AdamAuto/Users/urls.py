@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.urls import path, include
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),  # Admin interface at the root level
@@ -17,5 +19,11 @@ urlpatterns = [
     path('auth-receiver', views.auth_receiver, name='auth_receiver'),
     path('check_email/', views.check_email, name='check_email'),
     path('check_username/', views.check_username, name='check_username'),
+    path('update_profile/', views.update_profile, name='update_profile'),
+    path('adminindex/', views.adminindex_view, name='adminindex'),
+    path('adminadd_dtl/', views.adminadd_dtl, name='adminadd_dtl'),
+
 ]
 
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

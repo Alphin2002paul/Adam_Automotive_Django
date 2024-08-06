@@ -35,11 +35,12 @@
             <div class="author-card-cover" style="background-image: url('{% static 'images/logo.png' %}');"></div>
             <div class="author-card-profile">
               <div class="author-card-avatar">
-                <img src="{% static customer.photo %}" alt="Customer Photo" class="k" />
+                <img src="{{ user.profile_picture.url }}" alt="Customer Photo" class="k" />
+
               </div>
               <div class="author-card-details">
-                <h5 class="author-card-name text-lg">{{ customer.first_name }} {{ customer.last_name }}</h5>
-                <span class="author-card-position">Joined on<br />20-06-2024</span>
+                <h5 class="author-card-name text-lg">{{ user.first_name }} {{ user.last_name }}</h5>
+                <span class="author-card-position">Joined on<br />{{ user.date_joined }}</span>
               </div>
             </div>
           </div>
@@ -118,7 +119,7 @@
             <div class="col-md-6">
                 <div class="form-group">
                   <label for="account-phone">Address</label>
-                  <input class="form-control" type="text" id="addr" name="addr" value="" required="" disabled />
+                  <input class="form-control" type="text" id="addr" name="addr" value="{{ user.address }}" required="" disabled />
                   <span id="text4"></span>
                 </div>
               </div>
@@ -129,7 +130,7 @@
                   <input class="custom-control-input" type="checkbox" id="subscribe_me" checked="" />
                   <a href="{% url 'main' %}" class="btn btn-style-1 btn-primary">Back</a>
                 </div>
-                <a href="" class="btn btn-style-1 btn-primary">Logout</a>
+                <a href="{% url 'logout' %}" class="btn btn-style-1 btn-primary">Logout</a>
               </div>
             </div>
           </form>

@@ -27,28 +27,35 @@ token_generator = CustomTokenGenerator()
 
 def generate_otp():
     return random.randint(100000, 999999)
-
+@nocache
 def login_view(request):
     user = request.user
     if user.is_authenticated:
-        return redirect('main')
-    
+        if user.user_type=="admin":
+             return redirect('adminindex')
+        if user.user_type=="customer":
+             return redirect('main')
     if request.method == 'POST':
         email = request.POST['email']
         password = request.POST['password']
 
+        
+        # # Standard authentication
         user = authenticate(request, email=email, password=password)
         
         if user is not None:
             auth_login(request, user)
             messages.success(request, 'Logged in successfully.')
-            return redirect('main')
+            if user.user_type=="admin":
+                 return redirect('adminindex')
+            if user.user_type=="customer":
+                 return redirect('main')
         else:
             messages.error(request, 'Invalid email or password.')
             return redirect('login')
     
     return render(request, 'login.html')
-
+@nocache
 def index(request):
     return render(request, 'index.html')
 
@@ -69,7 +76,7 @@ def account_dtl(request):
 @nocache
 def account_edit(request):
     return render(request, 'account_edit.html')
-
+@nocache
 def register(request):
     if request.method == 'POST':
         fname = request.POST['name']
@@ -221,7 +228,7 @@ def auth_receiver(request):
 
     request.session['user_data'] = user_data
     return redirect('sign_in')
-
+@nocache
 def logout_view(request):
     request.session.flush()
     return redirect('index')
@@ -242,3 +249,31 @@ def check_username(request):
     username = request.POST.get('username')
     exists = User.objects.filter(username=username).exists()
     return JsonResponse({'exists': exists})
+
+def update_profile(request):
+    if request.method == 'POST':
+        customer = request.user  # Corrected attribute to get the logged-in user
+        customer.first_name = request.POST.get('first_name')
+        customer.last_name = request.POST.get('last_name')
+        # customer.username = request.POST.get('username')
+        # customer.email = request.POST.get('email')
+        customer.Phone_number = request.POST.get('Phone_number')  # Ensure case matches the model field
+        customer.address = request.POST.get('address')
+        if 'photo' in request.FILES:
+            customer.profile_picture = request.FILES['photo']  # Ensure the correct field name
+        customer.save()
+        messages.success(request, 'Profile updated successfully.')
+        return redirect('account_dtl')
+    return render(request, 'account_dtl.html', {'user': request.user})
+
+@login_required
+@nocache
+def adminindex_view(request):
+    users = User.objects.filter(is_superuser=False)
+    return render(request, 'adminindex.html', {'users': users})
+
+# @login_required
+# @nocache
+def adminadd_dtl(request):
+    return render(request, 'adminadd_dtl.html')
+
