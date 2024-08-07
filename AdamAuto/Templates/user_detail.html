@@ -3,17 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Adam Automotive Admin Panel</title>
+    <title>User Profile - Adam Automotive Admin Panel</title>
     {% load static %}
     <link rel="icon" href="{% static 'images/logo.png' %}" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
-    <link href="styles.css" rel="stylesheet" />
+    <link href="{% static 'styles.css' %}" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" />
-
-    <!-- DataTables JS -->
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
     <script>
@@ -24,7 +20,7 @@
     <style>
       body {
         font-family: 'Poppins', sans-serif;
-        background: linear-gradient(to right, rgba(0, 0, 0, 0.9), rgba(0 0 0 / 63%));
+        background: linear-gradient(to right, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.63));
         color: #fff;
         overflow-x: hidden;
       }
@@ -107,12 +103,13 @@
         outline: none !important;
         border: none;
       }
+      
       .btn-darkish {
         background-color: #333;
         color: white;
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 75px;
-        padding:4px 7px;
+        padding: 10px 8px;
         transition: all 0.3s ease;
       }
       
@@ -125,13 +122,34 @@
         outline: none;
         box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
       }
+      
       .sidebar-footer {
         bottom: -37px;
       }
+      .img-fluid {
+        max-width: 87%;
+        height: 160px;
+      }
+      {% comment %} .btn-success {
+        --bs-btn-color: #fff;
+        --bs-btn-bg: #2a2a2a;
+        --bs-btn-border-color: #303633;
+      }
+      .btn:hover {
+        color: #0f0f0f;
+        background-color: #2c2d2d;
+        border-color: #161616;
+    } {% endcomment %}
+    .mt-3 {
+        margin-top: 8rem !important;
+        margin-left:6px;
+        margin-bottom:10px;
+    }
     </style>
   </head>
   <body>
     <div class="d-flex">
+      <!-- Sidebar -->
       <nav id="sidebar" class="bg-dark text-light">
         <div class="sidebar-header">
           <h3 class="mb-0">Adam</h3><h3><span style="color: #d39e00;">Automotive</span></h3>
@@ -185,7 +203,7 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuLink">
                   <li>
-                    <a class="dropdown-item" href="{% url 'adminprofile' %}"><i class="fas fa-user me-2"></i>Profile</a>
+                    <a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a>
                   </li>
                   <li>
                     <hr class="dropdown-divider" />
@@ -201,58 +219,81 @@
 
         <!-- Main Content -->
         <div class="container-fluid mt-4">
-          <!-- User Details Section -->
+          <!-- User Profile Form -->
           <div class="row">
             <div class="col-md-12 mb-4">
               <div class="card">
                 <div class="card-header">
-                  <h5 class="card-title mb-0">User Details</h5>
+                  <h5 class="card-title mb-0">More Details</h5>
                 </div>
                 <div class="card-body">
-                  <table id="myTable" class="display">
-                    <thead>
-                      <tr>
-                        <th>Sl/No</th>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Email Id</th><th></th>
-                        <th>Phone Number</th>
-                        <th>More Details</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {% for user in users %}
-                        <tr>
-                          <td>{{ forloop.counter }}</td>
-                          <td>{{ user.first_name }}</td>
-                          <td>{{ user.last_name }}</td>
-                          <td>{{ user.email }}</td><td></td>
-                          <td>{{ user.Phone_number }}</td>
-                          <td>
-                            <a class="btn-darkish" href="{% url 'user_detail' user.id %}">More Details</a>
-                          </td>
-                        </tr>
-                      {% endfor %}
-                    </tbody>
-                  </table>
+                  <form class="row" action="" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="col-md-3 text-center mb-3">
+                      <img src="{{ user.profile_picture.url }}" alt="Customer Photo" class="img-fluid rounded-circle" />
+                      <button type="button" id="toggleButton" class="btn btn-success mt-3">Disable User</button>
+                    </div>
+                    <div class="col-md-9">
+                      <div class="row">
+                        <div class="col-md-6 mb-3">
+                          <label for="firstName" class="form-label">First Name</label>
+                          <input type="text" class="form-control" id="firstName" value="{{ user.first_name }}" disabled />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                          <label for="lastName" class="form-label">Last Name</label>
+                          <input type="text" class="form-control" id="lastName" value="{{ user.last_name }}" disabled />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                          <label for="userType" class="form-label">Mail Id</label>
+                          <input type="text" class="form-control" id="userType" value="{{ user.email }}" disabled />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                          <label for="phoneNumber" class="form-label">Phone Number</label>
+                          <input type="text" class="form-control" id="phoneNumber" value="{{ user.Phone_number }}" disabled />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                          <label for="address" class="form-label">Username</label>
+                          <input type="text" class="form-control" id="username" value="{{ user.username }}" disabled />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                          <label for="address" class="form-label">Created On</label>
+                          <input type="text" class="form-control" id="joinDate" value="{{ user.date_joined }}" disabled />
+                        </div>
+                        <div class="col-md-12 mb-3">
+                          <label for="address" class="form-label">Address</label>
+                          <input type="text" class="form-control" id="address" value="{{ user.address }}" disabled />
+                        </div>
+                      </div>
+                    </div>
+                  </form>
                 </div>
               </div>
             </div>
           </div>
-
-          <!-- Add Details Section -->
         </div>
       </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
     <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        // Toggle Sidebar
-        document.getElementById('sidebarCollapse').addEventListener('click', function () {
-          document.getElementById('sidebar').classList.toggle('active')
+      $(document).ready(function () {
+        $('#sidebarCollapse').on('click', function () {
+          $('#sidebar').toggleClass('active')
         })
+      })
+      
+      document.getElementById('toggleButton').addEventListener('click', function () {
+        var button = document.getElementById('toggleButton')
+        if (button.classList.contains('btn-success')) {
+          button.classList.remove('btn-success')
+          button.classList.add('btn-danger')
+          button.innerText = 'Enable User'
+        } else {
+          button.classList.remove('btn-danger')
+          button.classList.add('btn-success')
+          button.innerText = 'Disable User'
+        }
       })
     </script>
   </body>

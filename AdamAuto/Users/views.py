@@ -16,6 +16,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 import jwt
 from .decorators import nocache
+from django.shortcuts import render, get_object_or_404
 
 users = get_user_model()
 
@@ -45,7 +46,7 @@ def login_view(request):
         
         if user is not None:
             auth_login(request, user)
-            messages.success(request, 'Logged in successfully.')
+            # messages.success(request, 'Logged in successfully.')
             if user.user_type=="admin":
                  return redirect('adminindex')
             if user.user_type=="customer":
@@ -273,7 +274,111 @@ def adminindex_view(request):
     return render(request, 'adminindex.html', {'users': users})
 
 # @login_required
-# @nocache
+@nocache
 def adminadd_dtl(request):
     return render(request, 'adminadd_dtl.html')
 
+from django.shortcuts import render, redirect
+from .models import Tbl_Company, Tbl_Color, Tbl_Model,VehicleType,UserCarDetails
+
+def add_details(request):
+    if request.method == "POST":
+        if 'sub4' in request.POST:
+            color_name = request.POST.get('name4')
+            if Tbl_Color.objects.filter(color_name=color_name).exists():
+                messages.error(request, f"Color '{color_name}' already exists.")
+            else:
+                Tbl_Color.objects.create(color_name=color_name)
+                messages.success(request, f"Color '{color_name}' added successfully.")
+                
+        elif 'sub2' in request.POST:
+            company_name = request.POST.get('name2')
+            if Tbl_Company.objects.filter(company_name=company_name).exists():
+                messages.error(request, f"Company '{company_name}' already exists.")
+            else:
+                Tbl_Company.objects.create(company_name=company_name)
+                messages.success(request, f"Company '{company_name}' added successfully.")
+                
+        elif 'sub3' in request.POST:
+            model_name = request.POST.get('name3')
+            if Tbl_Model.objects.filter(model_name=model_name).exists():
+                messages.error(request, f"Model '{model_name}' already exists.")
+            else:
+                Tbl_Model.objects.create(model_name=model_name)
+                messages.success(request, f"Model '{model_name}' added successfully.")
+                
+        elif 'sub5' in request.POST:
+            vehicle_type_name = request.POST.get('name5')
+            if VehicleType.objects.filter(name=vehicle_type_name).exists():
+                messages.error(request, f"Vehicle Type '{vehicle_type_name}' already exists.")
+            else:
+                VehicleType.objects.create(name=vehicle_type_name)
+                messages.success(request, f"Vehicle Type '{vehicle_type_name}' added successfully.")
+        
+    return redirect('adminadd_dtl')
+
+@nocache
+def adminprofile(request):
+    return render(request, 'adminprofile.html')
+
+def adminprofile(request):
+    return render(request, 'adminprofile.html')
+
+# def admincaradd_dtl(request):
+#     return render(request, 'admincaradd_dtl.html')
+
+def user_detail(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    return render(request, 'user_detail.html', {'user': user})
+
+def admincaradd_dtl(request):
+    companies = Tbl_Company.objects.all()
+    models = Tbl_Model.objects.all()
+    colors = Tbl_Color.objects.all()
+    car_types = VehicleType.objects.all()
+
+    if request.method == "POST":
+        manufacturer_id = request.POST.get('manufacturer')
+        model_id = request.POST.get('model')
+        year = request.POST.get('year')
+        price = request.POST.get('price')
+        color_id = request.POST.get('color')
+        fuel_type = request.POST.get('fuel_type')
+        kilometers = request.POST.get('km')
+        transmission = request.POST.get('transmission')
+        condition = request.POST.get('condition')
+        reg_number = request.POST.get('reg_number')
+        insurance_validity = request.POST.get('insurance_validity')
+        pollution_validity = request.POST.get('pollution_validity')
+        tax_validity = request.POST.get('tax_validity')
+        car_type_id = request.POST.get('car_type')
+        image = request.FILES.get('image')
+
+        # Save the data to the database
+        car_details = UserCarDetails(
+            manufacturer_id=manufacturer_id,
+            model_name_id=model_id,
+            year=year,
+            price=price,
+            color_id=color_id,
+            fuel_type=fuel_type,
+            kilometers=kilometers,
+            transmission=transmission,
+            condition=condition,
+            reg_number=reg_number,
+            insurance_validity=insurance_validity,
+            pollution_validity=pollution_validity,
+            tax_validity=tax_validity,
+            car_type_id=car_type_id,
+            image=image
+        )
+        car_details.save()
+        messages.success(request, 'Car details added successfully!')
+        return redirect('admincaradd_dtl')  # Replace with your redirect URL
+
+    return render(request, 'admincaradd_dtl.html', {
+        'manufacturers': companies,
+        'models': models,
+        'colors': colors,
+        'car_types': car_types,
+    })
