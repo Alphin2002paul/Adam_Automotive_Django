@@ -3,6 +3,8 @@ from django.urls import path
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
+from .views import update_user_status
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),  # Admin interface at the root level
@@ -26,6 +28,12 @@ urlpatterns = [
     path('adminprofile/', views.adminprofile, name='adminprofile'),
     path('user/<int:user_id>/', views.user_detail, name='user_detail'),
     path('admincaradd_dtl/', views.admincaradd_dtl, name='admincaradd_dtl'),
+    path('update_user_status/<int:user_id>/', update_user_status, name='update_user_status'),
+    path('userdisplaycars_dtl/', views.userdisplaycars_dtl, name='userdisplaycars_dtl'),
+    path('userdisplaycarnologin_dtl/', views.userdisplaycarnologin_dtl, name='userdisplaycarnologin_dtl'),
+    
+
+
 ]
 
 if settings.DEBUG:

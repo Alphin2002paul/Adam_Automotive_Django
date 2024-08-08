@@ -155,14 +155,14 @@
           <h3 class="mb-0">Adam</h3><h3><span style="color: #d39e00;">Automotive</span></h3>
         </div>
         <ul class="list-unstyled components">
-          <li>
+          <li class="active">
             <a href="{% url 'adminindex' %}"><i class="fas fa-user-circle"></i> User Details</a>
           </li>
           <li>
             <a href="{% url 'adminadd_dtl' %}"><i class="fas fa-folder-plus"></i> Add Categories</a>
           </li>
           <li>
-            <a href="#"><i class="fas fa-car"></i> List New Car</a>
+            <a href="{% url 'admincaradd_dtl' %}"><i class="fas fa-car"></i> List New Car</a>
           </li>
           <li>
             <a href="#"><i class="fas fa-tools"></i> Service Request</a>
@@ -203,7 +203,7 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuLink">
                   <li>
-                    <a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a>
+                    <a class="dropdown-item" href="{% url 'adminprofile' %}"><i class="fas fa-user me-2"></i>Profile</a>
                   </li>
                   <li>
                     <hr class="dropdown-divider" />
@@ -227,11 +227,17 @@
                   <h5 class="card-title mb-0">More Details</h5>
                 </div>
                 <div class="card-body">
-                  <form class="row" action="" method="POST" enctype="multipart/form-data">
+                  <form class="row" action="{% url 'update_user_status' user.id %}" method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="col-md-3 text-center mb-3">
                       <img src="{{ user.profile_picture.url }}" alt="Customer Photo" class="img-fluid rounded-circle" />
-                      <button type="button" id="toggleButton" class="btn btn-success mt-3">Disable User</button>
+                      <button type="button" id="toggleButton" class="btn mt-3">
+                        {% if user.status == 1 %}
+                          Disable User
+                        {% else %}
+                          Enable User
+                        {% endif %}
+                      </button>
                     </div>
                     <div class="col-md-9">
                       <div class="row">
@@ -266,35 +272,46 @@
                       </div>
                     </div>
                   </form>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
-    <script>
-      $(document).ready(function () {
-        $('#sidebarCollapse').on('click', function () {
-          $('#sidebar').toggleClass('active')
-        })
-      })
-      
-      document.getElementById('toggleButton').addEventListener('click', function () {
-        var button = document.getElementById('toggleButton')
-        if (button.classList.contains('btn-success')) {
-          button.classList.remove('btn-success')
-          button.classList.add('btn-danger')
-          button.innerText = 'Enable User'
-        } else {
-          button.classList.remove('btn-danger')
-          button.classList.add('btn-success')
-          button.innerText = 'Disable User'
-        }
-      })
-    </script>
+          
+                  <script>
+                    $(document).ready(function () {
+                      var button = $('#toggleButton');
+                      var initialStatus = {{ user.status }};
+                      if (initialStatus == 1) {
+                        button.addClass('btn-success');
+                        button.text('Disable User');
+                      } else {
+                        button.addClass('btn-danger');
+                        button.text('Enable User');
+                      }
+          
+                      button.on('click', function () {
+                        var newStatus = button.hasClass('btn-success') ? 0 : 1; // Toggle status
+          
+                        $.ajax({
+                          url: "{% url 'update_user_status' user.id %}",
+                          type: "POST",
+                          data: {
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                            status: newStatus
+                          },
+                          success: function(response) {
+                            if (response.success) {
+                              if (newStatus === 0) {
+                                button.removeClass('btn-success').addClass('btn-danger').text('Enable User');
+                              } else {
+                                button.removeClass('btn-danger').addClass('btn-success').text('Disable User');
+                              }
+                            } else {
+                              alert('Failed to update user status.');
+                            }
+                          }
+                        });
+                      });
+                    });
+                  </script>
+                  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+                  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+    
   </body>
 </html>

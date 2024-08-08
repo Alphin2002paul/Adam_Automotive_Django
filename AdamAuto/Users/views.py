@@ -17,6 +17,7 @@ from google.auth.transport import requests
 import jwt
 from .decorators import nocache
 from django.shortcuts import render, get_object_or_404
+import re
 
 users = get_user_model()
 
@@ -32,30 +33,31 @@ def generate_otp():
 def login_view(request):
     user = request.user
     if user.is_authenticated:
-        if user.user_type=="admin":
-             return redirect('adminindex')
-        if user.user_type=="customer":
-             return redirect('main')
+        if user.status != 1:
+            messages.error(request, 'Your account is not active.')
+            return redirect('login')
+        if user.user_type == "admin":
+            return redirect('adminindex')
+        if user.user_type == "customer":
+            return redirect('main')
     if request.method == 'POST':
         email = request.POST['email']
         password = request.POST['password']
 
-        
-        # # Standard authentication
         user = authenticate(request, email=email, password=password)
-        
-        if user is not None:
+
+        if user is not None and user.status == "1":
             auth_login(request, user)
-            # messages.success(request, 'Logged in successfully.')
-            if user.user_type=="admin":
-                 return redirect('adminindex')
-            if user.user_type=="customer":
-                 return redirect('main')
+            if user.user_type == "admin":
+                return redirect('adminindex')
+            if user.user_type == "customer":
+                return redirect('main')
         else:
-            messages.error(request, 'Invalid email or password.')
+            messages.error(request, 'Invalid email or password or inactive account.')
             return redirect('login')
-    
+
     return render(request, 'login.html')
+
 @nocache
 def index(request):
     return render(request, 'index.html')
@@ -135,7 +137,8 @@ def verify_otp(request):
                     email=user_details['email'],
                     username=user_details['username'],
                     Phone_number=user_details['phone'],
-                    user_type='customer'
+                    user_type='customer',
+                    status=1  # Set status to 1 upon registration
                 )
                 user.set_password(user_details['password'])  # Hash the password
                 user.save()
@@ -152,6 +155,7 @@ def verify_otp(request):
             messages.error(request, "Invalid OTP. Please try again.")
 
     return render(request, 'verify_otp.html')
+
 
 def request_password_reset(request):
     if request.method == 'POST':
@@ -324,6 +328,10 @@ def adminprofile(request):
 def adminprofile(request):
     return render(request, 'adminprofile.html')
 
+def userdisplaycars_dtl(request):
+    cars = UserCarDetails.objects.all()
+    return render(request, 'userdisplaycars_dtl.html',{'cars': cars})
+
 # def admincaradd_dtl(request):
 #     return render(request, 'admincaradd_dtl.html')
 
@@ -353,28 +361,61 @@ def admincaradd_dtl(request):
         tax_validity = request.POST.get('tax_validity')
         car_type_id = request.POST.get('car_type')
         image = request.FILES.get('image')
+        owner_status = request.POST.get('owner_status')
+        car_status = request.POST.get('car_status')
+        car_cc = request.POST.get('car_cc')
 
-        # Save the data to the database
-        car_details = UserCarDetails(
-            manufacturer_id=manufacturer_id,
-            model_name_id=model_id,
-            year=year,
-            price=price,
-            color_id=color_id,
-            fuel_type=fuel_type,
-            kilometers=kilometers,
-            transmission=transmission,
-            condition=condition,
-            reg_number=reg_number,
-            insurance_validity=insurance_validity,
-            pollution_validity=pollution_validity,
-            tax_validity=tax_validity,
-            car_type_id=car_type_id,
-            image=image
-        )
-        car_details.save()
-        messages.success(request, 'Car details added successfully!')
-        return redirect('admincaradd_dtl')  # Replace with your redirect URL
+        # Validations
+        errors = []
+        if not price.isdigit():
+            errors.append("Price must be an integer.")
+        if not (year.isdigit() and len(year) == 4):
+            errors.append("Year must be a 4-digit integer.")
+        if fuel_type not in ["Petrol", "Diesel", "Electric", "Hybrid"]:
+            errors.append("Fuel type must be one of: Petrol, Diesel, Electric, Hybrid.")
+        if not kilometers.isdigit():
+            errors.append("Kilometers must be an integer.")
+        if transmission not in ["Manual", "Automatic"]:
+            errors.append("Transmission must be one of: Manual, Automatic.")
+        # if not condition.isalnum() or len(condition.split()) < 15:
+        #     errors.append("Condition must be at least 15 words long and contain only letters and numbers.")
+        if not reg_number or not re.match(r'^[A-Z]{2}-\d{2}-[A-Z]-\d{4}$', reg_number):
+            errors.append("Registration number must be in the format: 'AA-00-A-0000'.")
+        if not owner_status.isdigit():
+            errors.append("Owner status must be an integer.")
+        if car_status not in ["Available", "Sold", "Pending"]:
+            errors.append("Car status must be one of: Available, Sold, Pending.")
+        if not car_cc.isdigit() or not (3 <= len(car_cc) <= 4):
+            errors.append("Engine CC must be a 3 or 4-digit integer.")
+
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+        else:
+            # Save the data to the database
+            car_details = UserCarDetails(
+                manufacturer_id=manufacturer_id,
+                model_name_id=model_id,
+                year=year,
+                price=price,
+                color_id=color_id,
+                fuel_type=fuel_type,
+                kilometers=kilometers,
+                transmission=transmission,
+                condition=condition,
+                reg_number=reg_number,
+                insurance_validity=insurance_validity,
+                pollution_validity=pollution_validity,
+                tax_validity=tax_validity,
+                car_type_id=car_type_id,
+                image=image,
+                owner_status=owner_status,
+                car_status=car_status,
+                car_cc=car_cc
+            )
+            car_details.save()
+            messages.success(request, 'Car details added successfully!')
+            return redirect('admincaradd_dtl')
 
     return render(request, 'admincaradd_dtl.html', {
         'manufacturers': companies,
@@ -382,3 +423,28 @@ def admincaradd_dtl(request):
         'colors': colors,
         'car_types': car_types,
     })
+    
+    
+    
+# views.py
+from django.shortcuts import get_object_or_404, redirect
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import User
+
+@csrf_exempt
+def update_user_status(request, user_id):
+    if request.method == "POST":
+        user = get_object_or_404(User, id=user_id)
+        status = request.POST.get("status")
+        if status is not None:
+            user.status = int(status)
+            user.save()
+            return JsonResponse({"success": True})
+    return JsonResponse({"success": False}, status=400)
+
+def userdisplaycarnologin_dtl(request):
+    cars = UserCarDetails.objects.all()
+    return render(request, 'userdisplaycarnologin_dtl.html',{'cars': cars})
+
+

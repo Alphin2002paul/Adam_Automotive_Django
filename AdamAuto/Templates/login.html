@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="{% static 'css1/css/style.css' %}">
-    
+
     <style>
         .blur-background {
             position: fixed;
@@ -23,7 +23,9 @@
             background-size: cover;
             filter: blur(8px); /* Adjust the blur intensity as needed */
             z-index: -1;
-        }.signup-button {
+        }
+
+        .signup-button {
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -38,24 +40,42 @@
             height: 40px;
             text-decoration: none;
             transition: background-color 0.3s;
-          }
-          
-          .signup-button:hover {
+        }
+
+        .signup-button:hover {
             background-color: #f6f9fe;
             color: #174ea6;
-          }
-          
-          .signup-button .fa-user-plus {
+        }
+
+        .signup-button .fa-user-plus {
             margin-right: 8px;
-          }
-          
-          .social {
+        }
+
+        .social {
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 10px;
-          }
+        }
 
+        .alert {
+            --bs-alert-bg: #1f1f1f !important;
+            margin: 10px;
+            padding: 10px;
+            position: fixed;
+            top: 20px; /* Adjust the distance from the top */
+            right: 20px; /* Adjust the distance from the right */
+            z-index: 1000; /* Ensure it appears above other content */
+            background-color: #f8d7da; /* Light red background */
+            color: #721c24; /* Dark red text */
+            border: 1px solid #f5c6cb; /* Border color */
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-footer {
+            bottom: -37px;
+        }
     </style>
     
     <script src="https://accounts.google.com/gsi/client" async></script>
@@ -85,8 +105,8 @@
                             <button type="submit" class="" style="width: 100%; padding: 10px 20px; border-radius: 50px; background-color: white; color: black; border: none; cursor: pointer; transition: background-color 0.3s ease, color 0.3s ease;"
                             onmouseover="this.style.backgroundColor='black'; this.style.color='white';"
                             onmouseout="this.style.backgroundColor='white'; this.style.color='black';">
-                        Sign In
-                    </button>
+                            Sign In
+                            </button>
                         </div>
                         <div class="form-group d-md-flex">
                            <div class="w-50">
@@ -105,23 +125,21 @@
                         <a href="{% url 'register' %}" class="signup-button px-2 py-2 ml-md-1 rounded">
                           <span class="fa fa-user-plus mr-2"></span> Sign up
                         </a>
-                        <a href="{% provider_login_url 'google' %}" class="signup-button px-2 py-2 ml-md-1 rounded">Login with google</a>
+                        <a href="{% provider_login_url 'google' %}" class="signup-button px-2 py-2 ml-md-1 rounded">Login with Google</a>
                         
                         <div class="g_id_signin" data-type="standard"></div>
-                      </div>
-                   
                     </div>
-                  </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
 {% if messages %}
-{% for message in messages %}
-    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-        {{ message }}
-    </div>
-{% endfor %}
+    {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
 {% endif %}
 <script src="{% static 'js/jquery.min.js' %}"></script>
 <script src="{% static 'js/popper.js' %}"></script>

@@ -33,7 +33,7 @@
     <link rel="stylesheet" href="{% static 'css/flaticon.css' %}" />
     <link rel="stylesheet" href="{% static 'css/icomoon.css' %}" />
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
-    {% comment %} <style>
+    <style>
       .navbar {
         position: fixed;
         top: 0;
@@ -41,7 +41,7 @@
         z-index: 1000; /* Ensure it stays on top of other elements */
         background-color: rgba(0, 0, 0, 0.8); /* Optional: Semi-transparent background */
       }
-    </style> {% endcomment %}
+    </style> 
   </head>
 
   <body>
@@ -56,18 +56,21 @@
               <a href="" class="nav-link">Home</a>
             </li>
             <li class="nav-item">
-              <a href="" class="nav-link">About</a>
+              <a href="#ab" class="nav-link">About</a>
             </li>
             <li class="nav-item">
-              <a href="" class="nav-link">Cars Collection</a>
+              <a href="{% url 'userdisplaycars_dtl' %}" class="nav-link">Cars Collection</a>
             </li>
             <li class="nav-item">
-              <a href="" class="nav-link">Contact</a>
+              <a href="#con" class="nav-link">Contact</a>
             </li>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Hi, {{ user.first_name }}</a>
               <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink" style="margin-left:-50px">
                 <a class="dropdown-item" href="{% url 'account_dtl' %}">Account Details</a>
+                <a class="dropdown-item" href="">Sell Your Car</a>
+                <a class="dropdown-item" href="">Book A Service</a>
+                <a class="dropdown-item" href="">Requests</a>
                 <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
                 <!-- Add more options as needed, such as profile settings -->
               </div>

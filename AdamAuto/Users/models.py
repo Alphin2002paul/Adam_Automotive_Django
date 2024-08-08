@@ -11,6 +11,7 @@ class User(AbstractUser):
     user_type = models.CharField(max_length=50, choices=USER_TYPE_CHOICES)
     Phone_number = models.CharField(max_length=15, null=True)
     address = models.CharField(max_length=255, null=True)
+    status = models.CharField(max_length=255, null=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
 
     def __str__(self):
@@ -54,6 +55,9 @@ class UserCarDetails(models.Model):
     pollution_validity = models.DateField()
     tax_validity = models.DateField()
     car_type = models.ForeignKey(VehicleType, on_delete=models.CASCADE)
+    owner_status = models.CharField(max_length=100)
+    car_status = models.CharField(max_length=100)
+    car_cc = models.CharField(max_length=100)
     image = models.ImageField(upload_to='car_images/')
 
     def __str__(self):

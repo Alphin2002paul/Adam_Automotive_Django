@@ -1,0 +1,263 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Adam Automotive - Website For Luxury Used Cars</title>
+    <link rel="icon" href="{% static 'images/logo.png' %}" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <link href="https://fonts.googleapis.com/css?family=Poppins:200,300,400,500,600,700,800&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="{% static 'displaycar/css/animate.css' %}" />
+    <link rel="stylesheet" href="{% static 'displaycar/css/owl.carousel.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'displaycar/css/owl.theme.default.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'displaycar/css/magnific-popup.css' %}" />
+    <link rel="stylesheet" href="{% static 'displaycar/css/aos.css' %}" />
+    <link rel="stylesheet" href="{% static 'displaycar/css/ionicons.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'displaycar/css/bootstrap-datepicker.css' %}" />
+    <link rel="stylesheet" href="{% static 'displaycar/css/jquery.timepicker.css' %}" />
+    <link rel="stylesheet" href="{% static 'displaycar/css/flaticon.css' %}" />
+    <link rel="stylesheet" href="{% static 'displaycar/css/icomoon.css' %}" />
+    <link rel="stylesheet" href="{% static 'displaycar/css/style.css' %}" />
+
+    <style>
+        .custom-btn {
+            background: #d39e00;
+            border: 1px solid #d39e00 !important;
+        }
+
+        .dropdown-menu {
+            margin-top: -1px;
+        }
+
+        .ftco-footer {
+            font-size: 16px;
+            background: #000;
+            padding: 2em 0;
+        }
+        .ftco-navbar-light.scrolled.awake {
+          margin-top: 0px;
+          -webkit-transition: .3s all ease-out;
+          -o-transition: .3s all ease-out;
+          transition: .3s all ease-out;
+      }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
+        <div class="container">
+            <a class="navbar-brand" href="#">Adam&nbsp;<span>Automotive</span></a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation"><span class="oi oi-menu"></span> Menu</button>
+
+            <div class="collapse navbar-collapse" id="ftco-nav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item active">
+                        <a href="{% url 'index' %}" class="nav-link">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'index' %}.#ab" class="nav-link">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">Cars Collection</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#con" class="nav-link">Contact</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{%url 'login' %}" class="nav-link">Login</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="hero-wrap ftco-degree-bg" style="background-image: url('{% static 'images/car_dis.webp' %}');" data-stellar-background-ratio="0.5">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row no-gutters slider-text justify-content-start align-items-center justify-content-center">
+                <div class="col-lg-8 ftco-animate">
+                    <div class="text w-100 text-center mb-md-5 pb-md-5">
+                        <h1 class="mb-4">Buy Your Dream Car Through Adam Automotive</h1>
+                        <p style="font-size: 18px;">Buying A Car is Not Just Buying a Machine It's an Emotion For Every Auto Enthusiast</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top:110px;margin-left:50px">
+        <form method="POST" action="filterdisplay.php">
+            <div class="row" style="margin-left:-20px">
+                <div class="col-3">
+                    <label for="search">Search:</label>
+                    <input type="text" id="search" name="search" class="form-control" placeholder="Search You Need" />
+                </div>
+                <div class="col-3">
+                    <label for="brand">Brand:</label>
+                    <select id="brand" name="brand" class="form-control">
+                        <option value="">--Select Brand--</option>
+                        <option value="Brand1">Brand1</option>
+                        <option value="Brand2">Brand2</option>
+                        <!-- Add more options as needed -->
+                    </select>
+                </div>
+                <div class="col-3">
+                    <label for="price">Price:</label>
+                    <input type="text" id="price" name="price" class="form-control" placeholder="Enter maximum Amount" />
+                </div>
+                <div class="col-3">
+                    <label for="year">Year:</label>
+                    <input type="text" id="year" name="year" class="form-control" placeholder="Enter Year" />
+                </div>
+                <div class="col-12 text-center mt-3">
+                    <button class="btn btn-warning" type="submit" value="Search" name="sub_search">Search</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <section class="ftco-section bg-light">
+      <div class="container">
+          <h2>Available&nbsp;<span style="color: #d39e00;">Stocks</span></h2>
+          <hr />
+          <div class="row">
+            {% for car in cars %}
+            <div class="col-md-4">
+                <div class="car-wrap rounded ftco-animate">
+                    <div class="img rounded d-flex align-items-end" style="background-image: url('{{ car.image.url }}');"></div>
+                    <div class="text">
+                        <h2 class="mb-0">{{ car.manufacturer.company_name }}</h2>
+                        <div class="d-flex mb-3">
+                            <span class="mb-0" style="color:#d39e00">Model Name: <span style="color:black">{{ car.model_name.model_name }}</span></span>
+                        </div>
+                        <div class="d-flex mb-3">
+                            <span class="mb-0" style="color:#d39e00">Price: ₹ <span style="color:black">{{ car.price }}</span></span>
+                        </div>
+                        <div class="d-flex mb-3">
+                            <span class="mb-0" style="color:#d39e00">Status: <span style="color:{% if car.car_status == 'Available' %}red{% else %}grey{% endif %}">{{ car.car_status }}</span></span>
+                        </div>
+                        <p class="d-flex mb-0 d-block">
+                            <a href="{% url 'login' %}" class="btn btn-primary py-2 mr-1">Add To Liked</a>
+                            <a style="width:47%" href="{% url 'login' %}" class="btn custom-btn py-2 ml-1">Details</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        
+          </div>
+      </div>
+  </section>
+  
+                <!-- Repeat for other cars -->
+            </div>
+            <div style="margin-left:490px">
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination">
+                        <li class="page-item">
+                            <a class="page-link" href="?pageno=1">First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?pageno=prev">Prev</a>
+                        </li>
+                        <li class="page-item active">
+                            <a class="page-link">1</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?pageno=2">2</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?pageno=next">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?pageno=last">Last</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </section>
+
+    <footer class="ftco-footer ftco-bg-dark ftco-section">
+      <div class="container">
+        <div class="row mb-5">
+          <div class="col-md">
+            <div class="ftco-footer-widget mb-4">
+              <h2 class="ftco-heading-2"><a href="#" class="logo">Adam&nbsp;<span>Automotive</span></a></h2>
+              <p>Money may not buy happiness, but I'd rather cry in a Jaguar than on a bus.</p>
+              <ul class="ftco-footer-social list-unstyled float-md-left float-lft mt-5">
+                <li class="ftco-animate">
+                  <a href="https://twitter.com/"><span class="icon-twitter"></span></a>
+                </li>
+                <li class="ftco-animate">
+                  <a href="https://www.facebook.com/"><span class="icon-facebook"></span></a>
+                </li>
+                <li class="ftco-animate">
+                  <a href="https://www.instagram.com/"><span class="icon-instagram"></span></a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md" id="con">
+            <div class="ftco-footer-widget mb-4 ml-md-5">
+              <h2 class="ftco-heading-2">Information</h2>
+              <ul class="list-unstyled">
+                <li>
+                  <a href="" class="py-2 d-block">About</a>
+                </li>
+                <li>
+                  <a href="" class="py-2 d-block">Terms and Conditions</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md">
+            <div class="ftco-footer-widget mb-4">
+              <h2 class="ftco-heading-2">Timing</h2>
+              <ul class="list-unstyled">
+                <li>
+                  <a class="py-2 d-block">Monday-Sunday</a>
+                </li>
+                <li>
+                  <a class="py-2 d-block">Working Hours: 9am-10pm</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md">
+            <div class="ftco-footer-widget mb-4">
+              <h2 class="ftco-heading-2">Have a Questions?</h2>
+              <div class="block-23 mb-3">
+                <ul>
+                  <li>
+                    <a><span class="icon icon-map-marker"></span><span class="text">Adam Towers, Edappally Kochi , Kerala - 683544</span></a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="{% static 'displaycar/js/jquery.min.js' %}"></script>
+    <script src="{% static 'displaycar/js/jquery-migrate-3.0.1.min.js' %}"></script>
+    <script src="{% static 'displaycar/js/popper.min.js' %}"></script>
+    <script src="{% static 'displaycar/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'displaycar/js/jquery.easing.1.3.js' %}"></script>
+    <script src="{% static 'displaycar/js/jquery.waypoints.min.js' %}"></script>
+    <script src="{% static 'displaycar/js/jquery.stellar.min.js' %}"></script>
+    <script src="{% static 'displaycar/js/owl.carousel.min.js' %}"></script>
+    <script src="{% static 'displaycar/js/jquery.magnific-popup.min.js' %}"></script>
+    <script src="{% static 'displaycar/js/aos.js' %}"></script>
+    <script src="{% static 'displaycar/js/jquery.animateNumber.min.js' %}"></script>
+    <script src="{% static 'displaycar/js/bootstrap-datepicker.js' %}"></script>
+    <script src="{% static 'displaycar/js/jquery.timepicker.min.js' %}"></script>
+    <script src="{% static 'displaycar/js/scrollax.min.js' %}"></script>
+    <script src="{% static 'displaycar/js/main.js' %}"></script>
+</body>
+
+</html>
