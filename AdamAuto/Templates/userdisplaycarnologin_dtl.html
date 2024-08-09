@@ -1,8 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <title>Adam Automotive - Website For Luxury Used Cars</title>
     <link rel="icon" href="{% static 'images/logo.png' %}" />
     <meta charset="utf-8" />
@@ -23,162 +22,214 @@
     <link rel="stylesheet" href="{% static 'displaycar/css/style.css' %}" />
 
     <style>
-        .custom-btn {
-            background: #d39e00;
-            border: 1px solid #d39e00 !important;
-        }
-
-        .dropdown-menu {
-            margin-top: -1px;
-        }
-
-        .ftco-footer {
-            font-size: 16px;
-            background: #000;
-            padding: 2em 0;
-        }
-        .ftco-navbar-light.scrolled.awake {
-          margin-top: 0px;
-          -webkit-transition: .3s all ease-out;
-          -o-transition: .3s all ease-out;
-          transition: .3s all ease-out;
+      .custom-btn {
+        background: #d39e00;
+        border: 1px solid #d39e00 !important;
       }
+      
+      .dropdown-menu {
+        margin-top: -1px;
+      }
+      
+      .ftco-footer {
+        font-size: 16px;
+        background: #000;
+        padding: 2em 0;
+      }
+      .ftco-navbar-light.scrolled.awake {
+        margin-top: 0px;
+        -webkit-transition: 0.3s all ease-out;
+        -o-transition: 0.3s all ease-out;
+        transition: 0.3s all ease-out;
+      }
+      .btn.btn-secondary {
+        background: #d29801 !important;
+        border: 1px solid #d2ab01 !important;
+        color: #fff !important;
+    }
+    .btn.btn-primary {
+      background: #000 !important;
+      border: 1px solid #101011 !important;
+      color: #fff !important;
+  }
+  .block-27 ul li a, .block-27 ul li span {
+    color: #c4781f;
+    text-align: center;
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    border-radius: 50%;
+    border: 1px solid #c4781f; }
+  .block-27 ul li.active a, .block-27 ul li.active span {
+    background: black!important;
+    color: #fff;
+    border: 1px solid transparent; }
+    .ftco-section {
+      padding: 3em 0;
+  }
+  .ftco-section + .ftco-section {
+      padding-top: 0;
+  }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <nav class="navbar navbar-expand-lg navbar-light ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
-        <div class="container">
-            <a class="navbar-brand" href="#">Adam&nbsp;<span>Automotive</span></a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation"><span class="oi oi-menu"></span> Menu</button>
+      <div class="container">
+        <a class="navbar-brand" href="#">Adam&nbsp;<span>Automotive</span></a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation"><span class="oi oi-menu"></span> Menu</button>
 
-            <div class="collapse navbar-collapse" id="ftco-nav">
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item active">
-                        <a href="{% url 'index' %}" class="nav-link">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{% url 'index' %}.#ab" class="nav-link">About</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">Cars Collection</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#con" class="nav-link">Contact</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{%url 'login' %}" class="nav-link">Login</a>
-                    </li>
-                </ul>
-            </div>
+        <div class="collapse navbar-collapse" id="ftco-nav">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item active">
+              <a href="{% url 'index' %}" class="nav-link">Home</a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'index' %}.#ab" class="nav-link">About</a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link">Cars Collection</a>
+            </li>
+            <li class="nav-item">
+              <a href="#con" class="nav-link">Contact</a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'login' %}" class="nav-link">Login</a>
+            </li>
+          </ul>
         </div>
+      </div>
     </nav>
 
     <div class="hero-wrap ftco-degree-bg" style="background-image: url('{% static 'images/car_dis.webp' %}');" data-stellar-background-ratio="0.5">
-        <div class="overlay"></div>
-        <div class="container">
-            <div class="row no-gutters slider-text justify-content-start align-items-center justify-content-center">
-                <div class="col-lg-8 ftco-animate">
-                    <div class="text w-100 text-center mb-md-5 pb-md-5">
-                        <h1 class="mb-4">Buy Your Dream Car Through Adam Automotive</h1>
-                        <p style="font-size: 18px;">Buying A Car is Not Just Buying a Machine It's an Emotion For Every Auto Enthusiast</p>
-                    </div>
-                </div>
+      <div class="overlay"></div>
+      <div class="container">
+        <div class="row no-gutters slider-text justify-content-start align-items-center justify-content-center">
+          <div class="col-lg-8 ftco-animate">
+            <div class="text w-100 text-center mb-md-5 pb-md-5">
+              <h1 class="mb-4">Buy Your Dream Car Through Adam Automotive</h1>
+              <p style="font-size: 18px;">Buying A Car is Not Just Buying a Machine It's an Emotion For Every Auto Enthusiast</p>
             </div>
+          </div>
         </div>
-    </div>
-
-    <div style="margin-top:110px;margin-left:50px">
-        <form method="POST" action="filterdisplay.php">
-            <div class="row" style="margin-left:-20px">
-                <div class="col-3">
-                    <label for="search">Search:</label>
-                    <input type="text" id="search" name="search" class="form-control" placeholder="Search You Need" />
-                </div>
-                <div class="col-3">
-                    <label for="brand">Brand:</label>
-                    <select id="brand" name="brand" class="form-control">
-                        <option value="">--Select Brand--</option>
-                        <option value="Brand1">Brand1</option>
-                        <option value="Brand2">Brand2</option>
-                        <!-- Add more options as needed -->
-                    </select>
-                </div>
-                <div class="col-3">
-                    <label for="price">Price:</label>
-                    <input type="text" id="price" name="price" class="form-control" placeholder="Enter maximum Amount" />
-                </div>
-                <div class="col-3">
-                    <label for="year">Year:</label>
-                    <input type="text" id="year" name="year" class="form-control" placeholder="Enter Year" />
-                </div>
-                <div class="col-12 text-center mt-3">
-                    <button class="btn btn-warning" type="submit" value="Search" name="sub_search">Search</button>
-                </div>
-            </div>
-        </form>
+      </div>
     </div>
 
     <section class="ftco-section bg-light">
       <div class="container">
-          <h2>Available&nbsp;<span style="color: #d39e00;">Stocks</span></h2>
-          <hr />
-          <div class="row">
-            {% for car in cars %}
-            <div class="col-md-4">
-                <div class="car-wrap rounded ftco-animate">
-                    <div class="img rounded d-flex align-items-end" style="background-image: url('{{ car.image.url }}');"></div>
-                    <div class="text">
-                        <h2 class="mb-0">{{ car.manufacturer.company_name }}</h2>
-                        <div class="d-flex mb-3">
-                            <span class="mb-0" style="color:#d39e00">Model Name: <span style="color:black">{{ car.model_name.model_name }}</span></span>
-                        </div>
-                        <div class="d-flex mb-3">
-                            <span class="mb-0" style="color:#d39e00">Price: ₹ <span style="color:black">{{ car.price }}</span></span>
-                        </div>
-                        <div class="d-flex mb-3">
-                            <span class="mb-0" style="color:#d39e00">Status: <span style="color:{% if car.car_status == 'Available' %}red{% else %}grey{% endif %}">{{ car.car_status }}</span></span>
-                        </div>
-                        <p class="d-flex mb-0 d-block">
-                            <a href="{% url 'login' %}" class="btn btn-primary py-2 mr-1">Add To Liked</a>
-                            <a style="width:47%" href="{% url 'login' %}" class="btn custom-btn py-2 ml-1">Details</a>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
-        
-          </div>
+          <h2>Filter Cars</h2>
+          <form method="GET" action="">
+              <div class="row">
+                  <div class="col-md-3 mb-3">
+                      <input type="text" class="form-control" name="search" placeholder="Search cars...">
+                  </div>
+                  <div class="col-md-3 mb-3">
+                      <select class="form-control" name="brand">
+                          <option value="">Select Brand</option>
+                          {% for brand in brands %}
+                              <option value="{{ brand.id }}">{{ brand.company_name }}</option>
+                          {% endfor %}
+                      </select>
+                  </div>
+                  <div class="col-md-3 mb-3">
+                      <select class="form-control" name="price_range">
+                          <option value="">Select Price Range</option>
+                          <option value="1000000-2000000">1000000-2000000</option>
+                          <option value="2000000-3000000">2000000-3000000</option>
+                          <option value="3000000-4000000">3000000-4000000</option>
+                          <option value="4000000-5000000">4000000-5000000</option>
+                          <option value="5000000+">Above 5000000</option>
+                      </select>
+                  </div>
+                  <div class="col-md-3 mb-3">
+                      <input type="number" class="form-control" name="year" placeholder="Year (2015+)" min="2015" max="9999">
+                  </div>
+              </div>
+              <div class="row">
+                  <div class="col-md-12">
+                      <button type="submit" class="btn btn-primary">Apply Filters</button>
+                  </div>
+              </div>
+          </form>
       </div>
   </section>
-  
-                <!-- Repeat for other cars -->
+  <section class="ftco-section bg-light">
+    <div class="container">
+        <h2>Available&nbsp;<span style="color: #d39e00;">Stocks</span></h2>
+        <hr />
+        {% if no_cars %}
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <h3>No filtered cars available right now.</h3>
+                </div>
             </div>
-            <div style="margin-left:490px">
-                <nav aria-label="Page navigation example">
-                    <ul class="pagination">
-                        <li class="page-item">
-                            <a class="page-link" href="?pageno=1">First</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="?pageno=prev">Prev</a>
-                        </li>
-                        <li class="page-item active">
-                            <a class="page-link">1</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="?pageno=2">2</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="?pageno=next">Next</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="?pageno=last">Last</a>
-                        </li>
-                    </ul>
-                </nav>
+        {% else %}
+            <div class="row">
+                {% for car in page_obj %}
+                    <div class="col-md-4">
+                        <div class="car-wrap rounded ftco-animate">
+                            <div class="img rounded d-flex align-items-end" style="background-image: url('{{ car.image.url }}');"></div>
+                            <div class="text">
+                                <h2 class="mb-0">{{ car.manufacturer.company_name }}</h2>
+                                <div class="d-flex mb-3">
+                                    <span class="mb-0" style="color:#d39e00">Model Name: <span style="color:black">{{ car.model_name.model_name }}</span></span>
+                                </div>
+                                <div class="d-flex mb-3">
+                                    <span class="mb-0" style="color:#d39e00">Price: ₹ <span style="color:black">{{ car.price }}</span></span>
+                                </div>
+                                <div class="d-flex mb-3">
+                                    <span class="mb-0" style="color:#d39e00">Status: <span style="color:{% if car.car_status == 'Available' %}red{% else %}grey{% endif %}">{{ car.car_status }}</span></span>
+                                </div>
+                                <p class="d-flex mb-0 d-block">
+                                    <a href="{% url 'login' %}" class="btn btn-primary py-2 mr-1">Add to Liked</a>
+                                    <a style="width:47%" href="" class="btn custom-btn py-2 ml-1">Details</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
             </div>
+        {% endif %}
+    </div>
+        <div class="row mt-5">
+          <div class="col text-center">
+            <div class="block-27">
+              <ul>
+                {% if page_obj.has_previous %}
+                  <li>
+                    <a href="?page=1">&lt;&lt;</a>
+                  </li>
+                  <li>
+                    <a href="?page={{ page_obj.previous_page_number }}">&lt;</a>
+                  </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                  {% if page_obj.number == num %}
+                    <li class="active">
+                      <span>{{ num }}</span>
+                    </li>
+                  {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li>
+                      <a href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                  {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                  <li>
+                    <a href="?page={{ page_obj.next_page_number }}">&gt;</a>
+                  </li>
+                  <li>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">&gt;&gt;</a>
+                  </li>
+                {% endif %}
+              </ul>
+            </div>
+          </div>
         </div>
+      </div>
     </section>
 
     <footer class="ftco-footer ftco-bg-dark ftco-section">
@@ -258,6 +309,5 @@
     <script src="{% static 'displaycar/js/jquery.timepicker.min.js' %}"></script>
     <script src="{% static 'displaycar/js/scrollax.min.js' %}"></script>
     <script src="{% static 'displaycar/js/main.js' %}"></script>
-</body>
-
+  </body>
 </html>

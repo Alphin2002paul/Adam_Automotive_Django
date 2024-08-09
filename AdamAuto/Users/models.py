@@ -62,3 +62,16 @@ class UserCarDetails(models.Model):
 
     def __str__(self):
         return f"{self.manufacturer} {self.model_name} ({self.year})"
+
+from django.db import models
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class LikedCar(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='liked_cars')
+    car = models.ForeignKey('UserCarDetails', on_delete=models.CASCADE, related_name='liked_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'car')

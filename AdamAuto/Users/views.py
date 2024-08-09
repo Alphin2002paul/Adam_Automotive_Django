@@ -443,8 +443,143 @@ def update_user_status(request, user_id):
             return JsonResponse({"success": True})
     return JsonResponse({"success": False}, status=400)
 
+from django.db.models import Q
+from django.core.paginator import Paginator
+from .models import UserCarDetails, Tbl_Company
+
 def userdisplaycarnologin_dtl(request):
     cars = UserCarDetails.objects.all()
-    return render(request, 'userdisplaycarnologin_dtl.html',{'cars': cars})
+    brands = Tbl_Company.objects.all()
+
+    # Apply filters
+    search_query = request.GET.get('search')
+    brand = request.GET.get('brand')
+    price_range = request.GET.get('price_range')
+    year = request.GET.get('year')
+
+    if search_query:
+        cars = cars.filter(
+            Q(manufacturer__company_name__icontains=search_query) |
+            Q(model_name__model_name__icontains=search_query) |
+            Q(car_status__icontains=search_query)
+        )
+
+    if brand:
+        cars = cars.filter(manufacturer_id=brand)
+
+    if price_range:
+        if price_range == '5000000+':
+            cars = cars.filter(price__gte=5000000)
+        else:
+            min_price, max_price = map(int, price_range.split('-'))
+            cars = cars.filter(price__gte=min_price, price__lte=max_price)
+
+    if year:
+        cars = cars.filter(year__gte=int(year))
+
+   
+    no_cars = cars.count() == 0
+
+    # Pagination
+    paginator = Paginator(cars, 3)  # Show 3 cars per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'brands': brands,
+        'no_cars': no_cars,
+    }
+
+    return render(request, 'userdisplaycarnologin_dtl.html', context)
 
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from .models import UserCarDetails, LikedCar
+
+@login_required
+def toggle_like(request, car_id):
+    car = get_object_or_404(UserCarDetails, id=car_id)
+    liked_car, created = LikedCar.objects.get_or_create(user=request.user, car=car)
+    
+    if not created:
+        liked_car.delete()
+        is_liked = False
+    else:
+        is_liked = True
+    
+    return JsonResponse({'is_liked': is_liked})
+
+from django.core.paginator import Paginator
+
+@login_required
+def userdisplaycars_dtl(request):
+    cars = UserCarDetails.objects.all()
+    paginator = Paginator(cars, 3)  # Show 3 cars per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    liked_cars = LikedCar.objects.filter(user=request.user).values_list('car_id', flat=True)
+    return render(request, 'userdisplaycars_dtl.html', {'page_obj': page_obj, 'liked_cars': liked_cars})
+
+@login_required
+def liked_list(request):
+    liked_cars = LikedCar.objects.filter(user=request.user).select_related('car')
+    paginator = Paginator(liked_cars, 3)  # Show 3 cars per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'likedlist_dtl.html', {'page_obj': page_obj})
+
+from django.db.models import Q
+from django.core.paginator import Paginator
+from .models import UserCarDetails, LikedCar, Tbl_Company
+@login_required
+def userdisplaycars_dtl(request):
+    cars = UserCarDetails.objects.all()
+    brands = Tbl_Company.objects.all()
+
+    # Apply filters
+    search_query = request.GET.get('search')
+    brand = request.GET.get('brand')
+    price_range = request.GET.get('price_range')
+    year = request.GET.get('year')
+
+    if search_query:
+        cars = cars.filter(
+            Q(manufacturer__company_name__icontains=search_query) |
+            Q(model_name__model_name__icontains=search_query) |
+            Q(car_status__icontains=search_query)
+        )
+
+    if brand:
+        cars = cars.filter(manufacturer_id=brand)
+
+    if price_range:
+        if price_range == '5000000+':
+            cars = cars.filter(price__gte=5000000)
+        else:
+            min_price, max_price = map(int, price_range.split('-'))
+            cars = cars.filter(price__gte=min_price, price__lte=max_price)
+
+    if year:
+        cars = cars.filter(year__gte=int(year))
+
+    # Check if there are any cars after filtering
+    no_cars = cars.count() == 0
+
+    # Pagination
+    paginator = Paginator(cars, 3)  # Show 3 cars per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    liked_cars = LikedCar.objects.filter(user=request.user).values_list('car_id', flat=True)
+
+    context = {
+        'page_obj': page_obj,
+        'liked_cars': liked_cars,
+        'brands': brands,
+        'no_cars': no_cars,
+    }
+
+    return render(request, 'userdisplaycars_dtl.html', context)

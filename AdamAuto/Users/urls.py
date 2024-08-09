@@ -31,8 +31,10 @@ urlpatterns = [
     path('update_user_status/<int:user_id>/', update_user_status, name='update_user_status'),
     path('userdisplaycars_dtl/', views.userdisplaycars_dtl, name='userdisplaycars_dtl'),
     path('userdisplaycarnologin_dtl/', views.userdisplaycarnologin_dtl, name='userdisplaycarnologin_dtl'),
-    
-
+    path('toggle_like/<int:car_id>/', views.toggle_like, name='toggle_like'),
+    path('userdisplaycars_dtl/', views.userdisplaycars_dtl, name='userdisplaycars_dtl'),
+    path('liked_list/', views.liked_list, name='liked_list'),
+    path('userdisplaycars/', views.userdisplaycars_dtl, name='userdisplaycars_dtl'),
 
 ]
 

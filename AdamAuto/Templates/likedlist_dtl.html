@@ -71,12 +71,6 @@
     background: black!important;
     color: #fff;
     border: 1px solid transparent; }
-    .ftco-section {
-    padding: 3em 0;
-}
-.ftco-section + .ftco-section {
-    padding-top: 0;
-}
     </style>
 </head>
 
@@ -95,7 +89,7 @@
                         <a href="{% url 'main' %}.#ab" class="nav-link">About</a>
                     </li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link">Cars Collection</a>
+                        <a href="{% url 'userdisplaycars_dtl' %}" class="nav-link">Cars Collection</a>
                     </li>
                     <li class="nav-item">
                         <a href="#con" class="nav-link">Contact</a>
@@ -105,8 +99,7 @@
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Hi, {{ user.first_name }}</a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink" style="margin-left:-50px">
                           <a class="dropdown-item" href="{% url 'account_dtl' %}">Account Details</a>
-                          <a class="dropdown-item" href="{% url 'liked_list' %}">Liked List</a>                         
-                          <a class="dropdown-item" href="">Sell Your Car</a>
+                          <a class="dropdown-item" href="#">Liked List</a>                          <a class="dropdown-item" href="">Sell Your Car</a>
                           <a class="dropdown-item" href="">Book A Service</a>
                           <a class="dropdown-item" href="">Requests</a>
                           <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
@@ -134,109 +127,66 @@
     </div>
 
     <section class="ftco-section bg-light">
-      <div class="container">
-          <h2>Filter Cars</h2>
-          <form method="GET" action="">
-              <div class="row">
-                  <div class="col-md-3 mb-3">
-                      <input type="text" class="form-control" name="search" placeholder="Search cars...">
-                  </div>
-                  <div class="col-md-3 mb-3">
-                      <select class="form-control" name="brand">
-                          <option value="">Select Brand</option>
-                          {% for brand in brands %}
-                              <option value="{{ brand.id }}">{{ brand.company_name }}</option>
-                          {% endfor %}
-                      </select>
-                  </div>
-                  <div class="col-md-3 mb-3">
-                      <select class="form-control" name="price_range">
-                          <option value="">Select Price Range</option>
-                          <option value="1000000-2000000">1000000-2000000</option>
-                          <option value="2000000-3000000">2000000-3000000</option>
-                          <option value="3000000-4000000">3000000-4000000</option>
-                          <option value="4000000-5000000">4000000-5000000</option>
-                          <option value="5000000+">Above 5000000</option>
-                      </select>
-                  </div>
-                  <div class="col-md-3 mb-3">
-                      <input type="number" class="form-control" name="year" placeholder="Year (2015+)" min="2015" max="9999">
-                  </div>
-              </div>
-              <div class="row">
-                  <div class="col-md-12">
-                      <button type="submit" class="btn btn-primary">Apply Filters</button>
-                  </div>
-              </div>
-          </form>
-      </div>
-  </section>
-    </div>
-    <section class="ftco-section bg-light">
-      <div class="container">
-          <h2>Available&nbsp;<span style="color: #d39e00;">Stocks</span></h2>
-          <hr />
-          {% if no_cars %}
-              <div class="row">
-                  <div class="col-md-12 text-center">
-                      <h3>No filtered cars available right now.</h3>
-                  </div>
-              </div>
-          {% else %}
-              <div class="row">
-                  {% for car in page_obj %}
-                  <div class="col-md-4">
-                      <div class="car-wrap rounded ftco-animate">
-                          <div class="img rounded d-flex align-items-end" style="background-image: url('{{ car.image.url }}');"></div>
-                          <div class="text">
-                              <h2 class="mb-0">{{ car.manufacturer.company_name }}</h2>
-                              <div class="d-flex mb-3">
-                                  <span class="mb-0" style="color:#d39e00">Model Name: <span style="color:black">{{ car.model_name.model_name }}</span></span>
-                              </div>
-                              <div class="d-flex mb-3">
-                                  <span class="mb-0" style="color:#d39e00">Price: ₹ <span style="color:black">{{ car.price }}</span></span>
-                              </div>
-                              <div class="d-flex mb-3">
-                                  <span class="mb-0" style="color:#d39e00">Status: <span style="color:{% if car.car_status == 'Available' %}red{% else %}grey{% endif %}">{{ car.car_status }}</span></span>
-                              </div>
-                              <p class="d-flex mb-0 d-block">
-                                  <button class="btn {% if car.id in liked_cars %}btn-secondary{% else %}btn-primary{% endif %} py-2 mr-1 like-btn" data-car-id="{{ car.id }}">
-                                      {% if car.id in liked_cars %}Remove Like{% else %}Add to Liked{% endif %}
-                                  </button>
-                                  <a style="width:47%" href="" class="btn custom-btn py-2 ml-1">Details</a>
-                              </p>
-                          </div>
-                      </div>
-                  </div>
-                  {% endfor %}
-              </div>
-          {% endif %}
-      </div>
-            </div>
-            <div class="row mt-5">
-              <div class="col text-center">
-                <div class="block-27">
-                  <ul>
-                    {% if page_obj.has_previous %}
-                      <li><a href="?page=1">&lt;&lt;</a></li>
-                      <li><a href="?page={{ page_obj.previous_page_number }}">&lt;</a></li>
-                    {% endif %}
-            
-                    {% for num in page_obj.paginator.page_range %}
-                      {% if page_obj.number == num %}
-                        <li class="active"><span>{{ num }}</span></li>
-                      {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                        <li><a href="?page={{ num }}">{{ num }}</a></li>
-                      {% endif %}
-                    {% endfor %}
-            
-                    {% if page_obj.has_next %}
-                      <li><a href="?page={{ page_obj.next_page_number }}">&gt;</a></li>
-                      <li><a href="?page={{ page_obj.paginator.num_pages }}">&gt;&gt;</a></li>
-                    {% endif %}
-                  </ul>
+        <div class="container">
+            <h2>Your Liked Cars</h2>
+            <hr />
+            <div class="row">
+                {% for liked_car in page_obj %}
+                <div class="col-md-4">
+                    <div class="car-wrap rounded ftco-animate">
+                        <div class="img rounded d-flex align-items-end" style="background-image: url('{{ liked_car.car.image.url }}');"></div>
+                        <div class="text">
+                            <h2 class="mb-0">{{ liked_car.car.manufacturer.company_name }}</h2>
+                            <div class="d-flex mb-3">
+                                <span class="mb-0" style="color:#d39e00">Model Name: <span style="color:black">{{ liked_car.car.model_name.model_name }}</span></span>
+                            </div>
+                            <div class="d-flex mb-3">
+                                <span class="mb-0" style="color:#d39e00">Price: ₹ <span style="color:black">{{ liked_car.car.price }}</span></span>
+                            </div>
+                            <div class="d-flex mb-3">
+                                <span class="mb-0" style="color:#d39e00">Status: <span style="color:{% if liked_car.car.car_status == 'Available' %}red{% else %}grey{% endif %}">{{ liked_car.car.car_status }}</span></span>
+                            </div>
+                            <p class="d-flex mb-0 d-block">
+                                <button class="btn btn-secondary py-2 mr-1 like-btn" data-car-id="{{ liked_car.car.id }}">Remove Like</button>
+                                <a href="#" class="btn btn-primary py-2 ml-1">Details</a>
+                            </p>
+                        </div>
+                    </div>
                 </div>
-              </div>
+                {% empty %}
+                <div class="col-12">
+                    <p>You haven't liked any cars yet.</p>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="row mt-5">
+                <div class="col text-center">
+                    <div class="block-27">
+                        <ul>
+                            {% if page_obj.has_previous %}
+                                <li><a href="?page=1">&lt;&lt;</a></li>
+                                <li><a href="?page={{ page_obj.previous_page_number }}">&lt;</a></li>
+                            {% endif %}
+    
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="active"><span>{{ num }}</span></li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li><a href="?page={{ num }}">{{ num }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+    
+                            {% if page_obj.has_next %}
+                                <li><a href="?page={{ page_obj.next_page_number }}">&gt;</a></li>
+                                <li><a href="?page={{ page_obj.paginator.num_pages }}">&gt;&gt;</a></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
             </div>
         </div>
     </section>
@@ -320,33 +270,28 @@
     <script src="{% static 'displaycar/js/main.js' %}"></script>
 
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
-          const likeButtons = document.querySelectorAll('.like-btn');
-          likeButtons.forEach(button => {
-              button.addEventListener('click', function() {
-                  const carId = this.getAttribute('data-car-id');
-                  fetch(`/toggle_like/${carId}/`, {
-                      method: 'POST',
-                      headers: {
-                          'X-CSRFToken': '{{ csrf_token }}',
-                      },
-                  })
-                  .then(response => response.json())
-                  .then(data => {
-                      if (data.is_liked) {
-                          this.textContent = 'Remove Like';
-                          this.classList.remove('btn-primary');
-                          this.classList.add('btn-secondary');
-                      } else {
-                          this.textContent = 'Add to Liked';
-                          this.classList.remove('btn-secondary');
-                          this.classList.add('btn-primary');
-                      }
-                  });
-              });
-          });
-      });
-      </script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const likeButtons = document.querySelectorAll('.like-btn');
+            likeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const carId = this.getAttribute('data-car-id');
+                    fetch(`/toggle_like/${carId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.is_liked) {
+                            // If the car is unliked, refresh the page
+                            window.location.reload();
+                        }
+                    });
+                });
+            });
+        });
+        </script>
 </body>
 
 </html>
