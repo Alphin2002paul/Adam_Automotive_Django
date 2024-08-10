@@ -244,8 +244,7 @@
               <div class="col-md-12 mb-4">
                 <div class="card">
                   <div class="card-header">
-                    <h5 class="card-title mb-0">Edit Listing</h5>
-                  </div>
+                    <h2>Edit <span style="color: #d39e00;">Listing</span></h2>                  </div>
                   <div class="card-body">
                     <div class="row">
                       {% for car in cars %}
@@ -264,8 +263,10 @@
                                 <span class="mb-0" style="color:#d39e00">Status: <span class="{% if car.car_status == 'Available' %}text-success{% else %}text-secondary{% endif %}">{{ car.car_status }}</span></span>
                               </div>
                               <div class="d-flex justify-content-between">
-                                <a href="" class="btn btn-primary py-2 px-3">Edit Details</a>
-                                <a href="" class="btn btn-danger py-2 px-3">Delete Car</a>
+                                <a href="{% url 'speccaredit_dtl' car_id=car.id %}" class="btn btn-primary py-2 px-3">Edit Details</a>
+                                <a href="#" class="btn btn-danger py-2 px-3 delete-btn" data-car-id="{{ car.id }}">
+                                  {% if car.car_status == 'Pending' %}Republish{% else %}Delete Car{% endif %}
+                                </a>
                               </div>
                             </div>
                           </div>
@@ -317,6 +318,42 @@
           document.getElementById('sidebar').classList.toggle('active')
         })
       })
+    </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        // Toggle Sidebar
+        document.getElementById('sidebarCollapse').addEventListener('click', function () {
+          document.getElementById('sidebar').classList.toggle('active')
+        })
+    
+        // Handle delete/republish button clicks
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+        deleteButtons.forEach(button => {
+          button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const carId = this.getAttribute('data-car-id');
+            const action = this.textContent.trim();
+    
+            fetch(`/toggle_car_status/${carId}/`, {
+              method: 'POST',
+              headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ action: action }),
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                this.textContent = data.new_status === 'Pending' ? 'Republish' : 'Delete Car';
+                const statusSpan = this.closest('.car-wrap').querySelector('.d-flex.mb-3 span:last-child');
+                statusSpan.textContent = data.new_status;
+                statusSpan.className = data.new_status === 'Available' ? 'text-success' : 'text-secondary';
+              }
+            });
+          });
+        });
+      });
     </script>
   </body>
 </html>

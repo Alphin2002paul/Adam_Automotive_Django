@@ -594,6 +594,80 @@ def edit_car(request, car_id):
     # Implement car editing logic here
     pass
 
-def delete_car(request, car_id):
-    # Implement car deletion logic here
-    pass
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+@require_POST
+@csrf_exempt
+def toggle_car_status(request, car_id):
+    try:
+        car = UserCarDetails.objects.get(id=car_id)
+        data = json.loads(request.body)
+        action = data.get('action')
+
+        if action == 'Delete Car':
+            car.car_status = 'Pending'
+        elif action == 'Republish':
+            car.car_status = 'Available'
+        else:
+            return JsonResponse({'success': False, 'error': 'Invalid action'})
+
+        car.save()
+        return JsonResponse({'success': True, 'new_status': car.car_status})
+    except UserCarDetails.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Car not found'})
+    
+def speccaredit_dtl(request):
+    return render(request, 'speccaredit_dtl.html')
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from .models import UserCarDetails, Tbl_Company,Tbl_Color,VehicleType
+
+def speccaredit_dtl(request, car_id):
+    car = get_object_or_404(UserCarDetails, id=car_id)
+    manufacturers = Tbl_Company.objects.all()
+    models = Tbl_Model.objects.all()  # Change this line
+    colors = Tbl_Color.objects.all()
+    car_types = VehicleType.objects.all()
+
+    if request.method == 'POST':
+        # Update car details
+        car.manufacturer_id = request.POST.get('manufacturer')
+        car.model_name_id = request.POST.get('model')  # Keep this as model_name_id
+        car.year = request.POST.get('year')
+        car.price = request.POST.get('price')
+        car.color_id = request.POST.get('color')
+        car.fuel_type = request.POST.get('fuel_type')
+        car.kilometers = request.POST.get('km')
+        car.transmission = request.POST.get('transmission')
+        car.condition = request.POST.get('condition')
+        car.registration_number = request.POST.get('reg_number')
+        car.insurance_validity = request.POST.get('insurance_validity')
+        car.pollution_validity = request.POST.get('pollution_validity')
+        car.tax_validity = request.POST.get('tax_validity')
+        car.car_type_id = request.POST.get('car_type')
+        car.owner_status = request.POST.get('owner_status')
+        car.car_status = request.POST.get('car_status')
+        car.car_cc = request.POST.get('car_cc')
+
+        if 'image' in request.FILES:
+            car.image = request.FILES['image']
+
+        try:
+            car.save()
+            messages.success(request, 'Car details updated successfully.')
+            return redirect('edit_listing')
+        except Exception as e:
+            messages.error(request, f'Error updating car details: {str(e)}')
+
+    context = {
+        'car': car,
+        'manufacturers': manufacturers,
+        'models': models,
+        'colors': colors,
+        'car_types': car_types,
+    }
+    return render(request, 'speccaredit_dtl.html', context)

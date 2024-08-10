@@ -36,8 +36,9 @@ urlpatterns = [
     path('liked_list/', views.liked_list, name='liked_list'),
     path('userdisplaycars/', views.userdisplaycars_dtl, name='userdisplaycars_dtl'),
     path('edit-listing/', views.edit_listing, name='edit_listing'),
-    path('edit-car/<int:car_id>/', views.edit_car, name='edit_car'),
-    path('delete-car/<int:car_id>/', views.delete_car, name='delete_car'),
+    path('speccaredit_dtl/', views.speccaredit_dtl, name='speccaredit_dtl'),
+    path('toggle_car_status/<int:car_id>/', views.toggle_car_status, name='toggle_car_status'),
+    path('speccaredit_dtl/<int:car_id>/', views.speccaredit_dtl, name='speccaredit_dtl'),
 
 ]
 

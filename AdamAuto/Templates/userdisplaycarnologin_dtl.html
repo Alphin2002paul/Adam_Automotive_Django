@@ -176,10 +176,9 @@
                               <span class="mb-0" style="color:#d39e00">Status: <span style="color:red">{{ car.car_status }}</span></span>
                           </div>
                           <p class="d-flex mb-0 d-block">
-                              <button class="btn {% if car.id in liked_cars %}btn-secondary{% else %}btn-primary{% endif %} py-2 mr-1 like-btn" data-car-id="{{ car.id }}">
-                                  {% if car.id in liked_cars %}Remove Like{% else %}Add to Liked{% endif %}
-                              </button>
-                              <a style="width:47%" href="" class="btn custom-btn py-2 ml-1">Details</a>
+                            <a style="width:47%" href="{% url 'login' %}" class="btn btn-primary py-2 ml-1">Add To Liked</a>
+
+                              <a style="width:47%" href="{% url 'login' %}" class="btn custom-btn py-2 ml-1">Details</a>
                           </p>
                       </div>
                   </div>
