@@ -174,44 +174,45 @@
     </div>
     <section class="ftco-section bg-light">
       <div class="container">
-          <h2>Available&nbsp;<span style="color: #d39e00;">Stocks</span></h2>
-          <hr />
-          {% if no_cars %}
-              <div class="row">
-                  <div class="col-md-12 text-center">
-                      <h3>No filtered cars available right now.</h3>
-                  </div>
-              </div>
-          {% else %}
-              <div class="row">
-                  {% for car in page_obj %}
-                  <div class="col-md-4">
-                      <div class="car-wrap rounded ftco-animate">
-                          <div class="img rounded d-flex align-items-end" style="background-image: url('{{ car.image.url }}');"></div>
-                          <div class="text">
-                              <h2 class="mb-0">{{ car.manufacturer.company_name }}</h2>
-                              <div class="d-flex mb-3">
-                                  <span class="mb-0" style="color:#d39e00">Model Name: <span style="color:black">{{ car.model_name.model_name }}</span></span>
-                              </div>
-                              <div class="d-flex mb-3">
-                                  <span class="mb-0" style="color:#d39e00">Price: ₹ <span style="color:black">{{ car.price }}</span></span>
-                              </div>
-                              <div class="d-flex mb-3">
-                                  <span class="mb-0" style="color:#d39e00">Status: <span style="color:{% if car.car_status == 'Available' %}red{% else %}grey{% endif %}">{{ car.car_status }}</span></span>
-                              </div>
-                              <p class="d-flex mb-0 d-block">
-                                  <button class="btn {% if car.id in liked_cars %}btn-secondary{% else %}btn-primary{% endif %} py-2 mr-1 like-btn" data-car-id="{{ car.id }}">
-                                      {% if car.id in liked_cars %}Remove Like{% else %}Add to Liked{% endif %}
-                                  </button>
-                                  <a style="width:47%" href="" class="btn custom-btn py-2 ml-1">Details</a>
-                              </p>
-                          </div>
-                      </div>
-                  </div>
-                  {% endfor %}
-              </div>
-          {% endif %}
-      </div>
+        <h2>Available&nbsp;<span style="color: #d39e00;">Stocks</span></h2>
+        <hr />
+        {% if no_cars %}
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <h3>No filtered cars available right now.</h3>
+            </div>
+        </div>
+        {% else %}
+        <div class="row">
+            {% for car in page_obj %}
+                <div class="col-md-4">
+                    <div class="car-wrap rounded ftco-animate">
+                        <div class="img rounded d-flex align-items-end" style="background-image: url('{{ car.image.url }}');"></div>
+                        <div class="text">
+                            <h2 class="mb-0">{{ car.manufacturer.company_name }}</h2>
+                            <div class="d-flex mb-3">
+                                <span class="mb-0" style="color:#d39e00">Model Name: <span style="color:black">{{ car.model_name.model_name }}</span></span>
+                            </div>
+                            <div class="d-flex mb-3">
+                                <span class="mb-0" style="color:#d39e00">Price: ₹ <span style="color:black">{{ car.price }}</span></span>
+                            </div>
+                            <div class="d-flex mb-3">
+                                <span class="mb-0" style="color:#d39e00">Status: <span style="color:red">{{ car.car_status }}</span></span>
+                            </div>
+                            <p class="d-flex mb-0 d-block">
+                                <button class="btn {% if car.id in liked_cars %}btn-secondary{% else %}btn-primary{% endif %} py-2 mr-1 like-btn" data-car-id="{{ car.id }}">
+                                    {% if car.id in liked_cars %}Remove Like{% else %}Add to Liked{% endif %}
+                                </button>
+                                <a style="width:47%" href="" class="btn custom-btn py-2 ml-1">Details</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
             </div>
             <div class="row mt-5">
               <div class="col text-center">
@@ -265,12 +266,8 @@
             <div class="ftco-footer-widget mb-4 ml-md-5">
               <h2 class="ftco-heading-2">Information</h2>
               <ul class="list-unstyled">
-                <li>
-                  <a href="" class="py-2 d-block">About</a>
-                </li>
-                <li>
-                  <a href="" class="py-2 d-block">Terms and Conditions</a>
-                </li>
+                <li><a href="{% url 'main' %}.#ab" class="py-2 d-block">About</a></li>
+                <li><a href="#" id="termsAndConditions" class="py-2 d-block">Terms and Conditions</a></li>           
               </ul>
             </div>
           </div>
@@ -346,6 +343,24 @@
               });
           });
       });
+      </script>
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+      <script>
+        document.getElementById('termsAndConditions').addEventListener('click', function (e) {
+          e.preventDefault()
+          Swal.fire({
+            title: 'Terms and Conditions of Adam Automotive',
+            html: `
+                <p>1. All sales are final.</p>
+                <p>2. No Vehilces Which Has Any Kind Of Accidents And Flood Are Sold.</p>
+                <p>3. Adam Automotive reserves the right to refuse service to anyone.</p>
+                <p>4. Test drives are subject to approval and require a valid driver's license.</p>
+                <p>5. Prices are subject to change without notice.</p>
+              `,
+            confirmButtonText: 'Okay',
+            confirmButtonColor: '#d39e00'
+          })
+        })
       </script>
 </body>
 

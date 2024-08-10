@@ -35,6 +35,9 @@ urlpatterns = [
     path('userdisplaycars_dtl/', views.userdisplaycars_dtl, name='userdisplaycars_dtl'),
     path('liked_list/', views.liked_list, name='liked_list'),
     path('userdisplaycars/', views.userdisplaycars_dtl, name='userdisplaycars_dtl'),
+    path('edit-listing/', views.edit_listing, name='edit_listing'),
+    path('edit-car/<int:car_id>/', views.edit_car, name='edit_car'),
+    path('delete-car/<int:car_id>/', views.delete_car, name='delete_car'),
 
 ]
 

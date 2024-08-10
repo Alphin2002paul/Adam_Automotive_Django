@@ -443,12 +443,14 @@ def update_user_status(request, user_id):
             return JsonResponse({"success": True})
     return JsonResponse({"success": False}, status=400)
 
+from django.shortcuts import render
 from django.db.models import Q
 from django.core.paginator import Paginator
 from .models import UserCarDetails, Tbl_Company
 
 def userdisplaycarnologin_dtl(request):
-    cars = UserCarDetails.objects.all()
+    # Fetch only available cars
+    cars = UserCarDetails.objects.filter(car_status='Available')
     brands = Tbl_Company.objects.all()
 
     # Apply filters
@@ -460,8 +462,7 @@ def userdisplaycarnologin_dtl(request):
     if search_query:
         cars = cars.filter(
             Q(manufacturer__company_name__icontains=search_query) |
-            Q(model_name__model_name__icontains=search_query) |
-            Q(car_status__icontains=search_query)
+            Q(model_name__model_name__icontains=search_query)
         )
 
     if brand:
@@ -477,11 +478,10 @@ def userdisplaycarnologin_dtl(request):
     if year:
         cars = cars.filter(year__gte=int(year))
 
-   
     no_cars = cars.count() == 0
 
     # Pagination
-    paginator = Paginator(cars, 3)  # Show 3 cars per page
+    paginator = Paginator(cars, 6)  # Show 6 cars per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -536,7 +536,7 @@ from django.core.paginator import Paginator
 from .models import UserCarDetails, LikedCar, Tbl_Company
 @login_required
 def userdisplaycars_dtl(request):
-    cars = UserCarDetails.objects.all()
+    cars = UserCarDetails.objects.filter(car_status='Available')
     brands = Tbl_Company.objects.all()
 
     # Apply filters
@@ -548,8 +548,7 @@ def userdisplaycars_dtl(request):
     if search_query:
         cars = cars.filter(
             Q(manufacturer__company_name__icontains=search_query) |
-            Q(model_name__model_name__icontains=search_query) |
-            Q(car_status__icontains=search_query)
+            Q(model_name__model_name__icontains=search_query)
         )
 
     if brand:
@@ -569,7 +568,7 @@ def userdisplaycars_dtl(request):
     no_cars = cars.count() == 0
 
     # Pagination
-    paginator = Paginator(cars, 3)  # Show 3 cars per page
+    paginator = Paginator(cars, 6)  # Show 6 cars per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -583,3 +582,18 @@ def userdisplaycars_dtl(request):
     }
 
     return render(request, 'userdisplaycars_dtl.html', context)
+from django.core.paginator import Paginator
+
+def edit_listing(request):
+    cars = UserCarDetails.objects.all().order_by('-id')
+    paginator = Paginator(cars, 3)  # Show 6 cars per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'edit_listing.html', {'cars': page_obj})
+def edit_car(request, car_id):
+    # Implement car editing logic here
+    pass
+
+def delete_car(request, car_id):
+    # Implement car deletion logic here
+    pass

@@ -126,8 +126,48 @@
         box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
       }
       .sidebar-footer {
-        bottom: -37px;
+        bottom: -1px;
       }
+      .block-27 ul li a, .block-27 ul li span {
+        color: #c4781f;
+        text-align: center;
+        display: inline-block;
+        width: 46px;
+        height: 45px;
+        line-height: 36px;
+        border-radius: 80%;
+        border: 1px solid #c4781f;
+    }
+      .block-27 ul li.active a, .block-27 ul li.active span {
+        background: black!important;
+        color: #fff;
+        border: 1px solid transparent; }
+        .ftco-section {
+        padding: 3em 0;
+    }
+    .ftco-section + .ftco-section {
+        padding-top: 0;
+    }
+    .mb-4 {
+        margin-bottom: -1.0rem !important;
+    }
+    .btn-primary {
+        --bs-btn-color: #fff;
+        --bs-btn-bg: #0c0c0d;
+        --bs-btn-border-color: #0b0b0b;
+        --bs-btn-hover-color: #fff;
+        --bs-btn-hover-bg: #111112;
+        --bs-btn-hover-border-color: #0c0c0d;
+        --bs-btn-focus-shadow-rgb: 49, 132, 253;
+        --bs-btn-active-color: #fff;
+        --bs-btn-active-bg: #0c0c0d;
+        --bs-btn-active-border-color: #0e0f0f;
+        --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+        --bs-btn-disabled-color: #fff;
+        --bs-btn-disabled-bg: #191a1b;
+        --bs-btn-disabled-border-color: #131313;
+    }
+        
     </style>
   </head>
   <body>
@@ -137,7 +177,7 @@
           <h3 class="mb-0">Adam</h3><h3><span style="color: #d39e00;">Automotive</span></h3>
         </div>
         <ul class="list-unstyled components">
-          <li class="active">
+          <li>
             <a href="{% url 'adminindex' %}"><i class="fas fa-user-circle"></i> User Details</a>
           </li>
           <li>
@@ -146,9 +186,8 @@
           <li>
             <a href="{% url 'admincaradd_dtl' %}"><i class="fas fa-car"></i> List New Car</a>
           </li>
-          <li>
+          <li class="active">
             <a href="{% url 'edit_listing' %}"><i class="fas fa-edit"></i> Edit Listing</a>
-
           </li>
           <li>
             <a href="#"><i class="fas fa-phone"></i> Call Back</a>
@@ -200,47 +239,70 @@
           </div>
         </nav>
 
-        <!-- Main Content -->
         <div class="container-fluid mt-4">
-          <!-- User Details Section -->
-          <div class="row">
-            <div class="col-md-12 mb-4">
-              <div class="card">
-                <div class="card-header">
-                  <h5 class="card-title mb-0">User Details</h5>
-                </div>
-                <div class="card-body">
-                  <table id="myTable" class="display">
-                    <thead>
-                      <tr>
-                        <th>Sl/No</th>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Email Id</th><th></th>
-                        <th>Phone Number</th>
-                        <th>More Details</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {% for user in users %}
-                        <tr>
-                          <td>{{ forloop.counter }}</td>
-                          <td>{{ user.first_name }}</td>
-                          <td>{{ user.last_name }}</td>
-                          <td>{{ user.email }}</td><td></td>
-                          <td>{{ user.Phone_number }}</td>
-                          <td>
-                            <a class="btn-darkish" href="{% url 'user_detail' user.id %}">More Details</a>
-                          </td>
-                        </tr>
+            <div class="row">
+              <div class="col-md-12 mb-4">
+                <div class="card">
+                  <div class="card-header">
+                    <h5 class="card-title mb-0">Edit Listing</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      {% for car in cars %}
+                        <div class="col-md-4 mb-4">
+                          <div class="car-wrap rounded ftco-animate bg-white p-3">
+                            <div class="img rounded mb-3" style="background-image: url('{{ car.image.url }}'); height: 200px; background-size: cover; background-position: center;"></div>
+                            <div class="text">
+                              <h2 class="mb-0 text-dark">{{ car.manufacturer.company_name }}</h2>
+                              <div class="d-flex mb-3">
+                                <span class="mb-0" style="color:#d39e00">Model: <span class="text-dark">{{ car.model_name.model_name }}</span></span>
+                              </div>
+                              <div class="d-flex mb-3">
+                                <span class="mb-0" style="color:#d39e00">Price: <span class="text-dark">₹ {{ car.price }}</span></span>
+                              </div>
+                              <div class="d-flex mb-3">
+                                <span class="mb-0" style="color:#d39e00">Status: <span class="{% if car.car_status == 'Available' %}text-success{% else %}text-secondary{% endif %}">{{ car.car_status }}</span></span>
+                              </div>
+                              <div class="d-flex justify-content-between">
+                                <a href="" class="btn btn-primary py-2 px-3">Edit Details</a>
+                                <a href="" class="btn btn-danger py-2 px-3">Delete Car</a>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       {% endfor %}
-                    </tbody>
-                  </table>
+                    </div>
+                    <!-- Pagination -->
+                    <div class="row mt-5">
+                      <div class="col text-center">
+                        <div class="block-27">
+                          <ul class="pagination">
+                            {% if cars.has_previous %}
+                              <li class="page-item"><a class="page-link" href="?page=1">&lt;&lt;</a></li>
+                              <li class="page-item"><a class="page-link" href="?page={{ cars.previous_page_number }}">&lt;</a></li>
+                            {% endif %}
+                            
+                            {% for num in cars.paginator.page_range %}
+                              {% if cars.number == num %}
+                                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                              {% elif num > cars.number|add:'-3' and num < cars.number|add:'3' %}
+                                <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                              {% endif %}
+                            {% endfor %}
+                            
+                            {% if cars.has_next %}
+                              <li class="page-item"><a class="page-link" href="?page={{ cars.next_page_number }}">&gt;</a></li>
+                              <li class="page-item"><a class="page-link" href="?page={{ cars.paginator.num_pages }}">&gt;&gt;</a></li>
+                            {% endif %}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-
           <!-- Add Details Section -->
         </div>
       </div>

@@ -136,12 +136,8 @@
             <div class="ftco-footer-widget mb-4 ml-md-5">
               <h2 class="ftco-heading-2">Information</h2>
               <ul class="list-unstyled">
-                <li>
-                  <a href="" class="py-2 d-block">About</a>
-                </li>
-                <li>
-                  <a href="" class="py-2 d-block">Terms and Conditions</a>
-                </li>
+                <li><a href="{% url 'main' %}.#ab" class="py-2 d-block">About</a></li>
+                <li><a href="#" id="termsAndConditions" class="py-2 d-block">Terms and Conditions</a></li>           
               </ul>
             </div>
           </div>
@@ -173,5 +169,23 @@
         </div>
       </div>
     </footer>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+      <script>
+        document.getElementById('termsAndConditions').addEventListener('click', function (e) {
+          e.preventDefault()
+          Swal.fire({
+            title: 'Terms and Conditions of Adam Automotive',
+            html: `
+                <p>1. All sales are final.</p>
+                <p>2. No Vehilces Which Has Any Kind Of Accidents And Flood Are Sold.</p>
+                <p>3. Adam Automotive reserves the right to refuse service to anyone.</p>
+                <p>4. Test drives are subject to approval and require a valid driver's license.</p>
+                <p>5. Prices are subject to change without notice.</p>
+              `,
+            confirmButtonText: 'Okay',
+            confirmButtonColor: '#d39e00'
+          })
+        })
+      </script>
   </body>
 </html>
