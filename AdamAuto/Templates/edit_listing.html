@@ -317,14 +317,6 @@
         document.getElementById('sidebarCollapse').addEventListener('click', function () {
           document.getElementById('sidebar').classList.toggle('active')
         })
-      })
-    </script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        // Toggle Sidebar
-        document.getElementById('sidebarCollapse').addEventListener('click', function () {
-          document.getElementById('sidebar').classList.toggle('active')
-        })
     
         // Handle delete/republish button clicks
         const deleteButtons = document.querySelectorAll('.delete-btn');
@@ -345,11 +337,14 @@
             .then(response => response.json())
             .then(data => {
               if (data.success) {
-                this.textContent = data.new_status === 'Pending' ? 'Republish' : 'Delete Car';
-                const statusSpan = this.closest('.car-wrap').querySelector('.d-flex.mb-3 span:last-child');
-                statusSpan.textContent = data.new_status;
-                statusSpan.className = data.new_status === 'Available' ? 'text-success' : 'text-secondary';
+                // Reload the page after successful status update
+                window.location.reload();
+              } else {
+                console.error('Failed to update car status');
               }
+            })
+            .catch(error => {
+              console.error('Error:', error);
             });
           });
         });
