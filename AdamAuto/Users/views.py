@@ -110,14 +110,17 @@ def register(request):
                 fail_silently=False,
             )
 
-            messages.success(request, f"Account created for {username}. Check your email for the OTP.")
+            
             return redirect(reverse('verify_otp'))
+            
         
         except Exception as e:
             messages.error(request, f"Error creating account: {str(e)}")
             return redirect('register')
 
     return render(request, 'register.html')
+
+from django.http import JsonResponse
 
 def verify_otp(request):
     if request.method == 'POST':
@@ -126,8 +129,7 @@ def verify_otp(request):
         user_details = request.session.get('user_details')
 
         if not user_details or not session_otp:
-            messages.error(request, "Session expired or invalid data. Please try registering again.")
-            return redirect('register')
+            return JsonResponse({"success": False, "message": "Session expired or invalid data. Please try registering again."})
 
         if otp == str(session_otp):
             try:
@@ -138,24 +140,22 @@ def verify_otp(request):
                     username=user_details['username'],
                     Phone_number=user_details['phone'],
                     user_type='customer',
-                    status=1  # Set status to 1 upon registration
+                    status=1
                 )
-                user.set_password(user_details['password'])  # Hash the password
+                user.set_password(user_details['password'])
                 user.save()
 
                 # Clear session data
                 del request.session['otp']
                 del request.session['user_details']
 
-                messages.success(request, "OTP verified. You can now sign in.")
-                return redirect('login')
+                return JsonResponse({"success": True, "message": "Account created successfully!"})
             except Exception as e:
-                messages.error(request, f"Error saving user: {str(e)}")
+                return JsonResponse({"success": False, "message": f"Error saving user: {str(e)}"})
         else:
-            messages.error(request, "Invalid OTP. Please try again.")
+            return JsonResponse({"success": False, "message": "Invalid OTP. Please try again."})
 
     return render(request, 'verify_otp.html')
-
 
 def request_password_reset(request):
     if request.method == 'POST':
@@ -179,7 +179,7 @@ def request_password_reset(request):
             )
             
             messages.success(request, 'Password reset email has been sent. Check your email to proceed.')
-            return redirect('request_password_reset')
+            return redirect('login')
         
         except users.DoesNotExist:
             messages.error(request, 'User does not exist.')
@@ -216,7 +216,7 @@ def reset_password_confirm(request, uidb64, token):
         user = None
     
     return redirect('login')
-
+@nocache
 def sign_in(request):
     return render(request, 'sign_in.html')
 
@@ -671,3 +671,12 @@ def speccaredit_dtl(request, car_id):
         'car_types': car_types,
     }
     return render(request, 'speccaredit_dtl.html', context)
+
+def morecar_dtl(request, car_id):
+    car = get_object_or_404(UserCarDetails, id=car_id)
+    car_images = UserCarDetails.objects.filter(id=car_id)
+    context = {
+        'car': car,
+        'car_images': car_images,
+    }
+    return render(request, 'morecar_dtl.html', context)

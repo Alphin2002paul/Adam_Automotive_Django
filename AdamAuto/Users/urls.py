@@ -7,7 +7,6 @@ from .views import update_user_status
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),  # Admin interface at the root level
     path('', views.index, name='index'),
     path('login/', views.login_view, name='login'),
     path('register/', views.register, name='register'),
@@ -39,6 +38,7 @@ urlpatterns = [
     path('speccaredit_dtl/', views.speccaredit_dtl, name='speccaredit_dtl'),
     path('toggle_car_status/<int:car_id>/', views.toggle_car_status, name='toggle_car_status'),
     path('speccaredit_dtl/<int:car_id>/', views.speccaredit_dtl, name='speccaredit_dtl'),
+    path('car/<int:car_id>/', views.morecar_dtl, name='car_detail'),
 
 ]
 

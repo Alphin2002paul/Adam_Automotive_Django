@@ -8133,7 +8133,7 @@ body {
   font-size: 16px;
   line-height: 1.8;
   font-weight: 400;
-  color: #999999; }
+  color: #646060; }
   body.menu-show {
     overflow: hidden;
     position: fixed;
@@ -8352,7 +8352,7 @@ h1, h2, h3, h4, h5,
     bottom: 0;
     content: '';
     opacity: .3;
-    background: #000000;
+    background: #4c4a4a;
     height: 850px; }
   @media (max-width: 991.98px) {
     .hero-wrap {

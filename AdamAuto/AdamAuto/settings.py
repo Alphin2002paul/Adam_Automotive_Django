@@ -146,7 +146,7 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 )
-SITE_ID = 5
+SITE_ID = 8
 
 
 
@@ -166,7 +166,7 @@ SOCIALACCOUNT_PROVIDERS = {
 
 
 
-LOGIN_REDIRECT_URL = 'login'
+LOGIN_REDIRECT_URL = 'main'
 LOGOUT_REDIRECT_URL = 'logout'
 
 # Additional settings for email verification and sign up
