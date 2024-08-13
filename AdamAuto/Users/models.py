@@ -11,7 +11,7 @@ class User(AbstractUser):
     user_type = models.CharField(max_length=50, choices=USER_TYPE_CHOICES)
     Phone_number = models.CharField(max_length=15, null=True)
     address = models.CharField(max_length=255, null=True)
-    status = models.CharField(max_length=255, null=True)
+    status = models.CharField(max_length=255, null=True,default=1)
     profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
 
     def __str__(self):

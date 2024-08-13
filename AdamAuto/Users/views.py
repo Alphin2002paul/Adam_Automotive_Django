@@ -29,12 +29,13 @@ token_generator = CustomTokenGenerator()
 
 def generate_otp():
     return random.randint(100000, 999999)
-@nocache
+
 def login_view(request):
     user = request.user
     if user.is_authenticated:
         if user.status != 1:
             messages.error(request, 'Your account is not active.')
+            logout(request)  # Log out the user
             return redirect('login')
         if user.user_type == "admin":
             return redirect('adminindex')
@@ -332,8 +333,7 @@ def userdisplaycars_dtl(request):
     cars = UserCarDetails.objects.all()
     return render(request, 'userdisplaycars_dtl.html',{'cars': cars})
 
-# def admincaradd_dtl(request):
-#     return render(request, 'admincaradd_dtl.html')
+
 
 def user_detail(request, user_id):
     user = get_object_or_404(User, id=user_id)
@@ -680,3 +680,48 @@ def morecar_dtl(request, car_id):
         'car_images': car_images,
     }
     return render(request, 'morecar_dtl.html', context)
+
+from django.shortcuts import render
+from .models import Tbl_Company, Tbl_Model, Tbl_Color, VehicleType
+
+def category_edit(request):
+    companies = Tbl_Company.objects.all()
+    models = Tbl_Model.objects.all()
+    colors = Tbl_Color.objects.all()
+    car_types = VehicleType.objects.all()
+
+    context = {
+        'companies': companies,
+        'models': models,
+        'colors': colors,
+        'car_types': car_types,
+    }
+
+    return render(request, 'category_edit.html', context)
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
+from .models import Tbl_Company, Tbl_Model, Tbl_Color, VehicleType
+
+@login_required
+@require_POST
+def delete_category(request):
+    category_type = request.POST.get('type')
+    category_id = request.POST.get('id')
+
+    try:
+        if category_type == 'company':
+            Tbl_Company.objects.filter(id=category_id).delete()
+        elif category_type == 'model':
+            Tbl_Model.objects.filter(id=category_id).delete()
+        elif category_type == 'color':
+            Tbl_Color.objects.filter(id=category_id).delete()
+        elif category_type == 'car_type':
+            VehicleType.objects.filter(id=category_id).delete()
+        else:
+            return JsonResponse({'success': False, 'error': 'Invalid category type'})
+
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})

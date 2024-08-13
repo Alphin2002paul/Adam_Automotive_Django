@@ -39,6 +39,9 @@ urlpatterns = [
     path('toggle_car_status/<int:car_id>/', views.toggle_car_status, name='toggle_car_status'),
     path('speccaredit_dtl/<int:car_id>/', views.speccaredit_dtl, name='speccaredit_dtl'),
     path('car/<int:car_id>/', views.morecar_dtl, name='car_detail'),
+    path('category_edit/', views.category_edit, name='category_edit'),
+    path('delete_category/', views.delete_category, name='delete_category'),
+
 
 ]
 
