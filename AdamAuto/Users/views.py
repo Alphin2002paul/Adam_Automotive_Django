@@ -805,3 +805,14 @@ def send_disable_email(request, user_id):
             return JsonResponse({"success": False}, status=500)
     
     return JsonResponse({"success": False}, status=400)
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+
+@require_GET
+def get_disable_reason(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+        return JsonResponse({'success': True, 'reason': user.description})
+    except User.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'User not found'})

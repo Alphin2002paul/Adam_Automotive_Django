@@ -294,11 +294,8 @@
                                     </select>
                                     <div class="text-danger">{{ form.car_type.errors }}</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <label for="image" class="form-label">Image</label>
-                                    <input type="file" class="form-control" id="image" name="image" required>
-                                    <div class="text-danger">{{ form.image.errors }}</div>
-                                </div>
+                                <label for="image" class="form-label">Image</label>
+                                <input type="file" class="form-control" id="image" name="image" accept=".jpg,.jpeg,.png" required>
                             </div>
                     
                             <div class="row mb-3">
@@ -335,5 +332,6 @@
             document.getElementById('content').classList.toggle('active');
         });
     </script>
+    t>
 </body>
 </html>

@@ -43,7 +43,7 @@ urlpatterns = [
     path('delete_category/', views.delete_category, name='delete_category'),
     path('update_category/', views.update_category, name='update_category'),
     path('send_disable_email/<int:user_id>/', views.send_disable_email, name='send_disable_email'),
-
+    path('get_disable_reason/<int:user_id>/', views.get_disable_reason, name='get_disable_reason'),
 
 ]
 

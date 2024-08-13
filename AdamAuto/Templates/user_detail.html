@@ -145,6 +145,7 @@
         margin-left:6px;
         margin-bottom:10px;
     }
+    
     </style>
   </head>
   <body>
@@ -168,7 +169,7 @@
             <a href="{% url 'admincaradd_dtl' %}"><i class="fas fa-car"></i> List New Car</a>
           </li>
           <li>
-            <a href="{% url 'edit_listing' %}"><i class="fas fa-edit"></i> Edit Listing</a>                </li>
+            <a href="{% url 'edit_listing' %}"><i class="fas fa-edit"></i> Edit Listing</a>               
           </li>
           <li>
             <a href="#"><i class="fas fa-phone"></i> Call Back</a>
@@ -237,6 +238,9 @@
                           Disable User
                         {% else %}
                           Enable User
+                          <button type="button" id="reasonButton" class="btn btn-info btn-lg mt-3 ms-2" style="display: none;">
+                            Reason
+                          </button>
                         {% endif %}
                       </button>
                     </div>
@@ -281,13 +285,15 @@
         <script>
           $(document).ready(function () {
             var button = $('#toggleButton');
+            var reasonButton = $('#reasonButton');
             var initialStatus = {{ user.status }};
             var disableUserModal = new bootstrap.Modal(document.getElementById('disableUserModal'));
+            var reasonModal = new bootstrap.Modal(document.getElementById('reasonModal'));
           
             // Update the button state based on the user's initial status
             updateButtonState(initialStatus);
           
-            // Handle button click
+            // Handle toggle button click
             button.on('click', function () {
               var newStatus = button.hasClass('btn-success') ? 0 : 1;
           
@@ -306,6 +312,25 @@
               if (validateReason(reason)) {
                 updateUserStatus(0, reason); // Disable user with the reason
               }
+            });
+          
+            // Handle reason button click
+            reasonButton.on('click', function () {
+              $.ajax({
+                url: "{% url 'get_disable_reason' user.id %}",
+                type: "GET",
+                success: function(response) {
+                  if (response.success) {
+                    $('#reasonModalBody').text(response.reason);
+                    reasonModal.show();
+                  } else {
+                    alert('Failed to fetch disable reason.');
+                  }
+                },
+                error: function() {
+                  alert('An error occurred while fetching disable reason.');
+                }
+              });
             });
           
             // Function to validate the reason
@@ -342,6 +367,7 @@
                     } else {
                       alert('User enabled.');
                     }
+                    location.reload(); // Reload the page to reflect the changes
                   } else {
                     alert('Failed to update user status.');
                   }
@@ -356,8 +382,10 @@
             function updateButtonState(status) {
               if (status === 1) {
                 button.removeClass('btn-danger').addClass('btn-success').text('Disable User');
+                reasonButton.hide();
               } else {
                 button.removeClass('btn-success').addClass('btn-danger').text('Enable User');
+                reasonButton.show();
               }
             }
           
@@ -416,5 +444,22 @@
                     </div>
                   </div>   
               </div>
-   </body>
+              
+
+              <div class="modal fade" id="reasonModal" tabindex="-1" aria-labelledby="reasonModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content text-dark">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="reasonModalLabel">Disable Reason</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="reasonModalBody">
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+     </body>
    </html>
