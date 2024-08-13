@@ -142,7 +142,7 @@
                   <a href="{% url 'admincaradd_dtl' %}"><i class="fas fa-car"></i> List New Car</a>
                 </li>
                 <li>
-                    <a href="{% url 'edit_listing' %}"><i class="fas fa-edit"></i> Edit Listing</a>                </li>
+                    <a href="{% url 'edit_listing' %}"><i class="fas fa-edit"></i> Edit Listing</a></li>
                 <li>
                   <a href="#"><i class="fas fa-phone"></i> Call Back</a>
                 </li>
@@ -210,89 +210,43 @@
                 {% endif %}
                 
                 <!-- Add Details Section -->
-                <div class="row">
-                    <div class="col-md-12 mb-4">
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
                         <div class="card">
                             <div class="card-header">
-                                <h5 class="card-title mb-0">Categories</h5>
+                                <h2 class="text-center mb-0">Adding <span class="text-warning">Categories</span></h2>
                             </div>
                             <div class="card-body">
                                 <div class="row">
-                                    <div class="col-12 hed1">
-                                        <h2>Adding&nbsp;<span style="color: #d39e00;">Categories</span></h2>
-                                        <hr>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-group">
+                                            <label for="name2">Company Name</label>
+                                            <input type="text" class="form-control" id="name2" placeholder="Enter Company Name" name="name2">
+                                        </div>
                                     </div>
-                                    <!-- Forms in a Single Row -->
-                                    <div class="col-md-4 mb-4">
-                                        <form action="{% url 'add_details' %}" method="POST">
-                                            {% csrf_token %}
-                                            <div class="card h-100">
-                                                <div class="card-body">
-                                                    <h5 class="card-title">Add New Colors</h5>
-                                                    <div class="form-outline mb-4">
-                                                        <input type="text" class="form-control form-control-lg" id="name4" placeholder="Enter Color Name" name="name4">
-                                                    </div>
-                                                    <span id="num4" class="text-danger"></span>
-                                                    <br>
-                                                    <input type="submit" class="btsize btn btn-primary" name="sub4" id="btn4">
-                                                </div>
-                                            </div>
-                                        </form>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-group">
+                                            <label for="name3">Model Name</label>
+                                            <input type="text" class="form-control" id="name3" placeholder="Enter Model Name" name="name3">
+
+                                        </div>
                                     </div>
-            
-                                    <div class="col-md-4 mb-4">
-                                        <form action="{% url 'add_details' %}" method="POST">
-                                            {% csrf_token %}
-                                            <div class="card h-100">
-                                                <div class="card-body">
-                                                    <h5 class="card-title">Add New Company Name</h5>
-                                                    <div class="form-outline mb-4">
-                                                        <input type="text" class="form-control form-control-lg" id="name2" placeholder="Enter Company Name" name="name2">
-                                                    </div>
-                                                    <span id="num2" class="text-danger"></span>
-                                                    <br>
-                                                    <input type="submit" class="btsize btn btn-primary" name="sub2" id="btn2">
-                                                </div>
-                                            </div>
-                                        </form>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-group">
+                                            <label for="name5">Vehicle Type</label>
+                                            <input type="text" class="form-control" id="name5" placeholder="Enter Vehicle Type" name="name5">
+
+                                        </div>
                                     </div>
-            
-                                    <div class="col-md-4 mb-4">
-                                        <form action="{% url 'add_details' %}" method="POST">
-                                            {% csrf_token %}
-                                            <div class="card h-100">
-                                                <div class="card-body">
-                                                    <h5 class="card-title">Add New Model Name</h5>
-                                                    <div class="form-outline mb-4">
-                                                        <input type="text" class="form-control form-control-lg" id="name3" placeholder="Enter Model Name" name="name3">
-                                                    </div>
-                                                    <span id="num3" class="text-danger"></span>
-                                                    <br>
-                                                    <input type="submit" class="btsize btn btn-primary" name="sub3" id="btn3">
-                                                </div>
-                                            </div>
-                                        </form>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-group">
+                                            <label for="name4">Color Name</label>
+                                            <input type="text" class="form-control" id="name4" placeholder="Enter Color Name" name="name4">
+                                        </div>
                                     </div>
                                 </div>
-            
-                                <div class="row">
-                                    <!-- New Form for Vehicle Type -->
-                                    <div class="col-md-4 mb-4">
-                                        <form action="{% url 'add_details' %}" method="POST">
-                                            {% csrf_token %}
-                                            <div class="card h-100">
-                                                <div class="card-body">
-                                                    <h5 class="card-title">Add New Vehicle Type</h5>
-                                                    <div class="form-outline mb-4">
-                                                        <input type="text" class="form-control form-control-lg" id="name5" placeholder="Enter Vehicle Type" name="name5">
-                                                    </div>
-                                                    <span id="num5" class="text-danger"></span>
-                                                    <br>
-                                                    <input type="submit" class="btsize btn btn-primary" name="sub5" id="btn5">
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
+                                <div class="text-center mt-4">
+                                    <button type="button" id="submitAll" class="btn btn-primary btn-lg">Submit All</button>
                                 </div>
                             </div>
                         </div>
@@ -313,5 +267,47 @@
             });
         });
     </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#submitAll').on('click', function() {
+            var color = $('#name4').val();
+            var company = $('#name2').val();
+            var model = $('#name3').val();
+            var vehicleType = $('#name5').val();
+
+            $.ajax({
+                url: '{% url 'add_details' %}',
+                type: 'POST',
+                data: {
+                    'name4': color,
+                    'name2': company,y
+                    'name3': model,
+                    'name5': vehicleType,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    var message = '';
+                    if (response.color) message += 'Color: ' + response.color + ', ';
+                    if (response.company) message += 'Company: ' + response.company + ', ';
+                    if (response.model) message += 'Model: ' + response.model + ', ';
+                    if (response.vehicle_type) message += 'Vehicle Type: ' + response.vehicle_type;
+
+                    if (message) {
+                        alert('Added: ' + message.slice(0, -2));
+                    } else {
+                        alert('No items were added.');
+                    }
+
+                    // Clear input fields
+                    $('#name4, #name2, #name3, #name5').val('');
+                },
+                error: function() {
+                    alert('An error occurred while trying to add the items.');
+                }
+            });
+        });
+    });
+</script>
 </body>
 </html>

@@ -89,7 +89,7 @@ def register(request):
         email = request.POST['email']
         username = request.POST['username']
         password = request.POST['password']
-
+        user_type = request.POST['user_type']
         try:
             otp = generate_otp()
             request.session['otp'] = otp
@@ -100,6 +100,7 @@ def register(request):
                 'email': email,
                 'username': username,
                 'password': password,
+                'user_type': user_type,
             }
 
             # Send OTP to user's email
@@ -140,7 +141,7 @@ def verify_otp(request):
                     email=user_details['email'],
                     username=user_details['username'],
                     Phone_number=user_details['phone'],
-                    user_type='customer',
+                    user_type=user_details['user_type'],
                     status=1
                 )
                 user.set_password(user_details['password'])
@@ -286,42 +287,40 @@ def adminadd_dtl(request):
 from django.shortcuts import render, redirect
 from .models import Tbl_Company, Tbl_Color, Tbl_Model,VehicleType,UserCarDetails
 
+from django.http import JsonResponse
+
 def add_details(request):
     if request.method == "POST":
-        if 'sub4' in request.POST:
-            color_name = request.POST.get('name4')
-            if Tbl_Color.objects.filter(color_name=color_name).exists():
-                messages.error(request, f"Color '{color_name}' already exists.")
-            else:
-                Tbl_Color.objects.create(color_name=color_name)
-                messages.success(request, f"Color '{color_name}' added successfully.")
-                
-        elif 'sub2' in request.POST:
-            company_name = request.POST.get('name2')
-            if Tbl_Company.objects.filter(company_name=company_name).exists():
-                messages.error(request, f"Company '{company_name}' already exists.")
-            else:
-                Tbl_Company.objects.create(company_name=company_name)
-                messages.success(request, f"Company '{company_name}' added successfully.")
-                
-        elif 'sub3' in request.POST:
-            model_name = request.POST.get('name3')
-            if Tbl_Model.objects.filter(model_name=model_name).exists():
-                messages.error(request, f"Model '{model_name}' already exists.")
-            else:
-                Tbl_Model.objects.create(model_name=model_name)
-                messages.success(request, f"Model '{model_name}' added successfully.")
-                
-        elif 'sub5' in request.POST:
-            vehicle_type_name = request.POST.get('name5')
-            if VehicleType.objects.filter(name=vehicle_type_name).exists():
-                messages.error(request, f"Vehicle Type '{vehicle_type_name}' already exists.")
-            else:
-                VehicleType.objects.create(name=vehicle_type_name)
-                messages.success(request, f"Vehicle Type '{vehicle_type_name}' added successfully.")
-        
-    return redirect('adminadd_dtl')
+        color_name = request.POST.get('name4')
+        company_name = request.POST.get('name2')
+        model_name = request.POST.get('name3')
+        vehicle_type = request.POST.get('name5')
 
+        response = {}
+
+        if color_name:
+            if not Tbl_Color.objects.filter(color_name=color_name).exists():
+                Tbl_Color.objects.create(color_name=color_name)
+                response['color'] = color_name
+
+        if company_name:
+            if not Tbl_Company.objects.filter(company_name=company_name).exists():
+                Tbl_Company.objects.create(company_name=company_name)
+                response['company'] = company_name
+
+        if model_name:
+            if not Tbl_Model.objects.filter(model_name=model_name).exists():
+                Tbl_Model.objects.create(model_name=model_name)
+                response['model'] = model_name
+
+        if vehicle_type:
+            if not VehicleType.objects.filter(name=vehicle_type).exists():
+                VehicleType.objects.create(name=vehicle_type)
+                response['vehicle_type'] = vehicle_type
+
+        return JsonResponse(response)
+
+    return render(request, 'adminadd_dtl.html')
 @nocache
 def adminprofile(request):
     return render(request, 'adminprofile.html')
@@ -725,3 +724,84 @@ def delete_category(request):
         return JsonResponse({'success': True})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
+    
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+from .models import Tbl_Company, Tbl_Model, Tbl_Color, VehicleType
+
+@csrf_exempt
+@require_POST
+def update_category(request):
+    category_type = request.POST.get('type')
+    category_id = request.POST.get('id')
+    new_name = request.POST.get('new_name')
+
+    try:
+        if category_type == 'company':
+            category = Tbl_Company.objects.get(id=category_id)
+            category.company_name = new_name
+        elif category_type == 'model':
+            category = Tbl_Model.objects.get(id=category_id)
+            category.model_name = new_name
+        elif category_type == 'color':
+            category = Tbl_Color.objects.get(id=category_id)
+            category.color_name = new_name
+        elif category_type == 'car_type':
+            category = VehicleType.objects.get(id=category_id)
+            category.name = new_name
+        else:
+            return JsonResponse({'success': False, 'error': 'Invalid category type'})
+
+        category.save()
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+@csrf_exempt
+def update_user_status(request, user_id):
+    if request.method == "POST":
+        user = get_object_or_404(User, id=user_id)
+        status = request.POST.get("status")
+        reason = request.POST.get("reason", "")
+        if status is not None:
+            user.status = int(status)
+            if int(status) == 0:
+                user.description = reason
+            user.save()
+            return JsonResponse({"success": True})
+    return JsonResponse({"success": False}, status=400)
+
+from django.core.mail import send_mail
+from django.conf import settings
+
+@csrf_exempt
+def send_disable_email(request, user_id):
+    if request.method == "POST":
+        user = get_object_or_404(User, id=user_id)
+        reason = request.POST.get("reason", "")
+        
+        subject = 'Your Adam Automotive Account Has Been Disabled'
+        message = f"""
+        Dear {user.first_name} {user.last_name},
+
+        We regret to inform you that your Adam Automotive account has been disabled.
+
+        Reason: {reason}
+
+        If you have any questions or concerns, please contact our support team.
+
+        Best regards,
+        Adam Automotive Team
+        """
+        
+        from_email = settings.DEFAULT_FROM_EMAIL
+        recipient_list = [user.email]
+        
+        try:
+            send_mail(subject, message, from_email, recipient_list)
+            return JsonResponse({"success": True})
+        except Exception as e:
+            print(f"Error sending email: {str(e)}")
+            return JsonResponse({"success": False}, status=500)
+    
+    return JsonResponse({"success": False}, status=400)

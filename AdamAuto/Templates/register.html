@@ -42,7 +42,14 @@
         .form-group:last-child {
             margin-right: 0;
         }
+        
+        select.form-control option {
+            color: black !important;
+            background-color: white !important;
+        }
     </style>
+
+
 </head>
 <body class="img" style="height: 826px;">
 <div class="blur-background"></div>
@@ -93,11 +100,20 @@
                             </div>
                         </div>
                         
-                        <div class="form-group">
-                            <input id="confirm-password-field" type="password" class="form-control" name="confirm_password" placeholder="Confirm Password" required>
-                            <span id="text6" class="error"></span>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input id="confirm-password-field" type="password" class="form-control" name="confirm_password" placeholder="Confirm Password" required>
+                                <span id="text6" class="error"></span>
+                            </div>
+                            <div class="form-group">
+                                <select id="user-type" class="form-control" name="user_type" required>
+                                    <option value="" selected disabled>Select User Type</option>
+                                    <option value="customer" >Customer</option>
+                                    <option value="dealer">Dealer</option>
+                                </select>
+                                <span id="text7" class="error"></span>
+                            </div>
                         </div>
-                        
                         <div class="form-group">
                             <button type="submit" class="" style="width: 100%; padding: 10px 20px; border-radius: 50px; background-color: white; color: black; border: none; cursor: pointer; transition: background-color 0.3s ease, color 0.3s ease;"
                             onmouseover="this.style.backgroundColor='black'; this.style.color='white';"

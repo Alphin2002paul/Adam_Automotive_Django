@@ -41,6 +41,8 @@ urlpatterns = [
     path('car/<int:car_id>/', views.morecar_dtl, name='car_detail'),
     path('category_edit/', views.category_edit, name='category_edit'),
     path('delete_category/', views.delete_category, name='delete_category'),
+    path('update_category/', views.update_category, name='update_category'),
+    path('send_disable_email/<int:user_id>/', views.send_disable_email, name='send_disable_email'),
 
 
 ]
