@@ -145,11 +145,11 @@
                 <div class="carousel-inner">
                   {% for car_image in car_images %}
                     <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                      <img src="{{ car_image.image.url }}" class="d-block w-100" alt="Car Image">
+                      <img src="{{ car_image.image.url }}" class="d-block w-100" alt="Car Image" style="object-fit: contain; height: 400px;">
                     </div>
                   {% empty %}
                     <div class="carousel-item active">
-                      <img src="{% static 'images/no_image_available.jpg' %}" class="d-block w-100" alt="No Image Available">
+                      <img src="{% static 'images/no_image_available.jpg' %}" class="d-block w-100" alt="No Image Available" style="object-fit: contain; height: 400px;">
                     </div>
                   {% endfor %}
                 </div>

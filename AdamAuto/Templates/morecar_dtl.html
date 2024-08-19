@@ -144,10 +144,28 @@
               <div class="col-md-6" id="carImageSection">
                 <div id="carImageCarousel" class="carousel slide" data-ride="carousel">
                   <div class="carousel-inner">
-                    <div class="carousel-item active">
-                      <img src="{{ car.image.url }}" class="d-block w-100" alt="{{ car.manufacturer.company_name }} {{ car.model_name.model_name }}">
-                    </div>
+                    {% for car_image in car_images %}
+                      <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        {% if car_image.image %}
+                          <img src="{{ car_image.image.url }}" class="d-block w-100" alt="Car Image" style="object-fit: contain; height: 400px;">
+                        {% else %}
+                          <img src="{% static 'images/no_image_available.jpg' %}" class="d-block w-100" alt="No Image Available" style="object-fit: contain; height: 400px;">
+                        {% endif %}
+                      </div>
+                    {% empty %}
+                      <div class="carousel-item active">
+                        <img src="{% static 'images/no_image_available.jpg' %}" class="d-block w-100" alt="No Image Available" style="object-fit: contain; height: 400px;">
+                      </div>
+                    {% endfor %}
                   </div>
+                  <a class="carousel-control-prev" href="#carImageCarousel" role="button" data-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Previous</span>
+                  </a>
+                  <a class="carousel-control-next" href="#carImageCarousel" role="button" data-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Next</span>
+                  </a>
                 </div>
                 <div class="mt-3 d-flex justify-content-between">
                   <a href="#" class="btn btn-primary py-2 px-4 w-49">Book A Test Drive</a>

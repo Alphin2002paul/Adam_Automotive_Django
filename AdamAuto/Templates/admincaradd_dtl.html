@@ -294,8 +294,12 @@
                                     </select>
                                     <div class="text-danger">{{ form.car_type.errors }}</div>
                                 </div>
-                                <label for="image" class="form-label">Image</label>
-                                <input type="file" class="form-control" id="image" name="image" accept=".jpg,.jpeg,.png" required>
+                                <div class="col-md-12 mb-3">
+                                    <label for="images" class="form-label">Images (Up to 5)</label>
+                                    <input type="file" class="form-control" id="images" name="images" accept=".jpg,.jpeg,.png" multiple required>
+                                    <small class="form-text text-muted">You can select up to 5 images.</small>
+                                    <div class="text-danger">{{ form.images.errors }}</div>
+                                </div>
                             </div>
                     
                             <div class="row mb-3">

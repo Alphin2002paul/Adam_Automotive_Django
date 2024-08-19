@@ -94,49 +94,96 @@
    
         <!-- Profile Settings -->
         <div class="col-lg-8 pb-5">
-          <form class="row" action="" method="POST" enctype="multipart/form-data">
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="account-fn">First Name</label>
-                <input class="form-control" type="text" id="txt1" name="first" value="{{ user.first_name }}" required="" disabled />
-                <span id="text1"></span>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="account-fn">Last Name</label>
-                <input class="form-control" type="text" id="txt1" name="first" value="{{ user.last_name }}" required="" disabled />
-                <span id="text1"></span>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="account-ln">User Name</label>
-                <input class="form-control" type="text" id="txt2" name="last" value="{{ user.username }}" required="" disabled />
-                <span id="text2"></span>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="account-email">E-mail Address</label>
-                <input class="form-control" type="email" id="Email" name="email" value="{{ user.email }}" disabled />
-                <span id="text3"></span>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="account-phone">Phone Number</label>
-                <input class="form-control" type="text" id="phone" name="phone" value="{{ user.Phone_number }}" required="" disabled />
-                <span id="text4"></span>
-              </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                  <label for="account-phone">Address</label>
-                  <input class="form-control" type="text" id="addr" name="addr" value="{{ user.address }}" required="" disabled />
-                  <span id="text4"></span>
+          <form class="row" action="{% url 'update_profile' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+          
+        
+            <div class="col-12 mb-4">
+                <h4>Personal Information</h4><hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="account-fn">First Name</label>
+                            <input class="form-control" type="text" id="txt1" pattern="^.{2,12}$" title="Invalid Name" name="first_name" value="{{ user.first_name }}" disabled>
+                            <span id="text1"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="account-fn">Last Name</label>
+                            <input class="form-control" pattern="^.{2,12}$" title="Invalid Name" type="text" id="txt2" name="last_name" value="{{ user.last_name }}" disabled>
+                            <span id="text2"></span>
+                        </div>
+                    </div>
                 </div>
-              </div>
+            </div>
+        
+            <div class="col-12 mb-4">
+                <h4>Contact Information</h4><hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="account-ln">User Name</label>
+                            <input class="form-control" type="text" id="txt3" name="username" value="{{ user.username }}" disabled>
+                            <span id="text3"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="account-email">E-mail Address</label>
+                            <input class="form-control" type="email" id="Email" name="email" value="{{ user.email }}" disabled>
+                            <span id="text4"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-group">
+                          <label for="account-phone">Phone Number</label>
+                          <div class="input-group">
+                              <div class="input-group-prepend">
+                                  <span class="input-group-text">+91</span>
+                              </div>
+                              <input class="form-control" type="text" id="phone" name="Phone_number" pattern="^[6-9]\d{9}$" title="Enter Valid 10-digit Phone Number" value="{{ user.Phone_number}}" placeholder="10-digit number" disabled>
+                          </div>
+                          <span id="text5"></span>
+                      </div>
+                  </div>
+                </div>
+            </div>
+        
+            <div class="col-12 mb-4">
+                <h4>Address</h4> <hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="street_address">Street Address</label>
+                            <input class="form-control" type="text" id="address" name="address" pattern="^.{5,100}$" title="Enter a valid street address (5-100 characters)" value="{{ user.address }}" disabled>
+                            <span id="text_street"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="city">City</label>
+                            <input class="form-control" type="text" id="city" name="city" pattern="^[a-zA-Z\s]{2,50}$" title="Enter a valid city name (2-50 characters)" value="{{ user.city }}" disabled>
+                            <span id="text_city"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="state">State</label>
+                            <input class="form-control" type="text" id="state" name="state" pattern="^[a-zA-Z\s]{2,50}$" title="Enter a valid state name (2-50 characters)" value="{{ user.state }}" disabled>
+                            <span id="text_state"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="zipcode">Zipcode</label>
+                            <input class="form-control" type="text" id="zipcode" name="zipcode" pattern="^\d{6}(-\d{4})?$" title="Enter a valid zipcode (5 digits or 5+4 format)" value="{{ user.zipcode }}" disabled>
+                            <span id="text_zipcode"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
             <div class="col-12">
               <hr class="mt-2 mb-3" />
               <div class="d-flex flex-wrap justify-content-between align-items-center">

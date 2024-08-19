@@ -259,20 +259,23 @@ def check_username(request):
 
 def update_profile(request):
     if request.method == 'POST':
-        customer = request.user  # Corrected attribute to get the logged-in user
-        customer.first_name = request.POST.get('first_name')
-        customer.last_name = request.POST.get('last_name')
-        # customer.username = request.POST.get('username')
-        # customer.email = request.POST.get('email')
-        customer.Phone_number = request.POST.get('Phone_number')  # Ensure case matches the model field
-        customer.address = request.POST.get('address')
+        user = request.user
+        user.first_name = request.POST.get('first_name')
+        user.last_name = request.POST.get('last_name')
+        user.Phone_number = request.POST.get('Phone_number')
+        user.street_address = request.POST.get('address')  # Changed from 'street_address' to 'address'
+        user.city = request.POST.get('city')
+        user.state = request.POST.get('state')
+        user.zipcode = request.POST.get('zipcode')
+        
         if 'photo' in request.FILES:
-            customer.profile_picture = request.FILES['photo']  # Ensure the correct field name
-        customer.save()
-        messages.success(request, 'Profile updated successfully.')
-        return redirect('account_dtl')
-    return render(request, 'account_dtl.html', {'user': request.user})
-
+            user.profile_picture = request.FILES['photo']
+        
+        user.save()
+        messages.success(request, 'Profile updated successfully!')
+        return redirect('account_edit')
+    
+    return render(request, 'account_edit.html', {'user': request.user})
 @login_required
 @nocache
 def adminindex_view(request):
@@ -338,6 +341,9 @@ def user_detail(request, user_id):
     user = get_object_or_404(User, id=user_id)
     return render(request, 'user_detail.html', {'user': user})
 
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from .models import CarImage
+
 def admincaradd_dtl(request):
     companies = Tbl_Company.objects.all()
     models = Tbl_Model.objects.all()
@@ -359,7 +365,7 @@ def admincaradd_dtl(request):
         pollution_validity = request.POST.get('pollution_validity')
         tax_validity = request.POST.get('tax_validity')
         car_type_id = request.POST.get('car_type')
-        image = request.FILES.get('image')
+        images = request.FILES.getlist('images')
         owner_status = request.POST.get('owner_status')
         car_status = request.POST.get('car_status')
         car_cc = request.POST.get('car_cc')
@@ -376,8 +382,6 @@ def admincaradd_dtl(request):
             errors.append("Kilometers must be an integer.")
         if transmission not in ["Manual", "Automatic"]:
             errors.append("Transmission must be one of: Manual, Automatic.")
-        # if not condition.isalnum() or len(condition.split()) < 15:
-        #     errors.append("Condition must be at least 15 words long and contain only letters and numbers.")
         if not reg_number or not re.match(r'^[A-Z]{2}-\d{2}-[A-Z]-\d{4}$', reg_number):
             errors.append("Registration number must be in the format: 'AA-00-A-0000'.")
         if not owner_status.isdigit():
@@ -386,6 +390,8 @@ def admincaradd_dtl(request):
             errors.append("Car status must be one of: Available, Sold, Pending.")
         if not car_cc.isdigit() or not (3 <= len(car_cc) <= 4):
             errors.append("Engine CC must be a 3 or 4-digit integer.")
+        if len(images) > 5:
+            errors.append("You can upload a maximum of 5 images.")
 
         if errors:
             for error in errors:
@@ -407,12 +413,17 @@ def admincaradd_dtl(request):
                 pollution_validity=pollution_validity,
                 tax_validity=tax_validity,
                 car_type_id=car_type_id,
-                image=image,
                 owner_status=owner_status,
                 car_status=car_status,
                 car_cc=car_cc
             )
             car_details.save()
+
+            # Save multiple images
+            for image in images[:5]:  # Limit to first 5 images
+                if isinstance(image, InMemoryUploadedFile):
+                    CarImage.objects.create(car=car_details, image=image)
+
             messages.success(request, 'Car details added successfully!')
             return redirect('admincaradd_dtl')
 
@@ -422,9 +433,6 @@ def admincaradd_dtl(request):
         'colors': colors,
         'car_types': car_types,
     })
-    
-    
-    
 # views.py
 from django.shortcuts import get_object_or_404, redirect
 from django.http import JsonResponse
@@ -621,44 +629,67 @@ def toggle_car_status(request, car_id):
 def speccaredit_dtl(request):
     return render(request, 'speccaredit_dtl.html')
 
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import UserCarDetails, Tbl_Company,Tbl_Color,VehicleType
+from django.core.exceptions import ValidationError
+from .models import UserCarDetails, CarImage, Tbl_Company, Tbl_Model, Tbl_Color, VehicleType
+from django.core.files.storage import default_storage
+import os
 
 def speccaredit_dtl(request, car_id):
     car = get_object_or_404(UserCarDetails, id=car_id)
     manufacturers = Tbl_Company.objects.all()
-    models = Tbl_Model.objects.all()  # Change this line
+    models = Tbl_Model.objects.all()
     colors = Tbl_Color.objects.all()
     car_types = VehicleType.objects.all()
 
-    if request.method == 'POST':
-        # Update car details
-        car.manufacturer_id = request.POST.get('manufacturer')
-        car.model_name_id = request.POST.get('model')  # Keep this as model_name_id
-        car.year = request.POST.get('year')
-        car.price = request.POST.get('price')
-        car.color_id = request.POST.get('color')
-        car.fuel_type = request.POST.get('fuel_type')
-        car.kilometers = request.POST.get('km')
-        car.transmission = request.POST.get('transmission')
-        car.condition = request.POST.get('condition')
-        car.registration_number = request.POST.get('reg_number')
-        car.insurance_validity = request.POST.get('insurance_validity')
-        car.pollution_validity = request.POST.get('pollution_validity')
-        car.tax_validity = request.POST.get('tax_validity')
-        car.car_type_id = request.POST.get('car_type')
-        car.owner_status = request.POST.get('owner_status')
-        car.car_status = request.POST.get('car_status')
-        car.car_cc = request.POST.get('car_cc')
-
-        if 'image' in request.FILES:
-            car.image = request.FILES['image']
-
+    if request.method == "POST":
         try:
+            # Update car details
+            car.manufacturer_id = request.POST.get('manufacturer')
+            car.model_name_id = request.POST.get('model')
+            car.year = request.POST.get('year')
+            car.price = request.POST.get('price')
+            car.color_id = request.POST.get('color')
+            car.fuel_type = request.POST.get('fuel_type')
+            car.kilometers = request.POST.get('km')
+            car.transmission = request.POST.get('transmission')
+            car.condition = request.POST.get('condition')
+            car.reg_number = request.POST.get('reg_number')
+            car.insurance_validity = request.POST.get('insurance_validity')
+            car.pollution_validity = request.POST.get('pollution_validity')
+            car.tax_validity = request.POST.get('tax_validity')
+            car.car_type_id = request.POST.get('car_type')
+            car.owner_status = request.POST.get('owner_status')
+            car.car_status = request.POST.get('car_status')
+            car.car_cc = request.POST.get('car_cc')
+
+            car.full_clean()  # Validate the model
             car.save()
+
+            # Handle image updates
+            new_images = request.FILES.getlist('images')
+            existing_images = CarImage.objects.filter(car=car)
+
+            if new_images:
+                # Delete old images
+                for old_image in existing_images:
+                    if old_image.image:
+                        if os.path.isfile(old_image.image.path):
+                            os.remove(old_image.image.path)
+                    old_image.delete()
+
+                # Add new images
+                for image in new_images[:5]:  # Limit to first 5 images
+                    CarImage.objects.create(car=car, image=image)
+
             messages.success(request, 'Car details updated successfully.')
             return redirect('edit_listing')
+
+        except ValidationError as e:
+            messages.error(request, f'Validation error: {e}')
+        except ValueError as e:
+            messages.error(request, f'Invalid value: {e}')
         except Exception as e:
             messages.error(request, f'Error updating car details: {str(e)}')
 
@@ -670,10 +701,9 @@ def speccaredit_dtl(request, car_id):
         'car_types': car_types,
     }
     return render(request, 'speccaredit_dtl.html', context)
-
 def morecar_dtl(request, car_id):
     car = get_object_or_404(UserCarDetails, id=car_id)
-    car_images = UserCarDetails.objects.filter(id=car_id)
+    car_images = car.images.all()  # Assuming you have a related_name='images' in your CarImage model
     context = {
         'car': car,
         'car_images': car_images,
@@ -816,3 +846,14 @@ def get_disable_reason(request, user_id):
         return JsonResponse({'success': True, 'reason': user.description})
     except User.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'User not found'})
+from django.shortcuts import render, get_object_or_404
+from .models import UserCarDetails, CarImage
+
+def car_detail(request, car_id):
+    car = get_object_or_404(UserCarDetails, id=car_id)
+    car_images = CarImage.objects.filter(car=car)
+    context = {
+        'car': car,
+        'car_images': car_images,
+    }
+    return render(request, 'car_detail.html', context)

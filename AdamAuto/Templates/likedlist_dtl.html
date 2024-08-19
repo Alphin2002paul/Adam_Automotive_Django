@@ -127,69 +127,90 @@
     </div>
 
     <section class="ftco-section bg-light">
-        <div class="container">
-            <h2>Your Liked Cars</h2>
-            <hr />
-            <div class="row">
-                {% for liked_car in page_obj %}
-                <div class="col-md-4">
-                    <div class="car-wrap rounded ftco-animate">
-                        <div class="img rounded d-flex align-items-end" style="background-image: url('{{ liked_car.car.image.url }}');"></div>
-                        <div class="text">
-                            <h2 class="mb-0">{{ liked_car.car.manufacturer.company_name }}</h2>
-                            <div class="d-flex mb-3">
-                                <span class="mb-0" style="color:#d39e00">Model Name: <span style="color:black">{{ liked_car.car.model_name.model_name }}</span></span>
-                            </div>
-                            <div class="d-flex mb-3">
-                                <span class="mb-0" style="color:#d39e00">Price: ₹ <span style="color:black">{{ liked_car.car.price }}</span></span>
-                            </div>
-                            <div class="d-flex mb-3">
-                                <span class="mb-0" style="color:#d39e00">Status: <span style="color:{% if liked_car.car.car_status == 'Available' %}red{% else %}grey{% endif %}">{{ liked_car.car.car_status }}</span></span>
-                            </div>
-                            <p class="d-flex mb-0 d-block">
-                                <button class="btn btn-secondary py-2 mr-1 like-btn" data-car-id="{{ liked_car.car.id }}">Remove Like</button>
-                                <a href="#" class="btn btn-primary py-2 ml-1">Details</a>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                {% empty %}
-                <div class="col-12">
-                    <p>You haven't liked any cars yet.</p>
-                </div>
-                {% endfor %}
-            </div>
-            
-            <div class="row mt-5">
-                <div class="col text-center">
-                    <div class="block-27">
-                        <ul>
-                            {% if page_obj.has_previous %}
-                                <li><a href="?page=1">&lt;&lt;</a></li>
-                                <li><a href="?page={{ page_obj.previous_page_number }}">&lt;</a></li>
-                            {% endif %}
-    
-                            {% for num in page_obj.paginator.page_range %}
-                                {% if page_obj.number == num %}
-                                    <li class="active"><span>{{ num }}</span></li>
-                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                    <li><a href="?page={{ num }}">{{ num }}</a></li>
-                                {% endif %}
-                            {% endfor %}
-    
-                            {% if page_obj.has_next %}
-                                <li><a href="?page={{ page_obj.next_page_number }}">&gt;</a></li>
-                                <li><a href="?page={{ page_obj.paginator.num_pages }}">&gt;&gt;</a></li>
-                            {% endif %}
-                        </ul>
-                    </div>
-                </div>
-            </div>
+      <div class="container">
+          <h2>Your Liked Cars</h2>
+          <hr />
+          {% if page_obj %}
+              <div class="row">
+                  {% for liked_car in page_obj %}
+                      <div class="col-md-4">
+                          <div class="car-wrap rounded ftco-animate">
+                              <div id="carImageCarousel{{ liked_car.car.id }}" class="carousel slide" data-ride="carousel">
+                                  <div class="carousel-inner">
+                                      {% for car_image in liked_car.car.images.all %}
+                                          <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                              <img src="{{ car_image.image.url }}" class="d-block w-100" alt="Car Image" style="object-fit: cover; height: 200px;">
+                                          </div>
+                                      {% empty %}
+                                          <div class="carousel-item active">
+                                              <img src="{% static 'images/no_image_available.jpg' %}" class="d-block w-100" alt="No Image Available" style="object-fit: cover; height: 200px;">
+                                          </div>
+                                      {% endfor %}
+                                  </div>
+                                  <a class="carousel-control-prev" href="#carImageCarousel{{ liked_car.car.id }}" role="button" data-slide="prev">
+                                      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                      <span class="sr-only">Previous</span>
+                                  </a>
+                                  <a class="carousel-control-next" href="#carImageCarousel{{ liked_car.car.id }}" role="button" data-slide="next">
+                                      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                      <span class="sr-only">Next</span>
+                                  </a>
+                              </div>
+                              <div class="text">
+                                  <h2 class="mb-0">{{ liked_car.car.manufacturer.company_name }}</h2>
+                                  <div class="d-flex mb-3">
+                                      <span class="mb-0" style="color:#d39e00">Model Name: <span style="color:black">{{ liked_car.car.model_name.model_name }}</span></span>
+                                  </div>
+                                  <div class="d-flex mb-3">
+                                      <span class="mb-0" style="color:#d39e00">Price: ₹ <span style="color:black">{{ liked_car.car.price }}</span></span>
+                                  </div>
+                                  <div class="d-flex mb-3">
+                                      <span class="mb-0" style="color:#d39e00">Status: <span style="color:{% if liked_car.car.car_status == 'Available' %}red{% else %}grey{% endif %}">{{ liked_car.car.car_status }}</span></span>
+                                  </div>
+                                  <p class="d-flex mb-0 d-block">
+                                      <button class="btn btn-secondary py-2 mr-1 like-btn" data-car-id="{{ liked_car.car.id }}">Remove Like</button>
+                                      <a href="{% url 'car_detail' liked_car.car.id %}" class="btn btn-primary py-2 ml-1">Details</a>
+                                  </p>
+                              </div>
+                          </div>
+                      </div>
+                  {% endfor %}
+              </div>
+          {% else %}
+              <div class="row">
+                  <div class="col-12">
+                      <p>You haven't liked any cars yet.</p>
+                  </div>
+              </div>
+          {% endif %}
+      </div>
+      <div class="row mt-5">
+        <div class="col text-center">
+          <div class="block-27">
+            <ul>
+              {% if page_obj.has_previous %}
+                <li><a href="?page=1">&lt;&lt;</a></li>
+                <li><a href="?page={{ page_obj.previous_page_number }}">&lt;</a></li>
+              {% endif %}
+      
+              {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                  <li class="active"><span>{{ num }}</span></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                  <li><a href="?page={{ num }}">{{ num }}</a></li>
+                {% endif %}
+              {% endfor %}
+      
+              {% if page_obj.has_next %}
+                <li><a href="?page={{ page_obj.next_page_number }}">&gt;</a></li>
+                <li><a href="?page={{ page_obj.paginator.num_pages }}">&gt;&gt;</a></li>
+              {% endif %}
+            </ul>
+          </div>
         </div>
-    </section>
-            </div>
-        </div>
-    </section>
+      </div>
+  </div>
+  </section>
 
     <footer class="ftco-footer ftco-bg-dark ftco-section">
       <div class="container">
@@ -216,10 +237,10 @@
               <h2 class="ftco-heading-2">Information</h2>
               <ul class="list-unstyled">
                 <li>
-                  <a href="" class="py-2 d-block">About</a>
+                  <a href="{% url 'main' %}.#ab" class="py-2 d-block">About</a>
                 </li>
                 <li>
-                  <a href="" class="py-2 d-block">Terms and Conditions</a>
+                  <a href="#" id="termsAndConditions" class="py-2 d-block">Terms and Conditions</a>
                 </li>
               </ul>
             </div>
@@ -292,6 +313,24 @@
             });
         });
         </script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+      <script>
+        document.getElementById('termsAndConditions').addEventListener('click', function (e) {
+          e.preventDefault()
+          Swal.fire({
+            title: 'Terms and Conditions of Adam Automotive',
+            html: `
+                <p>1. All sales are final.</p>
+                <p>2. No Vehilces Which Has Any Kind Of Accidents And Flood Are Sold.</p>
+                <p>3. Adam Automotive reserves the right to refuse service to anyone.</p>
+                <p>4. Test drives are subject to approval and require a valid driver's license.</p>
+                <p>5. Prices are subject to change without notice.</p>
+              `,
+            confirmButtonText: 'Okay',
+            confirmButtonColor: '#d39e00'
+          })
+        })
+      </script>
 </body>
 
 </html>

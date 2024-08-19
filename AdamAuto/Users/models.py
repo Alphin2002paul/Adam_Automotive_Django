@@ -10,6 +10,9 @@ class User(AbstractUser):
     user_type = models.CharField(max_length=50, choices=USER_TYPE_CHOICES)
     Phone_number = models.CharField(max_length=15, null=True)
     address = models.CharField(max_length=255, null=True)
+    city = models.CharField(max_length=50, blank=True)
+    state = models.CharField(max_length=50, blank=True)
+    zipcode = models.CharField(max_length=10, blank=True)
     status = models.CharField(max_length=255, null=True,default=1)
     profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
     description = models.TextField(null=True)
@@ -59,7 +62,6 @@ class UserCarDetails(models.Model):
     owner_status = models.CharField(max_length=100)
     car_status = models.CharField(max_length=100)
     car_cc = models.CharField(max_length=100)
-    image = models.ImageField(upload_to='car_images/')
 
     def __str__(self):
         return f"{self.manufacturer} {self.model_name} ({self.year})"
@@ -76,3 +78,10 @@ class LikedCar(models.Model):
 
     class Meta:
         unique_together = ('user', 'car')
+
+class CarImage(models.Model):
+    car = models.ForeignKey(UserCarDetails, related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='car_images/')
+
+    def __str__(self):
+        return f"Image for {self.car}"

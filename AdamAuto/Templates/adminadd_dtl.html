@@ -275,35 +275,39 @@
             var company = $('#name2').val();
             var model = $('#name3').val();
             var vehicleType = $('#name5').val();
-
+        
+            console.log('Sending data:', { color, company, model, vehicleType });
+        
             $.ajax({
                 url: '{% url 'add_details' %}',
                 type: 'POST',
                 data: {
                     'name4': color,
-                    'name2': company,y
+                    'name2': company,
                     'name3': model,
                     'name5': vehicleType,
                     'csrfmiddlewaretoken': '{{ csrf_token }}'
                 },
                 success: function(response) {
+                    console.log('Response:', response);
                     var message = '';
                     if (response.color) message += 'Color: ' + response.color + ', ';
                     if (response.company) message += 'Company: ' + response.company + ', ';
                     if (response.model) message += 'Model: ' + response.model + ', ';
                     if (response.vehicle_type) message += 'Vehicle Type: ' + response.vehicle_type;
-
+        
                     if (message) {
                         alert('Added: ' + message.slice(0, -2));
                     } else {
                         alert('No items were added.');
                     }
-
+        
                     // Clear input fields
                     $('#name4, #name2, #name3, #name5').val('');
                 },
-                error: function() {
-                    alert('An error occurred while trying to add the items.');
+                error: function(xhr, status, error) {
+                    console.error('Error:', xhr.responseText);
+                    alert('An error occurred while trying to add the items. Please check the console for more details.');
                 }
             });
         });
