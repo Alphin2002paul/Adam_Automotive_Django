@@ -47,6 +47,14 @@ urlpatterns = [
     path('bookservice_dtl/', views.bookservice_dtl, name='bookservice_dtl'),
     path('sellcar_dtl/', views.sellcar_dtl, name='sellcar_dtl'),
     path('service_request_view/', views.service_request_view, name='service_request_view'),
+    path('api/service/<int:service_id>/', views.get_service_details, name='get_service_details'),
+    path('user-details/<int:user_id>/',views.get_user_details, name='get_user_details'),
+    path('approve-service/<int:service_id>/', views.approve_service, name='approve_service'),
+    path('deny-service/<int:service_id>/', views.deny_service, name='deny_service'),
+    path('request_dtl/', views.request_dtl, name='request_dtl'),
+    path('update_service/<int:service_id>/', views.update_service, name='update_service'),
+
+
 
 
 

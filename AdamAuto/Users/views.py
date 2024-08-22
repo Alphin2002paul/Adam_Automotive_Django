@@ -912,6 +912,172 @@ from .models import Service
 from django.shortcuts import render
 from .models import Service
 
+# views.py
+from django.shortcuts import render
+from .models import Service
+
 def service_request_view(request):
-    services = Service.objects.all()  # Fetch all service records
-    return render(request, 'service_request_view.html', {'services': services})  # Ensure the template name is correct
+    # Filter services with status 'Pending'
+    services = Service.objects.filter(status='Pending')
+    return render(request, 'service_request_view.html', {'services': services}) # Ensure the template name is correct
+
+@login_required
+def get_service_details(request, service_id):
+    service = get_object_or_404(Service, id=service_id)
+    data = {
+        'manufacturer': service.manufacturer,
+        'model': service.model,
+        'service_date': service.service_date,
+        'user': {
+            'username': service.user.username,
+            'email': service.user.email,
+            'phone_number': service.user.Phone_number,
+        },
+        'transmission': service.transmission,
+        'fuel': service.fuel,
+        'year': service.year,
+        'problem': service.problem,
+    }
+    return JsonResponse(data)
+
+from django.http import JsonResponse
+
+@login_required
+def get_user_details(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    user_details = {
+        'name': f"{user.first_name} {user.last_name}",
+        'username': user.username,
+        'email': user.email,
+        'phone_number': user.Phone_number,
+    }
+    return JsonResponse(user_details)
+
+# views.py
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import Service
+
+# views.py
+from django.core.mail import send_mail
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import Service
+import json
+
+@csrf_exempt
+def approve_service(request, service_id):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        time_slot = data.get('timeSlot')  # Ensure this is being sent correctly
+        new_date = data.get('suggestedDate')  # This will be the new date or the original suggested date
+
+        try:
+            service = Service.objects.get(id=service_id)
+            # Update the service details
+            service.service_date = new_date
+            service.slot = time_slot  # Ensure 'slot' is the correct field name in your model
+            service.status = 'Approved'  # Update status to Approved
+            service.save()  # Save the updated service
+
+            # Prepare email content
+            user_name = f"{service.user.first_name} {service.user.last_name}"  # Assuming user model has first_name and last_name
+            email_body = f"""
+            Dear {user_name},
+
+            We are pleased to inform you that your request for servicing of the vehicle {service.manufacturer} {service.model} has been approved.
+
+            Date: {service.service_date}
+            Time Slot: {service.slot}  # Ensure this is the correct attribute
+            If you have any questions or concerns, please contact our support team.
+
+            Best regards,
+            Adam Automotive Team
+            """
+
+            # Send email notification
+            send_mail(
+                'Service Request Approved',
+                email_body,
+                'adamautomotive3@gmail.com',
+                [service.user.email],  # Assuming the user model has an email field
+                fail_silently=False,
+            )
+            return JsonResponse({'success': True})
+        except Service.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Service not found.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+
+
+@csrf_exempt
+def deny_service(request, service_id):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        reason = data.get('reason')
+        manufacturer = data.get('manufacturer')
+        model = data.get('model')
+
+        try:
+            service = Service.objects.get(id=service_id)
+            service.status = 'Denied'  # Change status to Denied
+            service.save()  # Save the updated status
+
+            user_name = f"{service.user.first_name} {service.user.last_name}"  # Assuming user model has first_name and last_name
+
+            # Format the email body
+            email_body = f"""
+            Dear {user_name},
+
+            We regret to inform you that your service request for the {manufacturer} {model} has been rejected.
+
+            Reason: {reason}
+
+            If you have any questions or concerns, please contact our support team.
+
+            Best regards,
+            Adam Automotive Team
+            """
+
+            # Send email notification
+            send_mail(
+                'Service Request Denied',
+                email_body,
+                'adamautomotive3@gmail.com',
+                [service.user.email],  # Assuming the user model has an email field
+                fail_silently=False,
+            )
+            return JsonResponse({'success': True})
+        except Service.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Service not found.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+        
+def request_dtl(request):
+    services = Service.objects.filter(user=request.user)  # Fetch services for the logged-in user
+    return render(request, 'request_dtl.html', {'services': services})
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import Service
+
+@csrf_exempt
+def update_service(request, service_id):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        try:
+            service = Service.objects.get(id=service_id)
+            service.manufacturer = data['manufacturer']
+            service.model = data['model']
+            service.service_date = data['service_date']
+            service.transmission = data['transmission']  # Update transmission
+            service.fuel = data['fuel']                  # Update fuel
+            service.year = data['year']                  # Update year
+            service.problem = data['problem']            # Update problem
+            service.save()
+            return JsonResponse({'success': True})
+        except Service.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Service not found.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+

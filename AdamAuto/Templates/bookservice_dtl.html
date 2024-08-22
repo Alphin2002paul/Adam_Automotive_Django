@@ -116,7 +116,7 @@
                                 <a class="dropdown-item" href="{% url 'liked_list' %}">Liked List</a>
                                 <a class="dropdown-item" href="{% url 'sellcar_dtl' %}">Sell Your Car</a>
                                 <a class="dropdown-item" href="#">Book A Service</a>
-                                <a class="dropdown-item" href="">Requests</a>
+                                <a class="dropdown-item" href="{% url 'request_dtl' %}">Requests</a>
                                 <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
                                 <!-- Add more options as needed, such as profile settings -->
                             </div>
@@ -269,100 +269,95 @@
     <script src="{% static 'displaycar/js/scrollax.min.js' %}"></script>
     <script src="{% static 'displaycar/js/main.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const today = new Date();
-            const serviceDateInput = document.getElementById('serviceDate');
+    <!-- ... existing code ... -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const today = new Date();
+      const serviceDateInput = document.getElementById('serviceDate');
 
-            // Set the minimum date to today + 6 days
-            const minDate = new Date();
-            minDate.setDate(today.getDate() + 6);
-            serviceDateInput.setAttribute('min', minDate.toISOString().split('T')[0]);
+      // Set the minimum date to today + 6 days
+      const minDate = new Date();
+      minDate.setDate(today.getDate() + 6);
+      serviceDateInput.setAttribute('min', minDate.toISOString().split('T')[0]);
 
-            // Set the maximum date to 30 days from today
-            const maxDate = new Date();
-            maxDate.setDate(today.getDate() + 30);
-            serviceDateInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
+      // Set the maximum date to 30 days from today
+      const maxDate = new Date();
+      maxDate.setDate(today.getDate() + 30);
+      serviceDateInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
 
-            const manufacturerInput = document.getElementById('manufacturer');
-            const modelInput = document.getElementById('model');
-            const yearInput = document.getElementById('year');
-            const problemInput = document.getElementById('problem');
-            const bookServiceButton = document.querySelector('button[type="submit"]');
+      const manufacturerInput = document.getElementById('manufacturer');
+      const modelInput = document.getElementById('model');
+      const yearInput = document.getElementById('year');
+      const problemInput = document.getElementById('problem');
+      const bookServiceButton = document.querySelector('button[type="submit"]');
 
-            const createErrorMessage = (input) => {
-                const errorMessage = document.createElement('span');
-                errorMessage.className = 'error-message';
-                input.parentNode.appendChild(errorMessage);
-                return errorMessage;
-            };
+      const createErrorMessage = (input) => {
+          const errorMessage = document.createElement('span');
+          errorMessage.className = 'error-message';
+          input.parentNode.appendChild(errorMessage);
+          return errorMessage;
+      };
 
-            const manufacturerError = createErrorMessage(manufacturerInput);
-            const modelError = createErrorMessage(modelInput);
-            const problemError = createErrorMessage(problemInput);
+      const manufacturerError = createErrorMessage(manufacturerInput);
+      const modelError = createErrorMessage(modelInput);
+      const problemError = createErrorMessage(problemInput);
 
-            const validateInputs = () => {
-                let isValid = true;
+      const validateInputs = () => {
+          let isValid = true;
 
-                // Manufacturer validation
-                if (/[^a-zA-Z0-9 ]/.test(manufacturerInput.value)) {
-                    manufacturerError.textContent = 'Special characters are not allowed in Manufacturer Name.';
-                    isValid = false;
-                } else {
-                    manufacturerError.textContent = '';
-                }
+          // Manufacturer validation
+          if (/[^a-zA-Z0-9 ]/.test(manufacturerInput.value)) {
+              manufacturerError.textContent = 'Special characters are not allowed in Manufacturer Name.';
+              isValid = false;
+          } else {
+              manufacturerError.textContent = '';
+          }
 
-                // Model validation
-                if (/[^a-zA-Z0-9 ]/.test(modelInput.value)) {
-                    modelError.textContent = 'Special characters are not allowed in Model Name.';
-                    isValid = false;
-                } else {
-                    modelError.textContent = '';
-                }
+          // Model validation
+          if (/[^a-zA-Z0-9 ]/.test(modelInput.value)) {
+              modelError.textContent = 'Special characters are not allowed in Model Name.';
+              isValid = false;
+          } else {
+              modelError.textContent = '';
+          }
 
-                // Year validation
-                const currentYear = new Date().getFullYear();
-                const yearValue = parseInt(yearInput.value, 10);
-                if (isNaN(yearValue) || yearValue < 2000 || yearValue > currentYear) {
-                    yearInput.setCustomValidity('Please enter a valid year between 2000 and the current year.');
-                    isValid = false;
-                } else {
-                    yearInput.setCustomValidity('');
-                }
+          // Year validation
+          const currentYear = new Date().getFullYear();
+          const yearValue = parseInt(yearInput.value, 10);
+          if (isNaN(yearValue) || yearValue < 2000 || yearValue > currentYear) {
+              yearInput.setCustomValidity('Please enter a valid year between 2000 and the current year.');
+              isValid = false;
+          } else {
+              yearInput.setCustomValidity('');
+          }
 
-                // Disable or enable the button based on initial validity
-                bookServiceButton.disabled = !isValid;
-            };
+          // Disable or enable the button based on initial validity
+          bookServiceButton.disabled = !isValid;
+      };
 
-            manufacturerInput.addEventListener('input', validateInputs);
-            modelInput.addEventListener('input', validateInputs);
-            yearInput.addEventListener('input', validateInputs);
-            problemInput.addEventListener('input', validateInputs);
+      manufacturerInput.addEventListener('input', validateInputs);
+      modelInput.addEventListener('input', validateInputs);
+      yearInput.addEventListener('input', validateInputs);
+      problemInput.addEventListener('input', validateInputs);
 
-            // Handle form submission
-            document.getElementById('serviceBookingForm').addEventListener('submit', function(event) {
-                // Allow form submission
-                if (bookServiceButton.disabled) return; // Prevent submission if button is disabled
-            });
-        });
-    </script>
-    <script>
-        document.getElementById('termsAndConditions').addEventListener('click', function(e) {
-            e.preventDefault()
-            Swal.fire({
-                title: 'Terms and Conditions of Adam Automotive',
-                html: `
-                    <p>1. All sales are final.</p>
-                    <p>2. No Vehicles Which Has Any Kind Of Accidents And Flood Are Sold.</p>
-                    <p>3. Adam Automotive reserves the right to refuse service to anyone.</p>
-                    <p>4. Test drives are subject to approval and require a valid driver's license.</p>
-                    <p>5. Prices are subject to change without notice.</p>
-                `,
-                confirmButtonText: 'Okay',
-                confirmButtonColor: '#d39e00'
-            })
-        })
-    </script>
+      // Handle form submission
+      document.getElementById('serviceBookingForm').addEventListener('submit', function(event) {
+          event.preventDefault(); // Prevent default form submission
+          if (bookServiceButton.disabled) return; // Prevent submission if button is disabled
+
+          // Show success alert
+          Swal.fire({
+              title: 'Success!',
+              text: 'Service request submitted successfully. Thank you!',
+              icon: 'success',
+              confirmButtonText: 'Okay'
+          }).then(() => {
+              this.submit(); // Submit the form after the alert is closed
+          });
+      });
+  });
+</script>
+<!-- ... existing code ... -->
 </body>
 
 </html>
