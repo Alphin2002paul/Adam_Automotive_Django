@@ -85,3 +85,19 @@ class CarImage(models.Model):
 
     def __str__(self):
         return f"Image for {self.car}"
+
+from django.conf import settings
+
+class Service(models.Model):
+    manufacturer = models.CharField(max_length=100)
+    model = models.CharField(max_length=100)
+    transmission = models.CharField(max_length=50)
+    fuel = models.CharField(max_length=50)
+    year = models.IntegerField()
+    problem = models.TextField()
+    service_date = models.DateField()
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    slot_allocated = models.CharField(max_length=20, default='Pending')
+
+    def __str__(self):
+        return f"{self.manufacturer} {self.model} - {self.user.username}"

@@ -857,3 +857,61 @@ def car_detail(request, car_id):
         'car_images': car_images,
     }
     return render(request, 'car_detail.html', context)
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .models import Service
+from datetime import datetime
+
+@login_required
+def bookservice_dtl(request):
+    if request.method == 'POST':
+        print("Form submitted")  # Debugging line
+        manufacturer = request.POST.get('manufacturer')
+        model = request.POST.get('model')
+        transmission = request.POST.get('transmission')
+        fuel = request.POST.get('fuel')
+        year = request.POST.get('year')
+        problem = request.POST.get('problem')
+        service_date_str = request.POST.get('serviceDate')
+
+        # Convert service_date_str to a date object
+        service_date = datetime.strptime(service_date_str, '%Y-%m-%d').date()
+
+        # Create a new Service instance
+        service = Service(
+            manufacturer=manufacturer,
+            model=model,
+            transmission=transmission,
+            fuel=fuel,
+            year=int(year),  # Ensure year is an integer
+            problem=problem,
+            service_date=service_date,
+            user=request.user  # Set the user who is booking the service
+        )
+
+        try:
+            service.full_clean()  # Validate the model before saving
+            service.save()  # Save the service details to the database
+            print("Service saved successfully.")
+            return redirect('main')  # Redirect to the main page after saving
+        except ValidationError as e:
+            print(f"Validation error: {e}")  # Print validation errors
+        except Exception as e:
+            print(f"Error saving service: {str(e)}")  # Print any other errors
+
+    # Handle GET request
+    return render(request, 'bookservice_dtl.html')
+
+def sellcar_dtl(request):
+    return render(request, 'sellcar_dtl.html')
+
+from django.shortcuts import render
+from .models import Service
+
+from django.shortcuts import render
+from .models import Service
+
+def service_request_view(request):
+    services = Service.objects.all()  # Fetch all service records
+    return render(request, 'service_request_view.html', {'services': services})  # Ensure the template name is correct

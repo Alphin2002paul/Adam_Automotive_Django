@@ -160,7 +160,7 @@
             <a href="#"><i class="fas fa-dollar-sign"></i> Sale Request</a>
           </li>
           <li>
-            <a href="{% url 'service_request_view' %}"><i class="fas fa-tools"></i> Service Request</a>
+            <a href="#"><i class="fas fa-tools"></i> Service Request</a>
           </li>
           <li>
             <a href="#"><i class="fas fa-car-side"></i> Sold Cars</a>
@@ -210,30 +210,35 @@
             <div class="col-md-12 mb-4">
               <div class="card">
                 <div class="card-header">
-                  <h5 class="card-title mb-0">User Details</h5>
+                  <h5 class="card-title mb-0">Service Details</h5>
                 </div>
                 <div class="card-body">
                   <table id="myTable" class="display">
                     <thead>
                       <tr>
-                        <th>Sl/No</th>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Email Id</th><th></th>
-                        <th>Phone Number</th>
-                        <th>More Details</th>
+                        <th>Manufacturer</th>
+                        <th>Model</th>
+                        <th>Preferd Date</th>
+                        <th>More Details</th> <!-- Added More Details header -->
+                        <th>User Details</th> <!-- Added User Details header -->
+                        <th>Action</th> <!-- Action header -->
                       </tr>
                     </thead>
                     <tbody>
-                      {% for user in users %}
+                      {% for service in services %}
                         <tr>
-                          <td>{{ forloop.counter }}</td>
-                          <td>{{ user.first_name }}</td>
-                          <td>{{ user.last_name }}</td>
-                          <td>{{ user.email }}</td><td></td>
-                          <td>{{ user.Phone_number }}</td>
+                          <td>{{ service.manufacturer }}</td> <!-- Display manufacturer -->
+                          <td>{{ service.model }}</td>
+                          <td>{{ service.service_date }}</td>  <!-- Display model -->
                           <td>
-                            <a class="btn-darkish" href="{% url 'user_detail' user.id %}">More Details</a>
+                            <button class="btn btn-info" onclick="showMoreDetails({{ service.id }})">More</button> <!-- More details button -->
+                          </td>
+                          <td>
+                            <button class="btn btn-info" onclick="showUserDetails('{{ service.user.username }}')">More</button> <!-- User details button -->
+                          </td>
+                          <td>
+                            <button class="btn btn-success">Approve</button> <!-- Approve button -->
+                            <button class="btn btn-danger">Deny</button> <!-- Deny button -->
                           </td>
                         </tr>
                       {% endfor %}
