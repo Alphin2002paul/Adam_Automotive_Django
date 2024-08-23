@@ -1053,8 +1053,10 @@ def deny_service(request, service_id):
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)})
         
+@login_required
 def request_dtl(request):
-    services = Service.objects.filter(user=request.user)  # Fetch services for the logged-in user
+    # Fetch services for the logged-in user, excluding those with status 'Deleted'
+    services = Service.objects.filter(user=request.user).exclude(status='Deleted')
     return render(request, 'request_dtl.html', {'services': services})
 
 from django.http import JsonResponse
@@ -1081,3 +1083,21 @@ def update_service(request, service_id):
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)})
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
+from .models import Service
+
+@csrf_exempt
+def delete_service(request, service_id):
+    if request.method == 'POST':
+        try:
+            service = Service.objects.get(id=service_id)
+            service.status = 'Deleted'  # Change status to Deleted
+            service.save()  # Save the updated status
+            return JsonResponse({'success': True})
+        except Service.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Service not found.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+
+# Other existing views...

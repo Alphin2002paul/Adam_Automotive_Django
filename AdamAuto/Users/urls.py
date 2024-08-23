@@ -53,6 +53,8 @@ urlpatterns = [
     path('deny-service/<int:service_id>/', views.deny_service, name='deny_service'),
     path('request_dtl/', views.request_dtl, name='request_dtl'),
     path('update_service/<int:service_id>/', views.update_service, name='update_service'),
+    path('delete_service/<int:service_id>/', views.delete_service, name='delete_service'),
+
 
 
 
