@@ -171,6 +171,78 @@
     .sidebar-footer {
         bottom: -37px;
     }
+    .car-details-container {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      }
+    
+      .car-image-carousel {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      }
+    
+      .car-details-table {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+    
+      .car-details-table th,
+      .car-details-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+    
+      .car-details-table th {
+        background: rgba(255, 255, 255, 0.1);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        width: 30%;
+      }
+    
+      .car-description {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 20px;
+      }
+    
+      .action-buttons {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+      }
+    
+      .action-buttons .btn {
+        margin: 0 10px;
+        padding: 10px 20px;
+        border-radius: 50px;
+        text-transform: uppercase;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+    
+      .card-body h2 {
+        color: #d39e00;
+        margin-bottom: 1.5rem;
+      }
+    
+      .table-responsive {
+        margin-bottom: 1.5rem;
+      }
+    
+      .car-description h4 {
+        color: #d39e00;
+        margin-bottom: 1rem;
+      }
+    
+      .car-description p {
+        line-height: 1.6;
+      }
     </style>
   </head>
   <body>
@@ -250,96 +322,109 @@
         <div class="container-fluid mt-4">
             <div class="row">
               <div class="col-md-12 mb-4">
-                <div class="card">
+                <div class="card car-details-container">
                   <div class="card-header">
-                    <h2>Sale <span style="color: #d39e00;">Request's</span></h2>
+                    <h2>Car <span style="color: #d39e00;">Details</span></h2>
                   </div>
                   <div class="card-body">
                     <div class="row">
-                      {% if sell_cars %}
-                        {% for car in sell_cars %}
-                          <div class="col-md-4 mb-4">
-                            <div class="car-wrap rounded ftco-animate bg-white p-3">
-                              <div id="carImageCarousel{{ car.id }}" class="carousel slide" data-bs-ride="carousel">
-                                <div class="carousel-inner">
-                                  {% if car.image_list %}
-                                    {% for image in car.image_list %}
-                                      <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                                        <img src="{{ image.image.url }}" class="d-block w-100" alt="Car Image" style="object-fit: cover; height: 200px;">
-                                      </div>
-                                    {% endfor %}
-                                  {% else %}
-                                    <div class="carousel-item active">
-                                      <img src="{% static 'images/no_image_available.jpg' %}" class="d-block w-100" alt="No Image Available" style="object-fit: cover; height: 200px;">
-                                    </div>
-                                  {% endif %}
-                                </div>
-                                {% if car.image_list.count > 1 %}
-                                  <button class="carousel-control-prev" type="button" data-bs-target="#carImageCarousel{{ car.id }}" data-bs-slide="prev">
-                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Previous</span>
-                                  </button>
-                                  <button class="carousel-control-next" type="button" data-bs-target="#carImageCarousel{{ car.id }}" data-bs-slide="next">
-                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Next</span>
-                                  </button>
-                                {% endif %}
+                      <!-- Left side: Images and Buttons -->
+                      <div class="col-md-6 mb-4">
+                        <div id="carImageCarousel" class="carousel slide car-image-carousel" data-bs-ride="carousel">
+                          <div class="carousel-inner">
+                            {% for image in images %}
+                              <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                <img src="{{ image.image.url }}" class="d-block w-100" alt="Car Image" style="object-fit: cover; height: 400px;">
                               </div>
-                              <div class="text">
-                                <h2 class="mb-0 text-dark">{{ car.manufacturer }}</h2>
-                                <div class="d-flex mb-3">
-                                  <span class="mb-0" style="color:#d39e00">Model: <span class="text-dark">{{ car.model }}</span></span>
-                                </div>
-                                <div class="d-flex mb-3">
-                                  <span class="mb-0" style="color:#d39e00">Price: <span class="text-dark">₹ {{ car.price }}</span></span>
-                                </div>
-                                <div class="d-flex mb-3">
-                                  <span class="mb-0" style="color:#d39e00">Status: <span class="text-secondary">{{ car.status }}</span></span>
-                                </div>
-                                <div class="d-flex justify-content-between">
-                                    <a href="{% url 'salemore_dtl' car_id=car.id %}" class="btn btn-primary py-2 px-3">More Details</a>                                </div>
+                            {% empty %}
+                              <div class="carousel-item active">
+                                <img src="{% static 'images/no_image_available.jpg' %}" class="d-block w-100" alt="No Image Available" style="object-fit: cover; height: 400px;">
                               </div>
+                            {% endfor %}
+                          </div>
+                          {% if images.count > 1 %}
+                            <button class="carousel-control-prev" type="button" data-bs-target="#carImageCarousel" data-bs-slide="prev">
+                              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                              <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#carImageCarousel" data-bs-slide="next">
+                              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                              <span class="visually-hidden">Next</span>
+                            </button>
+                          {% endif %}
+                        </div>
+                        <div class="action-buttons mt-3">
+                          <button class="btn btn-success" onclick="approveCar({{ car.id }})">Approve Deal</button>
+                          <button class="btn btn-danger" onclick="denyCar({{ car.id }})">Deny Request</button>
+                        </div>
+                      </div>
+                      
+                      <!-- Right side: Car Details -->
+                      <div class="col-md-6">
+                        <div id="carDetails">
+                            <h2><span style="color: #ffffff;">{{ car.manufacturer }}</span> <span style="color: #d39e00;">{{ car.model }}</span></h2><hr>
+                            <div class="row">
+                            <div class="col-md-6">
+                              <p><strong>Year:</strong> {{ car.year }}</p>
+                              <p><strong>Fuel Type:</strong> {{ car.fuel_type }}</p>
+                              <p><strong>Kilometers:</strong> {{ car.kilometers }}</p>
+                              <p><strong>Ownership Status:</strong> {{ car.owner_status }}</p>
+                              <p><strong>Car Type:</strong> {{ car.car_type.name }}</p>
+                            </div>
+                            <div class="col-md-6">
+                              <p><strong>Price:</strong> ₹{{ car.price }}</p>
+                              <p><strong>Transmission:</strong> {{ car.transmission }}</p>
+                              <p><strong>Color:</strong> {{ car.color.color_name }}</p>
+                              <p><strong>Car Status:</strong> {{ car.car_status }}</p>
+                              <p><strong>Engine CC:</strong> {{ car.car_cc }}</p>
                             </div>
                           </div>
-                        {% endfor %}
-                      {% else %}
-                        <div class="col-12">
-                          <p>No pending sale requests found.</p>
                         </div>
-                      {% endif %}
+                        <div id="additionalInfo" class="row mt-4" style="display: none;">
+                          <h2 style="margin-left: 17px;">More <span style="color: #d39e00;">Information</span></h2>
+                          <hr>
+                          <div class="col-md-12">
+                            <p><strong>Registration Number:</strong> {{ car.reg_number }}</p>
+                            <p><strong>Pollution Validity:</strong> {{ car.pollution_validity }}</p>
+                            <p><strong>Insurance Validity:</strong> {{ car.insurance_validity }}</p>
+                            <p><strong>Registration Validity:</strong> {{ car.tax_validity }}</p>
+                            <p><strong>Overall Condition:</strong> {{ car.condition }}</p>
+                          </div>
+                        </div>
+                        <button id="moreInfoBtn" class="btn btn-primary mt-3">More Information</button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // ... existing code ...
+  
+      // Toggle More Information
+      const moreInfoBtn = document.getElementById('moreInfoBtn');
+      const additionalInfo = document.getElementById('additionalInfo');
+      
+      moreInfoBtn.addEventListener('click', function() {
+        if (additionalInfo.style.display === 'none') {
+          additionalInfo.style.display = 'block';
+          moreInfoBtn.textContent = 'Less Information';
+        } else {
+          additionalInfo.style.display = 'none';
+          moreInfoBtn.textContent = 'More Information';
+        }
+      });
+    });
+  </script>
+      </div>
+    </div>
+  </div>
+  
+
           
-          <!-- Pagination -->
-          <div class="row mt-5">
-            <div class="col text-center">
-              <div class="block-27">
-                <ul class="pagination">
-                  {% if sell_cars.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page=1">&lt;&lt;</a></li>
-                    <li class="page-item"><a class="page-link" href="?page={{ sell_cars.previous_page_number }}">&lt;</a></li>
-                  {% endif %}
-                  
-                  {% for num in sell_cars.paginator.page_range %}
-                    {% if sell_cars.number == num %}
-                      <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-                    {% elif num > sell_cars.number|add:'-3' and num < sell_cars.number|add:'3' %}
-                      <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
-                    {% endif %}
-                  {% endfor %}
-                  
-                  {% if sell_cars.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ sell_cars.next_page_number }}">&gt;</a></li>
-                    <li class="page-item"><a class="page-link" href="?page={{ sell_cars.paginator.num_pages }}">&gt;&gt;</a></li>
-                  {% endif %}
-                </ul>
-              </div>
-            </div>
-          </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>

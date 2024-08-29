@@ -1164,5 +1164,37 @@ def salereq_dsply(request):
     }
     return render(request, 'salereq_dsply.html', context)
 
+from django.shortcuts import render, get_object_or_404
+from .models import SellCar, SellCarImage
 
+def salemore_dtl(request, car_id):
+    car = get_object_or_404(SellCar, id=car_id)
+    images = SellCarImage.objects.filter(sell_car=car)
+    
+    # Create a dictionary of car details, only including fields that exist
+    car_details = {
+        'Manufacturer': car.manufacturer,
+        'Model': car.model,
+        'Year': car.year,
+        'Price': car.price,
+        'Fuel Type': car.fuel_type,
+        'Transmission': car.transmission,
+        'Color': car.color,
+        'Registration Number': car.reg_number,
+        'Number of Owners': car.owner_status,
+        'Insurance Valid Until': car.insurance_validity,
+        'Description': car.condition,
+        'Status': car.status,
+        'Created At': car.created_at,
+    }
 
+    # Only add the 'User' field if it exists and is not None
+    if hasattr(car, 'user') and car.user:
+        car_details['User'] = car.user.username
+
+    context = {
+        'car': car,
+        'images': images,
+        'car_details': car_details,
+    }
+    return render(request, 'salemore_dtl.html', context)

@@ -57,6 +57,8 @@ urlpatterns = [
     path('sell-car/', views.sellcar_dtl, name='sellcar_dtl'),
     path('check-registration-number/', views.check_registration_number, name='check_registration_number'),
     path('salereq_dsply/', views.salereq_dsply, name='salereq_dsply'),
+    path('salemore_dtl/<int:car_id>/', views.salemore_dtl, name='salemore_dtl'),
+
     
 
 
