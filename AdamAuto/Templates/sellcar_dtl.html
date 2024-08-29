@@ -38,7 +38,7 @@
       }
       
       .error-message {
-        color: red; /* Set the text color to red for error messages */
+        color: red;
         font-size: 0.9em;
       }
     </style>
@@ -101,7 +101,7 @@
         <h2>Sell Your Car</h2>
         <hr />
         <div class="container mt-5">
-          <form id="sellCarForm" method="POST">
+          <form id="sellCarForm" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form-group">
               <label for="manufacturer">Manufacturer Name</label>
@@ -292,32 +292,62 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
       $(document).ready(function () {
-        // Set the minimum date for insurance, pollution, and tax validity to one month from today
         const minDate = new Date()
         minDate.setMonth(minDate.getMonth() + 1)
         const minDateString = minDate.toISOString().split('T')[0]
       
         $('#insurance_validity, #pollution_validity, #tax_validity').attr('min', minDateString)
       
-        // Validate inputs on keyup
-        $('#sellCarForm input, #sellCarForm select, #sellCarForm textarea').on('keyup change', function () {
-          validateInputs()
-        })
+        // Real-time validation
+        $('#sellCarForm input, #sellCarForm select, #sellCarForm textarea').on('blur', function() {
+          validateField($(this));
+        });
       
-        // Form submission using AJAX
+        // Add this: Check registration number on blur
+        $('#reg_number').on('blur', function() {
+          checkRegistrationNumber($(this).val());
+        });
+      
         $('#sellCarForm').on('submit', function (event) {
-          event.preventDefault() // Prevent default form submission
-      
-          // Validate inputs before submission
-          if (!validateInputs()) {
-            return // Stop submission if validation fails
+          event.preventDefault();
+          
+          if (validateForm()) {
+            checkRegistrationNumber($('#reg_number').val(), true);
           }
+        });
       
-          // AJAX request to submit the form
+        function checkRegistrationNumber(regNumber, isSubmit = false) {
+          $.ajax({
+            type: 'GET',
+            url: '{% url "check_registration_number" %}',
+            data: { reg_number: regNumber },
+            success: function(response) {
+              if (response.exists) {
+                $('#regNumberError').text('This registration number already exists.');
+                $('#reg_number').addClass('is-invalid');
+              } else {
+                $('#regNumberError').text('');
+                $('#reg_number').removeClass('is-invalid');
+                if (isSubmit) {
+                  submitForm();
+                }
+              }
+            },
+            error: function() {
+              $('#regNumberError').text('Error checking registration number.');
+            }
+          });
+        }
+      
+        function submitForm() {
+          var formData = new FormData($('#sellCarForm')[0]);
+        
           $.ajax({
             type: 'POST',
-            url: '{% url "sellcar_dtl" %}', // Replace with your actual view URL
-            data: $(this).serialize(),
+            url: '{% url "sellcar_dtl" %}',
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function (response) {
               Swal.fire({
                 title: 'Success!',
@@ -325,160 +355,111 @@
                 icon: 'success',
                 confirmButtonText: 'Okay'
               }).then(() => {
-                window.location.href = '{% url "main" %}' // Redirect to the main page
-              })
+                window.location.href = '{% url "main" %}';
+              });
             },
             error: function (xhr) {
-              // Handle errors
-              const errors = xhr.responseJSON.errors // Assuming your view returns errors in this format
+              const errors = xhr.responseJSON.errors;
               for (const key in errors) {
                 if (errors.hasOwnProperty(key)) {
-                  $(`#${key}Error`).text(errors[key].join(', ')) // Display error messages
+                  $(`#${key}Error`).text(errors[key].join(', '));
                 }
               }
             }
-          })
-        })
-      
-        // Validate inputs function
-        function validateInputs() {
-          let isValid = true
-      
-          // Clear previous error messages
-          $('.error-message').text('')
-      
-          // Manufacturer validation
-          const manufacturerValue = $('#manufacturer').val().trim()
-          if (manufacturerValue === '') {
-            $('#manufacturerError').text('Manufacturer Name is required.')
-            isValid = false
-          } else if (/[^a-zA-Z0-9 ]/.test(manufacturerValue)) {
-            $('#manufacturerError').text('Special characters are not allowed in Manufacturer Name.')
-            isValid = false
+          });
           }
       
-          // Model validation
-          const modelValue = $('#model').val().trim()
-          if (modelValue === '') {
-            $('#modelError').text('Model Name is required.')
-            isValid = false
-          } else if (/[^a-zA-Z0-9 ]/.test(modelValue)) {
-            $('#modelError').text('Special characters are not allowed in Model Name.')
-            isValid = false
+        function validateField($field) {
+          const fieldId = $field.attr('id');
+          const fieldValue = $field.val().trim();
+          let isValid = true;
+          let errorMessage = '';
+      
+          switch (fieldId) {
+            case 'manufacturer':
+            case 'model':
+            case 'color':
+            case 'condition':
+              if (fieldValue === '') {
+                errorMessage = `${$field.prev('label').text()} is required.`;
+                isValid = false;
+              } else if (/[^a-zA-Z0-9 ]/.test(fieldValue)) {
+                errorMessage = `Special characters are not allowed in ${$field.prev('label').text()}.`;
+                isValid = false;
+              }
+              break;
+            case 'year':
+              const yearValue = parseInt(fieldValue, 10);
+              if (isNaN(yearValue) || yearValue < 1886 || yearValue > new Date().getFullYear()) {
+                errorMessage = 'Please enter a valid year.';
+                isValid = false;
+              }
+              break;
+            case 'price':
+            case 'kilometers':
+            case 'car_cc':
+              if (fieldValue === '' || parseFloat(fieldValue) <= 0) {
+                errorMessage = `${$field.prev('label').text()} must be a positive number.`;
+                isValid = false;
+              }
+              break;
+            case 'fuel_type':
+            case 'transmission':
+            case 'car_type':
+              if ($field.val() === null) {
+                errorMessage = `${$field.prev('label').text()} is required.`;
+                isValid = false;
+              }
+              break;
+            case 'reg_number':
+              if (fieldValue === '') {
+                errorMessage = 'Registration Number is required.';
+                isValid = false;
+              } else if (!/^[A-Z]{2}-\d{2}-[A-Z]-\d{4}$/.test(fieldValue)) {
+                errorMessage = 'Registration Number must be in the format AA-00-A-0000.';
+                isValid = false;
+              }
+              break;
+            case 'insurance_validity':
+            case 'pollution_validity':
+            case 'tax_validity':
+              if (fieldValue === '') {
+                errorMessage = `${$field.prev('label').text()} is required.`;
+                isValid = false;
+              }
+              break;
+            case 'owner_status':
+              if (fieldValue === '') {
+                errorMessage = 'Owner Status is required.';
+                isValid = false;
+              } else if (!/^[1-9]$/.test(fieldValue)) {
+                errorMessage = 'Owner Status must be a single digit (1-9) and cannot be 0.';
+                isValid = false;
+              }
+              break;
+            case 'images':
+              const images = $field[0].files;
+              if (images.length > 5) {
+                errorMessage = 'You can upload a maximum of 5 images.';
+                isValid = false;
+              }
+              break;
           }
       
-          // Year validation
-          const yearValue = parseInt($('#year').val(), 10)
-          if (isNaN(yearValue) || yearValue < 1886 || yearValue > new Date().getFullYear()) {
-            $('#yearError').text('Please enter a valid year.')
-            isValid = false
-          }
-      
-          // Price validation
-          if ($('#price').val().trim() === '' || parseFloat($('#price').val()) <= 0) {
-            $('#priceError').text('Price must be a positive number.')
-            isValid = false
-          }
-      
-          // Color validation
-          const colorValue = $('#color').val().trim()
-          if (colorValue === '') {
-            $('#colorError').text('Color is required.')
-            isValid = false
-          } else if (/[^a-zA-Z0-9 ]/.test(colorValue)) {
-            $('#colorError').text('Special characters are not allowed in Color.')
-            isValid = false
-          }
-      
-          // Fuel type validation
-          if ($('#fuel_type').val() === null) {
-            $('#fuelTypeError').text('Fuel Type is required.')
-            isValid = false
-          }
-      
-          // Kilometers validation
-          if ($('#kilometers').val().trim() === '' || parseInt($('#kilometers').val()) < 0) {
-            $('#kilometersError').text('Kilometers must be a non-negative number.')
-            isValid = false
-          }
-      
-          // Transmission validation
-          if ($('#transmission').val() === null) {
-            $('#transmissionError').text('Transmission Type is required.')
-            isValid = false
-          }
-      
-          // Condition validation
-          const conditionValue = $('#condition').val().trim()
-          if (conditionValue === '') {
-            $('#conditionError').text('Condition is required.')
-            isValid = false
-          } else if (/[^a-zA-Z0-9 ]/.test(conditionValue)) {
-            $('#conditionError').text('Special characters are not allowed in Condition.')
-            isValid = false
-          }
-      
-          // Registration number validation
-          const regNumberValue = $('#reg_number').val().trim()
-          if (regNumberValue === '') {
-            $('#regNumberError').text('Registration Number is required.')
-            isValid = false
-          } else if (!/^[A-Z]{2}-\d{2}-[A-Z]-\d{4}$/.test(regNumberValue)) {
-            $('#regNumberError').text('Registration Number must be in the format AA-00-A-0000.')
-            isValid = false
-          }
-      
-          // Insurance validity validation
-          if ($('#insurance_validity').val().trim() === '') {
-            $('#insuranceValidityError').text('Insurance Validity is required.')
-            isValid = false
-          }
-      
-          // Pollution validity validation
-          if ($('#pollution_validity').val().trim() === '') {
-            $('#pollutionValidityError').text('Pollution Validity is required.')
-            isValid = false
-          }
-      
-          // Tax validity validation
-          if ($('#tax_validity').val().trim() === '') {
-            $('#taxValidityError').text('Tax Validity is required.')
-            isValid = false
-          }
-      
-          // Car type validation
-          if ($('#car_type').val().trim() === '') {
-            $('#carTypeError').text('Car Type is required.')
-            isValid = false
-          }
-      
-          // Owner status validation
-          const ownerStatusValue = $('#owner_status').val().trim()
-          if (ownerStatusValue === '') {
-            $('#ownerStatusError').text('Owner Status is required.')
-            isValid = false
-          } else if (!/^[1-9]$/.test(ownerStatusValue)) {
-            $('#ownerStatusError').text('Owner Status must be a single digit (1-9) and cannot be 0.')
-            isValid = false
-          }
-      
-          // Car CC validation
-          const carCCValue = $('#car_cc').val().trim()
-          if (carCCValue === '' || parseInt(carCCValue) <= 0) {
-            $('#carCCError').text('Car CC must be a positive number.')
-            isValid = false
-          }
-      
-          // Image upload validation
-          const images = $('#images')[0].files
-          if (images.length > 5) {
-            $('#imagesError').text('You can upload a maximum of 5 images.')
-            isValid = false
-          }
-      
-          return isValid
+          $(`#${fieldId}Error`).text(errorMessage);
+          return isValid;
         }
-      })
+      
+        function validateForm() {
+          let isValid = true;
+          $('#sellCarForm input, #sellCarForm select, #sellCarForm textarea').each(function() {
+            if (!validateField($(this))) {
+              isValid = false;
+            }
+          });
+          return isValid;
+        }
+      });
     </script>
   </body>
 </html>

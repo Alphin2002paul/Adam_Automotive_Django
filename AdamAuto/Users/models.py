@@ -103,3 +103,40 @@ class Service(models.Model):
 
     def __str__(self):
         return f"{self.manufacturer} {self.model} - {self.user.username}"
+    
+    
+from django.db import models
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class SellCar(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    manufacturer = models.CharField(max_length=100)
+    model = models.CharField(max_length=100)
+    year = models.IntegerField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    color = models.CharField(max_length=50)
+    fuel_type = models.CharField(max_length=20)
+    kilometers = models.IntegerField()
+    transmission = models.CharField(max_length=20)
+    condition = models.TextField()
+    reg_number = models.CharField(max_length=20)
+    insurance_validity = models.DateField()
+    pollution_validity = models.DateField()
+    tax_validity = models.DateField()
+    car_type = models.CharField(max_length=50)
+    owner_status = models.IntegerField()
+    car_cc = models.IntegerField()
+    status = models.CharField(max_length=20, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.manufacturer} {self.model} - {self.user.username}"
+
+class SellCarImage(models.Model):
+    sell_car = models.ForeignKey(SellCar, related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='sell_car_images/')
+
+    def __str__(self):
+        return f"Image for {self.sell_car}"

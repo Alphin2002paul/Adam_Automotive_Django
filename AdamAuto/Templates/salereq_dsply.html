@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Adam Automotive Admin Panel</title>
@@ -167,10 +168,13 @@
         --bs-btn-disabled-bg: #191a1b;
         --bs-btn-disabled-border-color: #131313;
     }
-        
+    .sidebar-footer {
+        bottom: -37px;
+    }
     </style>
   </head>
   <body>
+    
     <div class="d-flex">
       <nav id="sidebar" class="bg-dark text-light ">
         <div class="sidebar-header">
@@ -190,13 +194,13 @@
             <a href="{% url 'admincaradd_dtl' %}"><i class="fas fa-car"></i> List New Car</a>
           </li>
           
-          <li class="active">
+          <li>
             <a href="{% url 'edit_listing' %}"><i class="fas fa-edit"></i> Edit Listing</a>
           </li>
           <li>
             <a href="#"><i class="fas fa-phone"></i> Call Back</a>
           </li>
-          <li>
+          <li class="active">
             <a href="{% url 'salereq_dsply' %}"><i class="fas fa-dollar-sign"></i> Sale Request</a>
           </li>
           <li>
@@ -244,100 +248,99 @@
         </nav>
 
         <div class="container-fluid mt-4">
-          <div class="row">
-            <div class="col-md-12 mb-4">
-              <div class="card">
-                <div class="card-header">
-                  <h2>Edit <span style="color: #d39e00;">Listing</span></h2>
-                </div>
-                <div class="card-body">
-                  <div class="row">
-                    {% for car in cars %}
-                      <div class="col-md-4 mb-4">
-                        <div class="car-wrap rounded ftco-animate bg-white p-3">
-                          <div id="carImageCarousel{{ car.id }}" class="carousel slide" data-bs-ride="carousel">
-                            <div class="carousel-inner">
-                              {% for car_image in car.images.all %}
-                                <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                                  <img src="{{ car_image.image.url }}" class="d-block w-100" alt="Car Image" style="object-fit: cover; height: 200px;">
-                                </div>
-                              {% empty %}
-                                <div class="carousel-item active">
-                                  <img src="{% static 'images/no_image_available.jpg' %}" class="d-block w-100" alt="No Image Available" style="object-fit: cover; height: 200px;">
-                                </div>
-                              {% endfor %}
-                            </div>
-                            <button class="carousel-control-prev" type="button" data-bs-target="#carImageCarousel{{ car.id }}" data-bs-slide="prev">
-                              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                              <span class="visually-hidden">Previous</span>
-                            </button>
-                            <button class="carousel-control-next" type="button" data-bs-target="#carImageCarousel{{ car.id }}" data-bs-slide="next">
-                              <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                              <span class="visually-hidden">Next</span>
-                            </button>
-                          </div>
-                          <div class="text">
-                            <h2 class="mb-0 text-dark">{{ car.manufacturer.company_name }}</h2>
-                            <div class="d-flex mb-3">
-                              <span class="mb-0" style="color:#d39e00">Model: <span class="text-dark">{{ car.model_name.model_name }}</span></span>
-                            </div>
-                            <div class="d-flex mb-3">
-                              <span class="mb-0" style="color:#d39e00">Price: <span class="text-dark">₹ {{ car.price }}</span></span>
-                            </div>
-                            <div class="d-flex mb-3">
-                              <span class="mb-0" style="color:#d39e00">Status: <span class="{% if car.car_status == 'Available' %}text-success{% else %}text-secondary{% endif %}">{{ car.car_status }}</span></span>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                              <a href="{% url 'speccaredit_dtl' car_id=car.id %}" class="btn btn-primary py-2 px-3">Edit Details</a>
-                              <a href="#" class="btn btn-danger py-2 px-3 delete-btn" data-car-id="{{ car.id }}">
-                                {% if car.car_status == 'Pending' %}Republish{% else %}Delete Car{% endif %}
-                              </a>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    {% endfor %}
+            <div class="row">
+              <div class="col-md-12 mb-4">
+                <div class="card">
+                  <div class="card-header">
+                    <h2>Sale <span style="color: #d39e00;">Request's</span></h2>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-                    <!-- Pagination -->
-                    <div class="row mt-5">
-                      <div class="col text-center">
-                        <div class="block-27">
-                          <ul class="pagination">
-                            {% if cars.has_previous %}
-                              <li class="page-item"><a class="page-link" href="?page=1">&lt;&lt;</a></li>
-                              <li class="page-item"><a class="page-link" href="?page={{ cars.previous_page_number }}">&lt;</a></li>
-                            {% endif %}
-                            
-                            {% for num in cars.paginator.page_range %}
-                              {% if cars.number == num %}
-                                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-                              {% elif num > cars.number|add:'-3' and num < cars.number|add:'3' %}
-                                <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
-                              {% endif %}
-                            {% endfor %}
-                            
-                            {% if cars.has_next %}
-                              <li class="page-item"><a class="page-link" href="?page={{ cars.next_page_number }}">&gt;</a></li>
-                              <li class="page-item"><a class="page-link" href="?page={{ cars.paginator.num_pages }}">&gt;&gt;</a></li>
-                            {% endif %}
-                          </ul>
+                  <div class="card-body">
+                    <div class="row">
+                      {% if sell_cars %}
+                        {% for car in sell_cars %}
+                          <div class="col-md-4 mb-4">
+                            <div class="car-wrap rounded ftco-animate bg-white p-3">
+                              <div id="carImageCarousel{{ car.id }}" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-inner">
+                                  {% if car.image_list %}
+                                    {% for image in car.image_list %}
+                                      <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                        <img src="{{ image.image.url }}" class="d-block w-100" alt="Car Image" style="object-fit: cover; height: 200px;">
+                                      </div>
+                                    {% endfor %}
+                                  {% else %}
+                                    <div class="carousel-item active">
+                                      <img src="{% static 'images/no_image_available.jpg' %}" class="d-block w-100" alt="No Image Available" style="object-fit: cover; height: 200px;">
+                                    </div>
+                                  {% endif %}
+                                </div>
+                                {% if car.image_list.count > 1 %}
+                                  <button class="carousel-control-prev" type="button" data-bs-target="#carImageCarousel{{ car.id }}" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                  </button>
+                                  <button class="carousel-control-next" type="button" data-bs-target="#carImageCarousel{{ car.id }}" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                  </button>
+                                {% endif %}
+                              </div>
+                              <div class="text">
+                                <h2 class="mb-0 text-dark">{{ car.manufacturer }}</h2>
+                                <div class="d-flex mb-3">
+                                  <span class="mb-0" style="color:#d39e00">Model: <span class="text-dark">{{ car.model }}</span></span>
+                                </div>
+                                <div class="d-flex mb-3">
+                                  <span class="mb-0" style="color:#d39e00">Price: <span class="text-dark">₹ {{ car.price }}</span></span>
+                                </div>
+                                <div class="d-flex mb-3">
+                                  <span class="mb-0" style="color:#d39e00">Status: <span class="text-secondary">{{ car.status }}</span></span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                  <a href="{% url 'speccaredit_dtl' car_id=car.id %}" class="btn btn-primary py-2 px-3">More Details</a>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        {% endfor %}
+                      {% else %}
+                        <div class="col-12">
+                          <p>No pending sale requests found.</p>
                         </div>
-                      </div>
+                      {% endif %}
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <!-- Add Details Section -->
-        </div>
-      </div>
-    </div>
+          
+          <!-- Pagination -->
+          <div class="row mt-5">
+            <div class="col text-center">
+              <div class="block-27">
+                <ul class="pagination">
+                  {% if sell_cars.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page=1">&lt;&lt;</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ sell_cars.previous_page_number }}">&lt;</a></li>
+                  {% endif %}
+                  
+                  {% for num in sell_cars.paginator.page_range %}
+                    {% if sell_cars.number == num %}
+                      <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > sell_cars.number|add:'-3' and num < sell_cars.number|add:'3' %}
+                      <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                    {% endif %}
+                  {% endfor %}
+                  
+                  {% if sell_cars.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ sell_cars.next_page_number }}">&gt;</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ sell_cars.paginator.num_pages }}">&gt;&gt;</a></li>
+                  {% endif %}
+                </ul>
+              </div>
+            </div>
+          </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>

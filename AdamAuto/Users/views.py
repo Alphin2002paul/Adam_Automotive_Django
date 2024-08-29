@@ -903,7 +903,44 @@ def bookservice_dtl(request):
     # Handle GET request
     return render(request, 'bookservice_dtl.html')
 
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .models import SellCar, SellCarImage
+from django.contrib import messages
+
+@login_required
 def sellcar_dtl(request):
+    if request.method == 'POST':
+        # Create a new SellCar instance
+        sell_car = SellCar(
+            user=request.user,
+            manufacturer=request.POST['manufacturer'],
+            model=request.POST['model'],
+            year=request.POST['year'],
+            price=request.POST['price'],
+            color=request.POST['color'],
+            fuel_type=request.POST['fuel_type'],
+            kilometers=request.POST['kilometers'],
+            transmission=request.POST['transmission'],
+            condition=request.POST['condition'],
+            reg_number=request.POST['reg_number'],
+            insurance_validity=request.POST['insurance_validity'],
+            pollution_validity=request.POST['pollution_validity'],
+            tax_validity=request.POST['tax_validity'],
+            car_type=request.POST['car_type'],
+            owner_status=request.POST['owner_status'],
+            car_cc=request.POST['car_cc'],
+        )
+        sell_car.save()
+
+        # Handle image uploads
+        images = request.FILES.getlist('images')
+        for image in images:
+            SellCarImage.objects.create(sell_car=sell_car, image=image)
+
+        messages.success(request, 'Your car details have been submitted successfully.')
+        return redirect('main')
+
     return render(request, 'sellcar_dtl.html')
 
 from django.shortcuts import render
@@ -1099,5 +1136,33 @@ def delete_service(request, service_id):
             return JsonResponse({'success': False, 'message': 'Service not found.'})
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)})
+        
+from django.http import JsonResponse
+from .models import SellCar
 
-# Other existing views...
+def check_registration_number(request):
+    reg_number = request.GET.get('reg_number', '')
+    exists = SellCar.objects.filter(reg_number=reg_number).exists()
+    return JsonResponse({'exists': exists})
+
+from django.shortcuts import render
+from django.core.paginator import Paginator
+from .models import SellCar, SellCarImage
+
+def salereq_dsply(request):
+    all_sell_cars = SellCar.objects.filter(status='Pending').order_by('-id')
+    paginator = Paginator(all_sell_cars, 3)  # Show 3 cars per page
+    page_number = request.GET.get('page')
+    sell_cars = paginator.get_page(page_number)
+    
+    # Fetch images for each car
+    for car in sell_cars:
+        car.image_list = SellCarImage.objects.filter(sell_car=car)
+    
+    context = {
+        'sell_cars': sell_cars,
+    }
+    return render(request, 'salereq_dsply.html', context)
+
+
+

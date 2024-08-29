@@ -54,6 +54,11 @@ urlpatterns = [
     path('request_dtl/', views.request_dtl, name='request_dtl'),
     path('update_service/<int:service_id>/', views.update_service, name='update_service'),
     path('delete_service/<int:service_id>/', views.delete_service, name='delete_service'),
+    path('sell-car/', views.sellcar_dtl, name='sellcar_dtl'),
+    path('check-registration-number/', views.check_registration_number, name='check_registration_number'),
+    path('salereq_dsply/', views.salereq_dsply, name='salereq_dsply'),
+    
+
 
 
 
