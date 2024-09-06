@@ -318,7 +318,6 @@
             </div>
           </div>
         </nav>
-
         <div class="container-fluid mt-4">
             <div class="row">
               <div class="col-md-12 mb-4">
@@ -354,8 +353,9 @@
                           {% endif %}
                         </div>
                         <div class="action-buttons mt-3">
-                          <button class="btn btn-success" onclick="approveCar({{ car.id }})">Approve Deal</button>
-                          <button class="btn btn-danger" onclick="denyCar({{ car.id }})">Deny Request</button>
+                          <button class="btn btn-success" onclick="showUserDetails({{ car.id }}); console.log('Details button clicked');">Details</button>                          
+                          <button class="btn btn-dark" onclick="approveCar({{ car.id }})">Approve</button>
+                          <button class="btn btn-danger" onclick="cancelCar({{ car.id }})">Cancel</button>                        
                         </div>
                       </div>
                       
@@ -369,13 +369,13 @@
                               <p><strong>Fuel Type:</strong> {{ car.fuel_type }}</p>
                               <p><strong>Kilometers:</strong> {{ car.kilometers }}</p>
                               <p><strong>Ownership Status:</strong> {{ car.owner_status }}</p>
-                              <p><strong>Car Type:</strong> {{ car.car_type.name }}</p>
+                              <p><strong>Car Type:</strong> {{ car.car_type }}</p>
                             </div>
                             <div class="col-md-6">
                               <p><strong>Price:</strong> ₹{{ car.price }}</p>
                               <p><strong>Transmission:</strong> {{ car.transmission }}</p>
-                              <p><strong>Color:</strong> {{ car.color.color_name }}</p>
-                              <p><strong>Car Status:</strong> {{ car.car_status }}</p>
+                              <p><strong>Color:</strong> {{ car.color }}</p>
+                              <p><strong>Car Status:</strong> {{ car.status }}</p>
                               <p><strong>Engine CC:</strong> {{ car.car_cc }}</p>
                             </div>
                           </div>
@@ -400,25 +400,7 @@
             </div>
           </div>
   
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      // ... existing code ...
-  
-      // Toggle More Information
-      const moreInfoBtn = document.getElementById('moreInfoBtn');
-      const additionalInfo = document.getElementById('additionalInfo');
-      
-      moreInfoBtn.addEventListener('click', function() {
-        if (additionalInfo.style.display === 'none') {
-          additionalInfo.style.display = 'block';
-          moreInfoBtn.textContent = 'Less Information';
-        } else {
-          additionalInfo.style.display = 'none';
-          moreInfoBtn.textContent = 'More Information';
-        }
-      });
-    });
-  </script>
+ 
       </div>
     </div>
   </div>
@@ -467,5 +449,209 @@
         });
       });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Toggle Sidebar
+    document.getElementById('sidebarCollapse').addEventListener('click', function () {
+        document.getElementById('sidebar').classList.toggle('active');
+    });
+
+    // Toggle More Information
+    const moreInfoBtn = document.getElementById('moreInfoBtn');
+    const additionalInfo = document.getElementById('additionalInfo');
+    
+    if (moreInfoBtn && additionalInfo) {
+        moreInfoBtn.addEventListener('click', function() {
+            console.log('More Info button clicked');
+            if (additionalInfo.style.display === 'none' || additionalInfo.style.display === '') {
+                additionalInfo.style.display = 'block';
+                moreInfoBtn.textContent = 'Less Information';
+            } else {
+                additionalInfo.style.display = 'none';
+                moreInfoBtn.textContent = 'More Information';
+            }
+        });
+    }
+
+    // Handle delete/republish button clicks
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const carId = this.getAttribute('data-car-id');
+            const action = this.textContent.trim();
+
+            fetch(`/toggle_car_status/${carId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ action: action }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    console.error('Failed to update car status');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    });
+});
+
+// Define showUserDetails in the global scope
+window.showUserDetails = function(carId) {
+    console.log('showUserDetails called with carId:', carId);
+    fetch(`/get_user_details/${carId}/`)
+        .then(response => {
+            console.log('Response received:', response);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Data received:', data);
+            if (data.success) {
+                Swal.fire({
+                    title: 'User Details',
+                    html: `
+                        <p><strong>Name:</strong> ${data.user.name}</p>
+                        <p><strong>Username:</strong> ${data.user.username}</p>
+                        <p><strong>Email:</strong> ${data.user.email}</p>
+                        <p><strong>Phone:</strong> ${data.user.phone_number}</p>
+                    `,
+                    icon: 'info',
+                    confirmButtonText: 'Close'
+                });
+            } else {
+                Swal.fire('Error', 'Failed to fetch user details', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire('Error', 'An error occurred while fetching user details', 'error');
+        });
+};
+
+window.cancelCar = function(carId) {
+    Swal.fire({
+        title: 'Cancel Car Listing',
+        input: 'textarea',
+        inputLabel: 'Reason for cancellation',
+        inputPlaceholder: 'Enter the reason here...',
+        inputAttributes: {
+            'aria-label': 'Reason for cancellation'
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Submit',
+        cancelButtonText: 'Close',
+        preConfirm: (reason) => {
+            if (!reason) {
+                Swal.showValidationMessage('Please enter a reason for cancellation')
+            }
+            return reason
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/cancel_car_listing/${carId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ reason: result.value })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Cancelled',
+                        text: 'The car listing has been cancelled successfully.',
+                        icon: 'success'
+                    }).then(() => {
+                        window.location.href = '{% url "salereq_dsply" %}';
+                    });
+                } else {
+                    Swal.fire('Error', 'Failed to cancel the car listing.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire('Error', 'An error occurred while cancelling the car listing.', 'error');
+            });
+        }
+    });
+};
+
+window.approveCar = function(carId) {
+    Swal.fire({
+        title: 'Approve Car Listing',
+        html: `
+            <textarea id="remarks" class="swal2-textarea" placeholder="Enter remarks here..." rows="4"></textarea>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Submit',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#dc3545',
+        allowOutsideClick: false,
+        didOpen: () => {
+            const confirmButton = Swal.getConfirmButton();
+            confirmButton.disabled = true;
+            
+            const remarksTextarea = Swal.getPopup().querySelector('#remarks');
+            remarksTextarea.addEventListener('input', () => {
+                confirmButton.disabled = remarksTextarea.value.trim().length === 0;
+            });
+        },
+        preConfirm: () => {
+            const remarks = Swal.getPopup().querySelector('#remarks').value;
+            if (!remarks) {
+                Swal.showValidationMessage('Please enter remarks');
+            }
+            return remarks;
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/approve_car_listing/${carId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ remarks: result.value })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Approved',
+                        text: 'The car listing has been approved successfully. An email has been sent to the user with the approval details.',
+                        icon: 'success'
+                    }).then(() => {
+                        window.location.href = '{% url "salereq_dsply" %}';
+                    });
+                } else {
+                    Swal.fire('Error', `Failed to approve the car listing: ${data.error || 'Unknown error'}`, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire('Error', `An error occurred while approving the car listing: ${error.message}`, 'error');
+            });
+        }
+    });
+};
+</script>
   </body>
 </html>

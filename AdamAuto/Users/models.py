@@ -140,3 +140,40 @@ class SellCarImage(models.Model):
 
     def __str__(self):
         return f"Image for {self.sell_car}"
+    
+    from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.conf import settings
+
+class Feedback(models.Model):
+    RECOMMENDATION_CHOICES = [
+        (1, 'Yes'),
+        (0, 'No'),
+        
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)        
+    car = models.ForeignKey(UserCarDetails, on_delete=models.CASCADE, related_name='feedbacks', null=True, blank=True)
+    manufacturer_name = models.CharField(max_length=100)
+    model_name = models.CharField(max_length=100)
+    year = models.IntegerField(validators=[MinValueValidator(2011), MaxValueValidator(2024)])
+    would_recommend = models.CharField(max_length=5, choices=RECOMMENDATION_CHOICES, null=True)
+    
+    # Rating fields
+    comfort_rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
+    performance_rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
+    fuel_efficiency_rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
+    safety_rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
+    technology_rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.manufacturer_name} {self.model_name} ({self.year}) - Feedback by {self.user.username}"
+
+    class Meta:
+        verbose_name = "Feedback"
+        verbose_name_plural = "Feedbacks"
+
+

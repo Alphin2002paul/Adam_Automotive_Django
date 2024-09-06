@@ -1147,17 +1147,24 @@ def check_registration_number(request):
 
 from django.shortcuts import render
 from django.core.paginator import Paginator
-from .models import SellCar, SellCarImage
+from .models import SellCar, CarImage
+
+from django.shortcuts import render
+from django.core.paginator import Paginator
+from .models import SellCar, CarImage
 
 def salereq_dsply(request):
-    all_sell_cars = SellCar.objects.filter(status='Pending').order_by('-id')
-    paginator = Paginator(all_sell_cars, 3)  # Show 3 cars per page
+    # Filter cars with 'pending' status
+    pending_cars = SellCar.objects.filter(status='pending').order_by('-created_at')
+    
+    # Add images to each car
+    for car in pending_cars:
+        car.image_list = CarImage.objects.filter(car=car.id)
+    
+    # Pagination
+    paginator = Paginator(pending_cars, 3)  # Show 9 cars per page
     page_number = request.GET.get('page')
     sell_cars = paginator.get_page(page_number)
-    
-    # Fetch images for each car
-    for car in sell_cars:
-        car.image_list = SellCarImage.objects.filter(sell_car=car)
     
     context = {
         'sell_cars': sell_cars,
@@ -1198,3 +1205,248 @@ def salemore_dtl(request, car_id):
         'car_details': car_details,
     }
     return render(request, 'salemore_dtl.html', context)
+
+
+
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from .models import SellCar
+
+def get_user_details(request, car_id):
+    sell_car = get_object_or_404(SellCar, id=car_id)
+    user = sell_car.user
+    
+    user_data = {
+        'name': f"{user.first_name} {user.last_name}",
+        'username': user.username,
+        'email': user.email,
+        'phone_number': user.Phone_number,
+    }
+    
+    return JsonResponse({'success': True, 'user': user_data})
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.shortcuts import get_object_or_404
+from .models import SellCar
+import json
+
+@require_POST
+def cancel_car_listing(request, car_id):
+    try:
+        data = json.loads(request.body)
+        reason = data.get('reason')
+        
+        car = get_object_or_404(SellCar, id=car_id)
+        car.car_status = "Denied"
+        car.denial_reason = reason
+        car.save()
+        
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+    
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.shortcuts import get_object_or_404
+from django.core.mail import send_mail
+from django.conf import settings
+from .models import SellCar
+import json
+
+@require_POST
+def cancel_car_listing(request, car_id):
+    try:
+        data = json.loads(request.body)
+        reason = data.get('reason')
+        
+        car = get_object_or_404(SellCar, id=car_id)
+        car.status = "Denied"
+        car.denial_reason = reason
+        car.save()
+        
+        # Send email to the user
+        subject = f"Your car listing for {car.manufacturer} {car.model} has been cancelled"
+        message = f"""
+        Dear {car.user.first_name},
+
+        We regret to inform you that your car listing for {car.manufacturer} {car.model} has been cancelled.
+
+        Reason for cancellation: {reason}
+
+        If you have any questions, please don't hesitate to contact us.
+
+        Best regards,
+        Adam Automotive Team
+        """
+        from_email = settings.EMAIL_HOST_USER
+        recipient_list = [car.user.email]
+        
+        send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+        
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+    
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+from django.core.mail import send_mail
+from django.conf import settings
+from .models import SellCar
+import json
+
+@require_POST
+@csrf_exempt
+def approve_car_listing(request, car_id):
+    try:
+        data = json.loads(request.body)
+        remarks = data.get('remarks')
+        
+        car = SellCar.objects.get(id=car_id)
+        car.status = 'Approved'
+        car.admin_remarks = remarks
+        car.save()
+        
+        # Send email to the user
+        subject = 'Your Car Listing Has Been Approved'
+        message = f"""
+        Dear {car.user.first_name},
+
+        Your request to sell your {car.manufacturer} {car.model} has been approved.
+
+        Admin remarks: {remarks}
+
+        Thank you for choosing Adam Automotive.
+
+        Best regards,
+        Adam Automotive Team
+        """
+        from_email = settings.DEFAULT_FROM_EMAIL
+        recipient_list = [car.user.email]
+        
+        send_mail(subject, message, from_email, recipient_list)
+        
+        return JsonResponse({'success': True})
+    except SellCar.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Car not found'}, status=404)
+    except Exception as e:
+        print(f"Error in approve_car_listing: {str(e)}")  # Log the error
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
+
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.conf import settings
+from .models import Feedback
+import os
+import csv
+
+def feedback_dtl(request):
+    if request.method == 'POST':
+        # Get form data
+        manufacturer_name = request.POST.get('manufacturer_name')
+        model_name = request.POST.get('model_name')
+        year = request.POST.get('year')
+        would_recommend = 1 if request.POST.get('would_recommend') == 'yes' else 0
+        
+        # Get ratings
+        ratings = {}
+        for rating in ['comfort', 'performance', 'fuel_efficiency', 'safety', 'technology']:
+            ratings[rating] = request.POST.get(f'{rating}_rating')
+
+        # Save to database
+        feedback = Feedback(
+            user=request.user,
+            manufacturer_name=manufacturer_name,
+            model_name=model_name,
+            year=year,
+            would_recommend=would_recommend,
+            comfort_rating=ratings['comfort'],
+            performance_rating=ratings['performance'],
+            fuel_efficiency_rating=ratings['fuel_efficiency'],
+            safety_rating=ratings['safety'],
+            technology_rating=ratings['technology']
+        )
+        feedback.save()
+
+        # Prepare data for CSV
+        csv_data = [manufacturer_name, model_name, year, would_recommend] + list(ratings.values())
+
+        # Save to CSV
+        csv_file_path = os.path.join(settings.BASE_DIR, 'car_reviews.csv')
+        file_exists = os.path.isfile(csv_file_path)
+
+        with open(csv_file_path, 'a', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            if not file_exists:
+                writer.writerow(['manufacturer', 'model', 'year', 'would_recommend', 'comfort', 'performance', 'fuel_efficiency', 'safety', 'technology'])
+            writer.writerow(csv_data)
+
+        messages.success(request, 'Feedback submitted successfully!')
+        return redirect('feedback_dtl')
+
+    rating_list = ['comfort', 'performance', 'fuel_efficiency', 'safety', 'technology']
+    return render(request, 'feedback_dtl.html', {'rating_list': rating_list})
+
+
+
+from django.db.models import Avg
+from django.http import JsonResponse
+from .models import UserCarDetails, Feedback
+from .ml import make_prediction
+import traceback
+
+def get_predictions(request, car_id):
+    try:
+        car = UserCarDetails.objects.get(id=car_id)
+        
+        # Get average ratings from feedback data
+        feedback_data = car.feedbacks.all()
+        
+        # Add debugging information
+        print(f"Number of feedbacks for car {car_id}: {feedback_data.count()}")
+        
+        avg_comfort = feedback_data.aggregate(Avg('comfort_rating'))['comfort_rating__avg'] or 5
+        avg_performance = feedback_data.aggregate(Avg('performance_rating'))['performance_rating__avg'] or 5
+        avg_fuel_efficiency = feedback_data.aggregate(Avg('fuel_efficiency_rating'))['fuel_efficiency_rating__avg'] or 5
+        avg_safety = feedback_data.aggregate(Avg('safety_rating'))['safety_rating__avg'] or 5
+        avg_technology = feedback_data.aggregate(Avg('technology_rating'))['technology_rating__avg'] or 5
+
+        # Add more debugging information
+        print(f"Average ratings: Comfort: {avg_comfort}, Performance: {avg_performance}, Fuel Efficiency: {avg_fuel_efficiency}, Safety: {avg_safety}, Technology: {avg_technology}")
+
+        prediction, probability = make_prediction(
+            str(car.manufacturer.company_name),
+            str(car.model_name.model_name),
+            int(car.year),
+            float(avg_comfort),
+            float(avg_performance),
+            float(avg_fuel_efficiency),
+            float(avg_safety),
+            float(avg_technology)
+        )
+
+        predictions_html = f"""
+        <h4>{car.manufacturer.company_name} {car.model_name.model_name} ({car.year})</h4>
+        <p><strong>Prediction:</strong> {'Recommended' if prediction == 1 else 'Not Recommended'}</p>
+        <p><strong>Confidence:</strong> {probability * 100:.2f}%</p>
+        <hr>
+        <h5>Average Ratings:</h5>
+        <ul>
+            <li>Comfort: {avg_comfort:.1f}/10</li>
+            <li>Performance: {avg_performance:.1f}/10</li>
+            <li>Fuel Efficiency: {avg_fuel_efficiency:.1f}/10</li>
+            <li>Safety: {avg_safety:.1f}/10</li>
+            <li>Technology: {avg_technology:.1f}/10</li>
+        </ul>
+        """
+
+        return JsonResponse({'predictions_html': predictions_html})
+    except UserCarDetails.DoesNotExist:
+        return JsonResponse({'error': 'Car not found'}, status=404)
+    except Exception as e:
+        print(f"Error in get_predictions: {str(e)}")
+        print(traceback.format_exc())
+        return JsonResponse({'error': 'An error occurred while processing the request'}, status=500)

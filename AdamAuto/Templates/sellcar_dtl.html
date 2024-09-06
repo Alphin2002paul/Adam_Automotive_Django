@@ -103,110 +103,166 @@
         <div class="container mt-5">
           <form id="sellCarForm" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            <div class="form-group">
-              <label for="manufacturer">Manufacturer Name</label>
-              <input type="text" class="form-control" id="manufacturer" name="manufacturer" required />
-              <span class="error-message" id="manufacturerError"></span>
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="manufacturer">Manufacturer Name</label>
+                  <input type="text" class="form-control" id="manufacturer" name="manufacturer" required />
+                  <span class="error-message" id="manufacturerError"></span>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="model">Model Name</label>
+                  <input type="text" class="form-control" id="model" name="model" required />
+                  <span class="error-message" id="modelError"></span>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="year">Year</label>
+                  <input type="number" class="form-control" id="year" name="year" min="1886" max="{{ current_year }}" required />
+                  <span class="error-message" id="yearError"></span>
+                </div>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="model">Model Name</label>
-              <input type="text" class="form-control" id="model" name="model" required />
-              <span class="error-message" id="modelError"></span>
+    
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="price">Price</label>
+                  <input type="number" class="form-control" id="price" name="price" required />
+                  <span class="error-message" id="priceError"></span>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="color">Color</label>
+                  <input type="text" class="form-control" id="color" name="color" required />
+                  <span class="error-message" id="colorError"></span>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="fuel_type">Fuel Type</label>
+                  <select class="form-control" id="fuel_type" name="fuel_type" required>
+                    <option value="" disabled selected>Select Fuel Type</option>
+                    <option value="Petrol">Petrol</option>
+                    <option value="Diesel">Diesel</option>
+                    <option value="Electric">Electric</option>
+                  </select>
+                  <span class="error-message" id="fuelTypeError"></span>
+                </div>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="year">Year</label>
-              <input type="number" class="form-control" id="year" name="year" min="1886" max="{{ current_year }}" required />
-              <span class="error-message" id="yearError"></span>
+    
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="kilometers">Kilometers</label>
+                  <input type="number" class="form-control" id="kilometers" name="kilometers" required />
+                  <span class="error-message" id="kilometersError"></span>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="transmission">Transmission</label>
+                  <select class="form-control" id="transmission" name="transmission" required>
+                    <option value="" disabled selected>Select Transmission Type</option>
+                    <option value="Manual">Manual</option>
+                    <option value="Automatic">Automatic</option>
+                  </select>
+                  <span class="error-message" id="transmissionError"></span>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="condition">Condition</label>
+                  <textarea class="form-control" id="condition" name="condition" rows="3" required></textarea>
+                  <span class="error-message" id="conditionError"></span>
+                </div>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="price">Price</label>
-              <input type="number" class="form-control" id="price" name="price" required />
-              <span class="error-message" id="priceError"></span>
+    
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="reg_number">Registration Number</label>
+                  <input type="text" class="form-control" id="reg_number" placeholder="AA-00-A-0000" name="reg_number" required />
+                  <span class="error-message" id="regNumberError"></span>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="insurance_validity">Insurance Validity</label>
+                  <input type="date" class="form-control" id="insurance_validity" name="insurance_validity" required />
+                  <span class="error-message" id="insuranceValidityError"></span>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="pollution_validity">Pollution Validity</label>
+                  <input type="date" class="form-control" id="pollution_validity" name="pollution_validity" required />
+                  <span class="error-message" id="pollutionValidityError"></span>
+                </div>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="color">Color</label>
-              <input type="text" class="form-control" id="color" name="color" required />
-              <span class="error-message" id="colorError"></span>
+    
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="tax_validity">Tax Validity</label>
+                  <input type="date" class="form-control" id="tax_validity" name="tax_validity" required />
+                  <span class="error-message" id="taxValidityError"></span>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="car_type">Car Type</label>
+                  <select class="form-control" id="car_type" name="car_type" required>
+                    <option value="" disabled selected>Select Car Type</option>
+                    <option value="SUV">SUV</option>
+                    <option value="MPV">MPV</option>
+                    <option value="Sedan">Sedan</option>
+                    <option value="Hatchback">Hatchback</option>
+                    <option value="Compact SUV">Compact SUV</option>
+                    <option value="Coupe">Coupe</option>
+                  </select>
+                  <span class="error-message" id="carTypeError"></span>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="owner_status">Owner Status</label>
+                  <input type="number" class="form-control" id="owner_status" name="owner_status" min="1" max="9" required />
+                  <span class="error-message" id="ownerStatusError"></span>
+                </div>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="fuel_type">Fuel Type</label>
-              <select class="form-control" id="fuel_type" name="fuel_type" required>
-                <option value="" disabled selected>Select Fuel Type</option>
-                <option value="Petrol">Petrol</option>
-                <option value="Diesel">Diesel</option>
-                <option value="Electric">Electric</option>
-              </select>
-              <span class="error-message" id="fuelTypeError"></span>
+    
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="car_cc">Car CC</label>
+                  <input type="number" class="form-control" id="car_cc" name="car_cc" required />
+                  <span class="error-message" id="carCCError"></span>
+                </div>
+              </div>
+              <div class="col-md-8">
+                <div class="form-group">
+                  <label for="images">Upload Images (Up to 5)</label>
+                  <input type="file" class="form-control" id="images" name="images" accept=".jpg,.jpeg,.png" multiple required />
+                  <small class="form-text text-muted">You can select up to 5 images.</small>
+                  <span class="error-message" id="imagesError"></span>
+                </div>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="kilometers">Kilometers</label>
-              <input type="number" class="form-control" id="kilometers" name="kilometers" required />
-              <span class="error-message" id="kilometersError"></span>
+    
+            <div class="row">
+              <div class="col-md-12">
+                <button type="submit" class="btn btn-primary">Submit</button>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="transmission">Transmission</label>
-              <select class="form-control" id="transmission" name="transmission" required>
-                <option value="" disabled selected>Select Transmission Type</option>
-                <option value="Manual">Manual</option>
-                <option value="Automatic">Automatic</option>
-              </select>
-              <span class="error-message" id="transmissionError"></span>
-            </div>
-            <div class="form-group">
-              <label for="condition">Condition</label>
-              <textarea class="form-control" id="condition" name="condition" rows="3" required></textarea>
-              <span class="error-message" id="conditionError"></span>
-            </div>
-            <div class="form-group">
-              <label for="reg_number">Registration Number</label>
-              <input type="text" class="form-control" id="reg_number" placeholder="AA-00-A-0000" name="reg_number" required />
-              <span class="error-message" id="regNumberError"></span>
-            </div>
-            <div class="form-group">
-              <label for="insurance_validity">Insurance Validity</label>
-              <input type="date" class="form-control" id="insurance_validity" name="insurance_validity" required />
-              <span class="error-message" id="insuranceValidityError"></span>
-            </div>
-            <div class="form-group">
-              <label for="pollution_validity">Pollution Validity</label>
-              <input type="date" class="form-control" id="pollution_validity" name="pollution_validity" required />
-              <span class="error-message" id="pollutionValidityError"></span>
-            </div>
-            <div class="form-group">
-              <label for="tax_validity">Tax Validity</label>
-              <input type="date" class="form-control" id="tax_validity" name="tax_validity" required />
-              <span class="error-message" id="taxValidityError"></span>
-            </div>
-            <div class="form-group">
-              <label for="car_type">Car Type</label>
-              <select class="form-control" id="car_type" name="car_type" required>
-                <option value="" disabled selected>Select Car Type</option>
-                <option value="SUV">SUV</option>
-                <option value="MPV">MPV</option>
-                <option value="Sedan">Sedan</option>
-                <option value="Hatchback">Hatchback</option>
-                <option value="Compact SUV">Compact SUV</option>
-                <option value="Coupe">Coupe</option>
-              </select>
-              <span class="error-message" id="carTypeError"></span>
-            </div>
-            <div class="form-group">
-              <label for="owner_status">Owner Status</label>
-              <input type="number" class="form-control" id="owner_status" name="owner_status" min="1" max="9" required />
-              <span class="error-message" id="ownerStatusError"></span>
-            </div>
-            <div class="form-group">
-              <label for="car_cc">Car CC</label>
-              <input type="number" class="form-control" id="car_cc" name="car_cc" required />
-              <span class="error-message" id="carCCError"></span>
-            </div>
-            <div class="form-group">
-              <label for="images">Upload Images (Up to 5)</label>
-              <input type="file" class="form-control" id="images" name="images" accept=".jpg,.jpeg,.png" multiple required />
-              <small class="form-text text-muted">You can select up to 5 images.</small>
-              <span class="error-message" id="imagesError"></span>
-            </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
           </form>
         </div>
       </div>
