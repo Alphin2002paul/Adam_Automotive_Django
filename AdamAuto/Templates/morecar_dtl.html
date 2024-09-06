@@ -80,6 +80,11 @@
       .ftco-section + .ftco-section {
         padding-top: 0;
       }
+      a:hover, a:focus {
+        text-decoration: none;
+        color: #020202;
+        outline: none !important;
+    }
     </style>
   </head>
 
@@ -138,7 +143,7 @@
     <section class="ftco-section bg-light">
         <div class="container">
           <h2>More&nbsp;<span style="color: #d39e00;">Details</span></h2>
-          <hr />
+          <hr/>
           <div class="container mt-5">
             <div class="row">
               <div class="col-md-6" id="carImageSection">
@@ -168,9 +173,9 @@
                   </a>
                 </div>
                 <div class="mt-3 d-flex justify-content-between">
-                  <a href="#" class="btn btn-primary py-2 px-4 w-49">Book A Test Drive</a>
-                  <a href="#" class="btn custom-btn py-2 px-4 w-49">Purchase The Car</a>
-                  <button id="predictionsBtn" class="btn custom-btn py-2 px-4 w-49">Predictions</button>
+                  <a href="#" class="btn btn-primary py-2 px-4 w-49" id="bookTestDriveBtn">Book A Test Drive</a>
+                  <a href="#" class="btn custom-btn py-2 px-4 w-49" id="purchaseCarBtn">Purchase The Car</a>
+                  <button id="predictionsBtn" class="btn btn-secondary py-2 px-4 w-49">Predictions</button>
                 </div>
               </div>
               <div class="col-md-6">
@@ -376,5 +381,243 @@
       });
     });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+    $('.custom-btn').click(function(e) {
+      e.preventDefault();
+      
+      Swal.fire({
+        title: 'Choose Delivery Option',
+        html: `
+          <select id="deliveryOption" class="swal2-select">
+            <option value="showroom">Showroom Delivery</option>
+            <option value="home">Home Delivery</option>
+          </select>
+          <div id="homeDeliveryForm" style="display:none; margin-top: 15px;">
+            <input type="text" id="street" class="swal2-input" placeholder="Street Address">
+            <div id="streetError" class="error-message"></div>
+            <input type="text" id="city" class="swal2-input" placeholder="City">
+            <div id="cityError" class="error-message"></div>
+            <input type="text" id="state" class="swal2-input" placeholder="State">
+            <div id="stateError" class="error-message"></div>
+            <input type="number" id="pincode" class="swal2-input" placeholder="Pincode">
+            <div id="pincodeError" class="error-message"></div>
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Proceed to Payment',
+        cancelButtonText: 'Cancel',
+        didOpen: () => {
+          $('#deliveryOption').change(function() {
+            if ($(this).val() === 'home') {
+              $('#homeDeliveryForm').show();
+            } else {
+              $('#homeDeliveryForm').hide();
+            }
+          });
+  
+          // Add input event listeners for validation
+          $('#street, #city, #state').on('input', function() {
+            validateField($(this).attr('id'), $(this).val());
+          });
+  
+          $('#pincode').on('input', function() {
+            validatePincode($(this).val());
+          });
+        },
+        preConfirm: () => {
+          if ($('#deliveryOption').val() === 'home') {
+            let isValid = true;
+            ['street', 'city', 'state'].forEach(field => {
+              if (!validateField(field, $(`#${field}`).val())) {
+                isValid = false;
+              }
+            });
+            if (!validatePincode($('#pincode').val())) {
+              isValid = false;
+            }
+            return isValid;
+          }
+          return true;
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Collect form data
+          let formData = {
+            deliveryOption: $('#deliveryOption').val(),
+            street: $('#street').val(),
+            city: $('#city').val(),
+            state: $('#state').val(),
+            pincode: $('#pincode').val()
+          };
+  
+          // Send AJAX request
+          $.ajax({
+            url: '{% url 'process_payment' %}',  // Replace with your actual URL
+            type: 'POST',
+            data: formData,
+            headers: {
+              'X-CSRFToken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+              Swal.fire('Success', 'Payment processed successfully!', 'success');
+            },
+            error: function() {
+              Swal.fire('Error', 'There was an error processing your payment.', 'error');
+            }
+          });
+        }
+      });
+    });
+  
+    function validateField(fieldId, value) {
+      const minLength = 3;
+      const regex = /^[a-zA-Z0-9\s]+$/;
+      const errorElement = $(`#${fieldId}Error`);
+  
+      if (value.length < minLength) {
+        errorElement.text(`Minimum ${minLength} characters required`);
+        return false;
+      } else if (!regex.test(value)) {
+        errorElement.text('Special characters are not allowed');
+        return false;
+      } else {
+        errorElement.text('');
+        return true;
+      }
+    }
+  
+    function validatePincode(value) {
+      const regex = /^[0-9]{1,6}$/;
+      const errorElement = $('#pincodeError');
+  
+      if (!regex.test(value)) {
+        errorElement.text('Pincode must be up to 6 digits only');
+        return false;
+      } else {
+        errorElement.text('');
+        return true;
+      }
+    }
+  });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    document.getElementById('termsAndConditions').addEventListener('click', function (e) {
+      e.preventDefault()
+      Swal.fire({
+        title: 'Terms and Conditions of Adam Automotive',
+        html: `
+            <p>1. All sales are final.</p>
+            <p>2. No Vehilces Which Has Any Kind Of Accidents And Flood Are Sold.</p>
+            <p>3. Adam Automotive reserves the right to refuse service to anyone.</p>
+            <p>4. Test drives are subject to approval and require a valid driver's license.</p>
+            <p>5. Prices are subject to change without notice.</p>
+          `,
+        confirmButtonText: 'Okay',
+        confirmButtonColor: '#d39e00'
+      })
+    })
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    $(document).ready(function() {
+      $('#bookTestDriveBtn').click(function(e) {
+        e.preventDefault();
+        
+        const today = new Date();
+        const maxDate = new Date(today);
+        maxDate.setDate(maxDate.getDate() + 10);
+        
+        const formatDate = (date) => {
+          const d = new Date(date);
+          let month = '' + (d.getMonth() + 1);
+          let day = '' + d.getDate();
+          const year = d.getFullYear();
+          if (month.length < 2) month = '0' + month;
+          if (day.length < 2) day = '0' + day;
+          return [year, month, day].join('-');
+        };
+    
+        Swal.fire({
+          title: 'Book a Test Drive',
+          html: `
+            <input type="date" id="testDriveDate" class="swal2-input" min="${formatDate(today.setDate(today.getDate() + 1))}" max="${formatDate(maxDate)}">
+            <select id="testDriveTime" class="swal2-select">
+              <option value="">Select a time slot</option>
+            </select>
+          `,
+          showCancelButton: true,
+          confirmButtonText: 'Book Test Drive',
+          cancelButtonText: 'Cancel',
+          didOpen: () => {
+            $('#testDriveDate').change(function() {
+              const selectedDate = $(this).val();
+              if (selectedDate) {
+                $.ajax({
+                  url: '{% url 'get_available_slots' %}',
+                  data: {
+                    car_id: '{{ car.id }}',
+                    date: selectedDate
+                  },
+                  success: function(response) {
+                    const timeSelect = $('#testDriveTime');
+                    timeSelect.empty();
+                    timeSelect.append('<option value="">Select a time slot</option>');
+                    response.available_slots.forEach(slot => {
+                      timeSelect.append(`<option value="${slot}">${slot}</option>`);
+                    });
+                  },
+                  error: function(xhr) {
+                    console.error('Error fetching available slots:', xhr);
+                  }
+                });
+              }
+            });
+          },
+          preConfirm: () => {
+            const date = document.getElementById('testDriveDate').value;
+            const time = document.getElementById('testDriveTime').value;
+            if (!date || !time) {
+              Swal.showValidationMessage('Please select both date and time');
+            }
+            return { date, time };
+          }
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Send booking data to the server
+            $.ajax({
+              url: '{% url 'book_test_drive' %}',
+              type: 'POST',
+              data: {
+                car_id: '{{ car.id }}',
+                date: result.value.date,
+                time: result.value.time,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+              },
+              success: function(response) {
+                Swal.fire('Booked!', response.message, 'success');
+              },
+              error: function(xhr) {
+                Swal.fire('Error', xhr.responseJSON.message, 'error');
+              }
+            });
+          }
+        });
+      });
+    });
+    </script>
+  <style>
+  .error-message {
+    color: red;
+    font-size: 12px;
+    margin-top: 5px;
+  }
+  </style>
+  
+
   </body>
 </html>

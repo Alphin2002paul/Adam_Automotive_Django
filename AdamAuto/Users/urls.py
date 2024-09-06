@@ -58,13 +58,20 @@ urlpatterns = [
     path('check-registration-number/', views.check_registration_number, name='check_registration_number'),
     path('salereq_dsply/', views.salereq_dsply, name='salereq_dsply'),
     path('salemore_dtl/<int:car_id>/', views.salemore_dtl, name='salemore_dtl'),
-    path('get_user_details/<int:car_id>/', views.get_user_details, name='get_user_details'),
+    path('get_user_details/<int:user_id>/', views.get_user_details, name='get_user_details'),
     path('cancel_car_listing/<int:car_id>/', views.cancel_car_listing, name='cancel_car_listing'),
     path('approve_car_listing/<int:car_id>/', views.approve_car_listing, name='approve_car_listing'),
     path('feedback_dtl/', views.feedback_dtl, name='feedback_dtl'),
     # path('predict_recommendation/', views.predict_recommendation, name='predict_recommendation'),
     # path('prediction_result/', views.prediction_result, name='prediction_result'),
     path('get_predictions/<int:car_id>/', views.get_predictions, name='get_predictions'),
+    path('process_payment/', views.process_payment, name='process_payment'),
+    path('book-test-drive/', views.book_test_drive, name='book_test_drive'),
+    path('get-available-slots/', views.get_available_slots, name='get_available_slots'),
+    path('admintestdrive/', views.admintestdrive, name='admintestdrive'),
+    path('get-test-drive-user-details/<int:user_id>/', views.get_test_drive_user_details, name='get_test_drive_user_details'),
+
+
 
 
     

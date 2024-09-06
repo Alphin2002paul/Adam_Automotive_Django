@@ -156,7 +156,7 @@
 
           </li>
           <li>
-            <a href="#"><i class="fas fa-phone"></i> Call Back</a>
+            <a href="{% url 'admintestdrive' %}"><i class="fas fa-phone"></i> Slot Request</a>
           </li>
           <li>
             <a href="{% url 'salereq_dsply' %}"><i class="fas fa-dollar-sign"></i> Sale Request</a>
@@ -212,8 +212,7 @@
             <div class="col-md-12 mb-4">
               <div class="card">
                 <div class="card-header">
-                  <h5 class="card-title mb-0">Service Details</h5>
-                </div>
+                  <h2>Service <span style="color: #d39e00;">Requests</span></h2>                </div>
                 <div class="card-body">
                   <table id="myTable" class="display">
                     <thead>
@@ -237,8 +236,7 @@
                                     <button class="btn btn-info" onclick="showMoreDetails({{ service.id }})">More</button> <!-- More details button -->
                                 </td>
                                 <td>
-                                    <button class="btn btn-info" onclick="showUserDetails({{ service.user.id }})">More</button> <!-- User details button -->
-                                </td>
+                                  <button class="btn btn-info" onclick="showUserDetails({{ service.user.id }})">More</button>                                </td>
                                 <td>{{ service.status }}</td> <!-- Display status -->
                                 <td>
                                     <button class="btn btn-success" onclick="approveService({{ service.id }}, '{{ service.service_date }}')">Approve</button> <!-- Approve button -->
@@ -336,27 +334,69 @@
             }
         });
     }
-    function showUserDetails(user_id) {
-      fetch(`/user-details/${user_id}/`)
-          .then(response => response.json())
-          .then(data => {
-              Swal.fire({
-                  title: 'User Details',
-                  html: `
-                      <strong>Name:</strong> ${data.name}<br>
-                      <strong>Username:</strong> ${data.username}<br>
-                      <strong>Email:</strong> ${data.email}<br>
-                      <strong>Phone Number:</strong> ${data.phone_number}
-                  `,
-                  icon: 'info',
-                  confirmButtonText: 'Okay'
-              });
-          })
-          .catch(error => {
-              console.error('Error fetching user details:', error);
-          });
-  }
     </script>
+    
+
+<script>
+  function showUserDetails(user_id) {
+    console.log('showUserDetails called with user_id:', user_id);
+    fetch(`/get_user_details/${user_id}/`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => {
+        console.log('Response received:', response);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Data received:', data);
+        // Combine first name and last name for full name
+        const fullName = [data.first_name, data.last_name].filter(Boolean).join(' ') || 'N/A';
+        Swal.fire({
+            title: 'User Details',
+            html: `
+                <strong>Name:</strong> ${fullName}<br>
+                <strong>Username:</strong> ${data.username || 'N/A'}<br>
+                <strong>Email:</strong> ${data.email || 'N/A'}<br>
+                <strong>Phone Number:</strong> ${data.phone_number || 'N/A'}
+            `,
+            icon: 'info',
+            confirmButtonText: 'Okay'
+        });
+    })
+    .catch(error => {
+        console.error('Error fetching user details:', error);
+        Swal.fire('Error', 'Failed to fetch user details', 'error');
+    });
+}
+
+// ... rest of the code remains the same
+// ... existing code ...
+
+// Function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+
     <script>
       // ... existing code ...
 function approveService(serviceId, suggestedDate) {
@@ -424,7 +464,7 @@ function approveService(serviceId, suggestedDate) {
       }
   });
 }
-// ... existing code ...
+
   
       function getCookie(name) {
           let cookieValue = null;

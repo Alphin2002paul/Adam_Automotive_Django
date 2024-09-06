@@ -977,23 +977,20 @@ def get_service_details(request, service_id):
     }
     return JsonResponse(data)
 
-from django.http import JsonResponse
-
-@login_required
 def get_user_details(request, user_id):
-    user = get_object_or_404(User, id=user_id)
-    user_details = {
-        'name': f"{user.first_name} {user.last_name}",
-        'username': user.username,
-        'email': user.email,
-        'phone_number': user.Phone_number,
-    }
-    return JsonResponse(user_details)
-
-# views.py
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from .models import Service
+    User = get_user_model()
+    try:
+        user = User.objects.get(id=user_id)
+        data = {
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'username': user.username,
+            'email': user.email,
+            'phone_number': user.Phone_number,  # Changed from phone_number to Phone_number
+        }
+        return JsonResponse(data)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=404)
 
 # views.py
 from django.core.mail import send_mail
@@ -1208,22 +1205,12 @@ def salemore_dtl(request, car_id):
 
 
 
-from django.http import JsonResponse
+from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from .models import SellCar
+from django.http import JsonResponse
 
-def get_user_details(request, car_id):
-    sell_car = get_object_or_404(SellCar, id=car_id)
-    user = sell_car.user
-    
-    user_data = {
-        'name': f"{user.first_name} {user.last_name}",
-        'username': user.username,
-        'email': user.email,
-        'phone_number': user.Phone_number,
-    }
-    
-    return JsonResponse({'success': True, 'user': user_data})
+User = get_user_model()
+
 
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
@@ -1450,3 +1437,106 @@ def get_predictions(request, car_id):
         print(f"Error in get_predictions: {str(e)}")
         print(traceback.format_exc())
         return JsonResponse({'error': 'An error occurred while processing the request'}, status=500)
+    
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+
+@require_POST
+def process_payment(request):
+    # Extract data from request
+    delivery_option = request.POST.get('deliveryOption')
+    street = request.POST.get('street')
+    city = request.POST.get('city')
+    state = request.POST.get('state')
+    pincode = request.POST.get('pincode')
+
+    # Process payment logic here
+    # ...
+
+    # Return success response
+    return JsonResponse({'status': 'success'})
+
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST, require_GET
+from .models import TestDriveBooking, UserCarDetails
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError
+
+@require_POST
+def book_test_drive(request):
+    car_id = request.POST.get('car_id')
+    date = request.POST.get('date')
+    time = request.POST.get('time')
+
+    try:
+        car = UserCarDetails.objects.get(id=car_id)
+        booking = TestDriveBooking(
+            user=request.user,
+            car=car,
+            date=date,
+            time=time
+        )
+        booking.save()
+        return JsonResponse({'status': 'success', 'message': 'Test drive booked successfully'})
+    except ValidationError as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    except IntegrityError:
+        return JsonResponse({'status': 'error', 'message': 'This time slot is no longer available'}, status=400)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+@require_GET
+def get_available_slots(request):
+    car_id = request.GET.get('car_id')
+    date = request.GET.get('date')
+
+    all_slots = [
+        "9:00am - 10:00am", "10:00am - 11:00am", "11:00am - 12:00pm",
+        "12:00pm - 1:00pm", "2:00pm - 3:00pm", "3:00pm - 4:00pm", "4:00pm - 5:00pm"
+    ]
+
+    booked_slots = TestDriveBooking.objects.filter(car_id=car_id, date=date).values_list('time', flat=True)
+    available_slots = [slot for slot in all_slots if slot not in booked_slots]
+
+    return JsonResponse({'available_slots': available_slots})
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .models import TestDriveBooking
+
+def admintestdrive(request):
+    testdrive_bookings = TestDriveBooking.objects.all()
+    context = {
+        'testdrive_bookings': testdrive_bookings
+    }
+    return render(request, 'admintestdrive.html', context)
+
+from django.shortcuts import render
+from .models import TestDriveBooking
+
+def admintestdrive(request):
+    testdrive_bookings = TestDriveBooking.objects.select_related(
+        'car__manufacturer', 
+        'car__model_name', 
+        'car__color', 
+        'user'
+    ).all()
+    return render(request, 'admintestdrive.html', {'testdrive_bookings': testdrive_bookings})
+
+from django.contrib.auth import get_user_model
+from django.http import JsonResponse
+def get_test_drive_user_details(request, user_id):
+    User = get_user_model()
+    try:
+        user = User.objects.get(id=user_id)
+        data = {
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'username': user.username,
+            'email': user.email,
+            'phone_number': user.Phone_number,
+        }
+        return JsonResponse(data)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=404)

@@ -175,5 +175,37 @@ class Feedback(models.Model):
     class Meta:
         verbose_name = "Feedback"
         verbose_name_plural = "Feedbacks"
+        
+
+
+from django.db import models
+from django.conf import settings
+from django.core.exceptions import ValidationError
+
+class TestDriveBooking(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    car = models.ForeignKey('UserCarDetails', on_delete=models.CASCADE)  # Use string reference if UserCarDetails is defined later
+    date = models.DateField()
+    time = models.CharField(max_length=20)
+    status = models.CharField(max_length=20, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [
+            ['car', 'date', 'time'],
+            ['user', 'car', 'date']
+        ]
+
+    def clean(self):
+        # Check if the user has already booked a test drive for this car on this date
+        if TestDriveBooking.objects.filter(user=self.user, car=self.car, date=self.date).exists():
+            raise ValidationError("You have already booked a test drive for this car on this date.")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.car.manufacturer} {self.car.model_name} - {self.date}"
 
 
