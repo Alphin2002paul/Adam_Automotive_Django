@@ -241,8 +241,15 @@
                             </td>
                             <td>{{ booking.status }}</td>
                             <td>
-                                <button class="btn btn-success approve-btn" data-booking-id="{{ booking.id }}" data-date="{{ booking.date }}">Approve</button>
-                                <button class="btn btn-danger deny-btn" data-booking-id="{{ booking.id }}" data-manufacturer="{{ booking.car.manufacturer }}" data-model="{{ booking.car.model_name }}">Deny</button>
+                              <button class="btn btn-success approve-btn" 
+                              data-booking-id="{{ booking.id }}" 
+                              data-date="{{ booking.date }}"
+                              data-time="{{ booking.time }}"
+                              data-car-manufacturer="{{ booking.car.manufacturer }}"
+                              data-car-model="{{ booking.car.model_name }}"
+                              data-user-name="{{ booking.user.first_name }}">
+                          Approve
+                      </button>                                <button class="btn btn-danger deny-btn" data-booking-id="{{ booking.id }}" data-manufacturer="{{ booking.car.manufacturer }}" data-model="{{ booking.car.model_name }}">Deny</button>
                             </td>
                         </tr>
                     {% endfor %}
@@ -351,6 +358,166 @@
               console.error('Error:', error);
               Swal.fire('Error', 'Failed to fetch user details', 'error');
           });
+  }
+
+  // ... existing code ...
+</script>
+// ... existing code ...
+
+<script>
+  // ... existing code ...
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add event listener for approve buttons
+    const approveButtons = document.querySelectorAll('.approve-btn');
+    approveButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const bookingId = this.getAttribute('data-booking-id');
+        const date = this.getAttribute('data-date');
+        
+        Swal.fire({
+          title: 'Confirm Approval',
+          text: "Are you sure you want to approve this test drive request?",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Yes, approve it!'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Send AJAX request to approve the booking
+            fetch('/approve-test-drive/', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+              },
+              body: JSON.stringify({
+                booking_id: bookingId,
+                date: date
+              })
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                Swal.fire(
+                  'Approved!',
+                  'The test drive request has been approved.',
+                  'success'
+                ).then(() => {
+                  // Reload the page to reflect the changes
+                  location.reload();
+                });
+              } else {
+                Swal.fire(
+                  'Error!',
+                  'There was an error approving the request.',
+                  'error'
+                );
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              Swal.fire(
+                'Error!',
+                'There was an error processing your request.',
+                'error'
+              );
+            });
+          }
+        });
+      });
+    });
+  });document.addEventListener('DOMContentLoaded', function() {
+    const approveButtons = document.querySelectorAll('.approve-btn');
+    approveButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const bookingId = this.getAttribute('data-booking-id');
+            const date = this.getAttribute('data-date');
+            const time = this.getAttribute('data-time');
+            const carManufacturer = this.getAttribute('data-car-manufacturer');
+            const carModel = this.getAttribute('data-car-model');
+            const userName = this.getAttribute('data-user-name');
+            
+            console.log('Approval button clicked:', { bookingId, date, time, carManufacturer, carModel, userName });
+
+            Swal.fire({
+                title: 'Confirm Approval',
+                text: "Are you sure you want to approve this test drive request?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, approve it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    console.log('Approval confirmed, sending AJAX request');
+                    // Send AJAX request to approve the booking
+                    fetch('/approve-test-drive/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({
+                            booking_id: bookingId,
+                            date: date,
+                            time: time,
+                            car_manufacturer: carManufacturer,
+                            car_model: carModel,
+                            user_name: userName
+                        })
+                    })
+                    .then(response => {
+                        console.log('Response received:', response);
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Data received:', data);
+                        if (data.success) {
+                            Swal.fire(
+                                'Approved!',
+                                'The test drive request has been approved.',
+                                'success'
+                            ).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire(
+                                'Error!',
+                                'There was an error approving the request: ' + (data.error || 'Unknown error'),
+                                'error'
+                            );
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire(
+                            'Error!',
+                            'There was an error processing your request: ' + error.message,
+                            'error'
+                        );
+                    });
+                }
+            });
+        });
+    });
+});
+
+  // Function to get CSRF token
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
   }
 
   // ... existing code ...

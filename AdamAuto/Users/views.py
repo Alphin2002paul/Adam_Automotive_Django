@@ -626,8 +626,8 @@ def toggle_car_status(request, car_id):
     except UserCarDetails.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Car not found'})
     
-def speccaredit_dtl(request):
-    return render(request, 'speccaredit_dtl.html')
+# def speccaredit_dtl(request):
+#     return render(request, 'speccaredit_dtl.html')
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
@@ -1512,11 +1512,23 @@ def admintestdrive(request):
     }
     return render(request, 'admintestdrive.html', context)
 
-from django.shortcuts import render
-from .models import TestDriveBooking
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from django.core.mail import send_mail
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import get_user_model
+from .models import TestDriveBooking, UserCarDetails
+import json
+import logging
+
+logger = logging.getLogger(__name__)
+
+User = get_user_model()
 
 def admintestdrive(request):
-    testdrive_bookings = TestDriveBooking.objects.select_related(
+    # Filter test drive bookings to only show 'Pending' status
+    testdrive_bookings = TestDriveBooking.objects.filter(status='Pending').select_related(
         'car__manufacturer', 
         'car__model_name', 
         'car__color', 
@@ -1524,10 +1536,64 @@ def admintestdrive(request):
     ).all()
     return render(request, 'admintestdrive.html', {'testdrive_bookings': testdrive_bookings})
 
-from django.contrib.auth import get_user_model
-from django.http import JsonResponse
+@csrf_exempt
+def approve_test_drive(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            booking_id = data.get('booking_id')
+            logger.info(f"Received approval request for booking ID: {booking_id}")
+            
+            booking = TestDriveBooking.objects.get(id=booking_id)
+            
+            # Only change the status if it's currently 'Pending'
+            if booking.status == 'pending':
+                booking.status = 'Approved'
+                booking.save()
+                logger.info(f"Booking {booking_id} status updated to Approved")
+
+                # Send email
+                subject = 'Test Drive Request Approved'
+                message = f"""
+                Dear {booking.user.first_name},
+
+                Your request for a test drive has been approved.
+
+                Details:
+                Date: {booking.date}
+                Time: {booking.time}
+                Vehicle: {booking.car.manufacturer} {booking.car.model_name}
+
+                Thank you for choosing Adam Automotive.
+
+                Best regards,
+                Adam Automotive Team
+                """
+                from_email = settings.EMAIL_HOST_USER
+                recipient_list = [booking.user.email]
+
+                send_mail(subject, message, from_email, recipient_list)
+                logger.info(f"Approval email sent to {booking.user.email}")
+
+                return JsonResponse({'success': True})
+            else:
+                logger.warning(f"Booking {booking_id} is not in Pending status")
+                return JsonResponse({'success': False, 'error': 'Booking is not in Pending status'})
+
+        except TestDriveBooking.DoesNotExist:
+            logger.error(f"Booking not found: {booking_id}")
+            return JsonResponse({'success': False, 'error': 'Booking not found'})
+        except json.JSONDecodeError:
+            logger.error("Invalid JSON in request body")
+            return JsonResponse({'success': False, 'error': 'Invalid JSON in request body'})
+        except Exception as e:
+            logger.exception("Error in approve_test_drive view")
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    logger.warning("Invalid request method for approve_test_drive")
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
 def get_test_drive_user_details(request, user_id):
-    User = get_user_model()
     try:
         user = User.objects.get(id=user_id)
         data = {
@@ -1540,3 +1606,5 @@ def get_test_drive_user_details(request, user_id):
         return JsonResponse(data)
     except User.DoesNotExist:
         return JsonResponse({'error': 'User not found'}, status=404)
+
+
