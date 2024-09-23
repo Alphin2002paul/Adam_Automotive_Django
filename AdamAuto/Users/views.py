@@ -1323,10 +1323,13 @@ def approve_car_listing(request, car_id):
     
 
 
+
+
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.conf import settings
 from .models import Feedback
+from django.core.exceptions import ValidationError
 import os
 import csv
 
@@ -1336,43 +1339,50 @@ def feedback_dtl(request):
         manufacturer_name = request.POST.get('manufacturer_name')
         model_name = request.POST.get('model_name')
         year = request.POST.get('year')
-        would_recommend = 1 if request.POST.get('would_recommend') == 'yes' else 0
+        description = request.POST.get('description')
         
         # Get ratings
         ratings = {}
         for rating in ['comfort', 'performance', 'fuel_efficiency', 'safety', 'technology']:
             ratings[rating] = request.POST.get(f'{rating}_rating')
 
-        # Save to database
-        feedback = Feedback(
-            user=request.user,
-            manufacturer_name=manufacturer_name,
-            model_name=model_name,
-            year=year,
-            would_recommend=would_recommend,
-            comfort_rating=ratings['comfort'],
-            performance_rating=ratings['performance'],
-            fuel_efficiency_rating=ratings['fuel_efficiency'],
-            safety_rating=ratings['safety'],
-            technology_rating=ratings['technology']
-        )
-        feedback.save()
+        try:
+            # Save to database
+            feedback = Feedback(
+                user=request.user,
+                manufacturer_name=manufacturer_name,
+                model_name=model_name,
+                year=year,
+                comfort_rating=ratings['comfort'],
+                performance_rating=ratings['performance'],
+                fuel_efficiency_rating=ratings['fuel_efficiency'],
+                safety_rating=ratings['safety'],
+                technology_rating=ratings['technology'],
+                description=description,
+            )
+            feedback.full_clean()  # Validate the model
+            feedback.save()
 
-        # Prepare data for CSV
-        csv_data = [manufacturer_name, model_name, year, would_recommend] + list(ratings.values())
+            # Prepare data for CSV
+            csv_data = [manufacturer_name, model_name, year, description] + list(ratings.values())
 
-        # Save to CSV
-        csv_file_path = os.path.join(settings.BASE_DIR, 'car_reviews.csv')
-        file_exists = os.path.isfile(csv_file_path)
+            # Save to CSV
+            csv_file_path = os.path.join(settings.BASE_DIR, 'car_reviews_with_feedback.csv')
+            file_exists = os.path.isfile(csv_file_path)
 
-        with open(csv_file_path, 'a', newline='') as csvfile:
-            writer = csv.writer(csvfile)
-            if not file_exists:
-                writer.writerow(['manufacturer', 'model', 'year', 'would_recommend', 'comfort', 'performance', 'fuel_efficiency', 'safety', 'technology'])
-            writer.writerow(csv_data)
+            with open(csv_file_path, 'a', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                if not file_exists:
+                    writer.writerow(['manufacturer', 'model', 'year', 'description', 'comfort', 'performance', 'fuel_efficiency', 'safety', 'technology'])
+                writer.writerow(csv_data)
 
-        messages.success(request, 'Feedback submitted successfully!')
-        return redirect('feedback_dtl')
+            messages.success(request, 'Feedback submitted successfully!')
+            return redirect('feedback_dtl')
+        
+        except ValidationError as e:
+            messages.error(request, f'Validation error: {e}')
+        except Exception as e:
+            messages.error(request, f'Error submitting feedback: {str(e)}')
 
     rating_list = ['comfort', 'performance', 'fuel_efficiency', 'safety', 'technology']
     return render(request, 'feedback_dtl.html', {'rating_list': rating_list})
@@ -1401,6 +1411,9 @@ def get_predictions(request, car_id):
         avg_safety = feedback_data.aggregate(Avg('safety_rating'))['safety_rating__avg'] or 5
         avg_technology = feedback_data.aggregate(Avg('technology_rating'))['technology_rating__avg'] or 5
 
+        # Calculate overall average rating
+        overall_avg_rating = (avg_comfort + avg_performance + avg_fuel_efficiency + avg_safety + avg_technology) / 5
+
         # Add more debugging information
         print(f"Average ratings: Comfort: {avg_comfort}, Performance: {avg_performance}, Fuel Efficiency: {avg_fuel_efficiency}, Safety: {avg_safety}, Technology: {avg_technology}")
 
@@ -1417,6 +1430,7 @@ def get_predictions(request, car_id):
 
         predictions_html = f"""
         <h4>{car.manufacturer.company_name} {car.model_name.model_name} ({car.year})</h4>
+        <p><strong>Overall Average Rating:</strong> {overall_avg_rating:.1f}/10</p>
         <p><strong>Prediction:</strong> {'Recommended' if prediction == 1 else 'Not Recommended'}</p>
         <p><strong>Confidence:</strong> {probability * 100:.2f}%</p>
         <hr>
@@ -1430,7 +1444,10 @@ def get_predictions(request, car_id):
         </ul>
         """
 
-        return JsonResponse({'predictions_html': predictions_html})
+        return JsonResponse({
+            'predictions_html': predictions_html,
+            'average_rating': overall_avg_rating
+        })
     except UserCarDetails.DoesNotExist:
         return JsonResponse({'error': 'Car not found'}, status=404)
     except Exception as e:
@@ -1438,23 +1455,57 @@ def get_predictions(request, car_id):
         print(traceback.format_exc())
         return JsonResponse({'error': 'An error occurred while processing the request'}, status=500)
     
+
+
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.shortcuts import get_object_or_404
+from .models import UserCarDetails, CarPurchase
+from django.db import transaction
+
 @require_POST
 def process_payment(request):
-    # Extract data from request
-    delivery_option = request.POST.get('deliveryOption')
-    street = request.POST.get('street')
-    city = request.POST.get('city')
-    state = request.POST.get('state')
-    pincode = request.POST.get('pincode')
+    try:
+        with transaction.atomic():
+            # Extract data from request
+            payment_id = request.POST.get('payment_id')
+            car_id = request.POST.get('car_id')
+            delivery_option = request.POST.get('delivery_option', 'showroom')  # Default to 'showroom' if not provided
+            street = request.POST.get('street', '')
+            city = request.POST.get('city', '')
+            state = request.POST.get('state', '')
+            pincode = request.POST.get('pincode', '')
 
-    # Process payment logic here
-    # ...
+            # Get the car object
+            car = get_object_or_404(UserCarDetails, id=car_id)
 
-    # Return success response
-    return JsonResponse({'status': 'success'})
+            # Create a new CarPurchase instance
+            purchase = CarPurchase(
+                user=request.user,
+                car=car,
+                amount=car.price,
+                delivery_option=delivery_option,
+                street=street,
+                city=city,
+                state=state,
+                pincode=pincode,
+                payment_id=payment_id
+            )
+            purchase.save()
+
+            # Update the car status to 'Sold'
+            car.car_status = 'Sold'
+            car.save()
+
+        # Return success response
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        # Log the error for debugging
+        print(f"Error processing payment: {str(e)}")
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
 
 from django.http import JsonResponse
@@ -1606,5 +1657,11 @@ def get_test_drive_user_details(request, user_id):
         return JsonResponse(data)
     except User.DoesNotExist:
         return JsonResponse({'error': 'User not found'}, status=404)
+    
+def mybookings(request):
+    purchases = CarPurchase.objects.filter(user=request.user)
+
+    return render(request, 'mybookings.html', {'purchases': purchases})
+
 
 

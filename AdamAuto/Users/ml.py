@@ -6,7 +6,7 @@ import joblib
 
 def train_model():
     # Load the data
-    data = pd.read_csv('car_reviews.csv')
+    data = pd.read_csv('car_reviews_with_feedback.csv')
 
     # Prepare the features and target
     X = data.drop(['would_recommend'], axis=1)

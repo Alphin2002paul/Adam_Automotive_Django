@@ -146,25 +146,19 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.conf import settings
 
 class Feedback(models.Model):
-    RECOMMENDATION_CHOICES = [
-        (1, 'Yes'),
-        (0, 'No'),
-        
-    ]
-
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)        
     car = models.ForeignKey(UserCarDetails, on_delete=models.CASCADE, related_name='feedbacks', null=True, blank=True)
     manufacturer_name = models.CharField(max_length=100)
     model_name = models.CharField(max_length=100)
     year = models.IntegerField(validators=[MinValueValidator(2011), MaxValueValidator(2024)])
-    would_recommend = models.CharField(max_length=5, choices=RECOMMENDATION_CHOICES, null=True)
-    
+
     # Rating fields
     comfort_rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
     performance_rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
     fuel_efficiency_rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
     safety_rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
     technology_rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
+    description = models.TextField(null=True,blank=True)   
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -207,5 +201,26 @@ class TestDriveBooking(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.car.manufacturer} {self.car.model_name} - {self.date}"
+
+
+
+from django.db import models
+from django.conf import settings
+
+class CarPurchase(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    car = models.ForeignKey(UserCarDetails, on_delete=models.CASCADE)
+    purchase_date = models.DateTimeField(auto_now_add=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    delivery_option = models.CharField(max_length=20, default='showroom')  # Add default value
+    street = models.CharField(max_length=255, blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    pincode = models.CharField(max_length=10, blank=True, null=True)
+    payment_id = models.CharField(max_length=100)
+    status = models.CharField(max_length=20, default='completed')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.car.manufacturer} {self.car.model_name} - {self.purchase_date}"
 
 

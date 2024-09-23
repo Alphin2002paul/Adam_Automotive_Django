@@ -71,8 +71,7 @@ urlpatterns = [
     path('admintestdrive/', views.admintestdrive, name='admintestdrive'),
     path('get-test-drive-user-details/<int:user_id>/', views.get_test_drive_user_details, name='get_test_drive_user_details'),
     path('approve-test-drive/', views.approve_test_drive, name='approve_test_drive'),
-
-
+    path('mybookings/', views.mybookings, name='mybookings'),
 
 
     

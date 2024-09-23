@@ -136,15 +136,12 @@
                   </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="form-group">
-                      <label for="would_recommend">Would Recommend</label>
-                      <select class="form-control" id="would_recommend" name="would_recommend" required>
-                        <option value="yes">Yes</option>
-                        <option value="no">No</option>
-                        <option value="maybe">Maybe</option>
-                      </select>
-                    </div>
+                  <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+                    <div class="error-message" id="description_error"></div>
                   </div>
+                </div>
                 
                 <!-- Rating scales -->
                 {% for rating in rating_list %}
@@ -180,7 +177,8 @@
       const modelName = document.getElementById('model_name');
       const year = document.getElementById('year');
       const submitButton = document.getElementById('submitButton');
-  
+      const description = document.getElementById('description');
+      const descriptionError = document.getElementById('description_error');
       const manufacturerNameError = document.getElementById('manufacturer_name_error');
       const modelNameError = document.getElementById('model_name_error');
       const yearError = document.getElementById('year_error');
@@ -210,7 +208,7 @@
   
       function validateForm() {
         let isValid = true;
-  
+        
         isValid = validateInput(manufacturerName, manufacturerNameError, /^[a-zA-Z\s-]+$/, 'Only letters, spaces, and hyphens are allowed') && isValid;
         isValid = validateInput(modelName, modelNameError, /^[a-zA-Z0-9\s-]+$/, 'Only letters, numbers, spaces, and hyphens are allowed') && isValid;
         isValid = validateYear(year, yearError) && isValid;
@@ -228,6 +226,7 @@
           event.preventDefault();
         }
       });
+      
   
       // Initial validation
       validateForm();
@@ -235,5 +234,3 @@
   </script>
   </body>
   </html>
-</body>
-</html>

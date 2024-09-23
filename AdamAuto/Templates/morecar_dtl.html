@@ -371,7 +371,13 @@
           url: '{% url 'get_predictions' car.id %}',
           type: 'GET',
           success: function(response) {
-            $('#predictionsModalBody').html(response.predictions_html);
+            // Add the average rating to the modal body
+            const averageRating = response.average_rating || 'N/A';
+            const predictionsHtml = `
+              <p><strong>Average Rating:</strong> ${averageRating}</p>
+              ${response.predictions_html}
+            `;
+            $('#predictionsModalBody').html(predictionsHtml);
             $('#predictionsModal').modal('show');
           },
           error: function(xhr, status, error) {
@@ -484,7 +490,42 @@ $(document).ready(function() {
       image: "{% static 'images/logo.png' %}",
       handler: function (response) {
         console.log("Payment successful:", response);
-        Swal.fire('Success', 'Payment processed successfully!', 'success');
+        // Send payment details to the server
+        $.ajax({
+          url: '{% url 'process_payment' %}',
+          type: 'POST',
+          data: {
+            payment_id: response.razorpay_payment_id,
+            car_id: '{{ car.id }}',
+            delivery_option: $('#deliveryOption').val() || 'showroom',  // Default to 'showroom' if not selected
+            street: $('#street').val() || '',
+            city: $('#city').val() || '',
+            state: $('#state').val() || '',
+            pincode: $('#pincode').val() || '',
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+          },
+          success: function(serverResponse) {
+            if (serverResponse.status === 'success') {
+              Swal.fire({
+                title: 'Success',
+                text: 'Payment processed successfully!',
+                icon: 'success',
+                confirmButtonText: 'OK'
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  // Redirect to userdisplaycars_dtl.html
+                  window.location.href = "{% url 'userdisplaycars_dtl' %}";
+                }
+              });
+            } else {
+              Swal.fire('Error', 'There was an error processing your payment.', 'error');
+            }
+          },
+          error: function(xhr) {
+            console.error('Error processing payment:', xhr.responseText);
+            Swal.fire('Error', 'There was an error processing your payment.', 'error');
+          }
+        });
       },
       prefill: {
         name: $('#ownerName').val(),
