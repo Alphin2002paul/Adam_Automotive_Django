@@ -1,21 +1,28 @@
+import os
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 import joblib
 
+# Get the current directory
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 def train_model():
     # Load the data
-    data = pd.read_csv('car_reviews_with_feedback.csv')
+    data = pd.read_csv(os.path.join(BASE_DIR, 'car_reviews_with_feedback.csv'))
 
     # Prepare the features and target
-    X = data.drop(['would_recommend'], axis=1)
-    y = data['would_recommend']
+    X = data[['manufacturer', 'model', 'year', 'comfort', 'performance', 'fuel_efficiency', 'safety', 'technology']]
+    y = data['description']  # Use description as the target
 
     # Encode categorical variables
-    le = LabelEncoder()
-    X['manufacturer'] = le.fit_transform(X['manufacturer'])
-    X['model'] = le.fit_transform(X['model'])
+    le_manufacturer = LabelEncoder()
+    le_model = LabelEncoder()
+    le_description = LabelEncoder()
+    X['manufacturer'] = le_manufacturer.fit_transform(X['manufacturer'])
+    X['model'] = le_model.fit_transform(X['model'])
+    y = le_description.fit_transform(y)
 
     # Split the data
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -28,17 +35,23 @@ def train_model():
     accuracy = model.score(X_test, y_test)
     print(f"Model accuracy: {accuracy}")
 
-    # Save the model
-    joblib.dump(model, 'feedback_model.joblib')
+    # Save the model and label encoders
+    joblib.dump(model, os.path.join(BASE_DIR, 'feedback_model.joblib'))
+    joblib.dump(le_manufacturer, os.path.join(BASE_DIR, 'le_manufacturer.joblib'))
+    joblib.dump(le_model, os.path.join(BASE_DIR, 'le_model.joblib'))
+    joblib.dump(le_description, os.path.join(BASE_DIR, 'le_description.joblib'))
 
 def make_prediction(manufacturer, model, year, comfort, performance, fuel_efficiency, safety, technology):
-    # Load the trained model
-    model = joblib.load('feedback_model.joblib')
+    # Load the trained model and label encoders
+    model = joblib.load(os.path.join(BASE_DIR, 'feedback_model.joblib'))
+    le_manufacturer = joblib.load(os.path.join(BASE_DIR, 'le_manufacturer.joblib'))
+    le_model = joblib.load(os.path.join(BASE_DIR, 'le_model.joblib'))
+    le_description = joblib.load(os.path.join(BASE_DIR, 'le_description.joblib'))
 
     # Prepare the input data
     input_data = pd.DataFrame({
-        'manufacturer': [str(manufacturer)],  # Convert to string
-        'model': [str(model)],  # Convert to string
+        'manufacturer': [manufacturer],
+        'model': [model],
         'year': [year],
         'comfort': [comfort],
         'performance': [performance],
@@ -48,15 +61,14 @@ def make_prediction(manufacturer, model, year, comfort, performance, fuel_effici
     })
 
     # Encode categorical variables
-    le = LabelEncoder()
-    input_data['manufacturer'] = le.fit_transform(input_data['manufacturer'])
-    input_data['model'] = le.fit_transform(input_data['model'])
+    input_data['manufacturer'] = le_manufacturer.transform(input_data['manufacturer'])
+    input_data['model'] = le_model.transform(input_data['model'])
 
     # Make prediction
     prediction = model.predict(input_data)
-    probability = model.predict_proba(input_data)[0][1]
+    description = le_description.inverse_transform(prediction)[0]
 
-    return prediction[0], probability
+    return description
 
 if __name__ == "__main__":
     train_model()

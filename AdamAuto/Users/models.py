@@ -158,7 +158,7 @@ class Feedback(models.Model):
     fuel_efficiency_rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
     safety_rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
     technology_rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
-    description = models.TextField(null=True,blank=True)   
+    description = models.TextField(null=True, blank=True)   
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

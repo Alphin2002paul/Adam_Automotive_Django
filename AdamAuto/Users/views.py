@@ -18,6 +18,9 @@ import jwt
 from .decorators import nocache
 from django.shortcuts import render, get_object_or_404
 import re
+import sys
+import os
+from .ml import make_prediction
 
 users = get_user_model()
 
@@ -1322,9 +1325,6 @@ def approve_car_listing(request, car_id):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
     
 
-
-
-
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.conf import settings
@@ -1367,10 +1367,16 @@ def feedback_dtl(request):
             csv_data = [manufacturer_name, model_name, year, description] + list(ratings.values())
 
             # Save to CSV
-            csv_file_path = os.path.join(settings.BASE_DIR, 'car_reviews_with_feedback.csv')
+            csv_file_path = os.path.join(settings.BASE_DIR, 'Users', 'car_reviews_with_feedback.csv')
+
+            print(f"Attempting to open file at: {csv_file_path}")  # Debugging line
+
+            # Check if the directory exists, if not, create it
+            os.makedirs(os.path.dirname(csv_file_path), exist_ok=True)
+
             file_exists = os.path.isfile(csv_file_path)
 
-            with open(csv_file_path, 'a', newline='') as csvfile:
+            with open(csv_file_path, 'a', newline='', encoding='utf-8') as csvfile:
                 writer = csv.writer(csvfile)
                 if not file_exists:
                     writer.writerow(['manufacturer', 'model', 'year', 'description', 'comfort', 'performance', 'fuel_efficiency', 'safety', 'technology'])
@@ -1379,13 +1385,13 @@ def feedback_dtl(request):
             messages.success(request, 'Feedback submitted successfully!')
             return redirect('feedback_dtl')
         
-        except ValidationError as e:
-            messages.error(request, f'Validation error: {e}')
         except Exception as e:
+            print(f"Error details: {str(e)}")  # Add this line for more detailed error information
             messages.error(request, f'Error submitting feedback: {str(e)}')
 
     rating_list = ['comfort', 'performance', 'fuel_efficiency', 'safety', 'technology']
     return render(request, 'feedback_dtl.html', {'rating_list': rating_list})
+
 
 
 
@@ -1395,66 +1401,78 @@ from .models import UserCarDetails, Feedback
 from .ml import make_prediction
 import traceback
 
+users = get_user_model()
+
+class CustomTokenGenerator(PasswordResetTokenGenerator):
+    def _make_hash_value(self, user, timestamp):
+        return str(user.pk) + str(timestamp)
+
+token_generator = CustomTokenGenerator()
+
 def get_predictions(request, car_id):
-    try:
-        car = UserCarDetails.objects.get(id=car_id)
-        
-        # Get average ratings from feedback data
-        feedback_data = car.feedbacks.all()
-        
-        # Add debugging information
-        print(f"Number of feedbacks for car {car_id}: {feedback_data.count()}")
-        
-        avg_comfort = feedback_data.aggregate(Avg('comfort_rating'))['comfort_rating__avg'] or 5
-        avg_performance = feedback_data.aggregate(Avg('performance_rating'))['performance_rating__avg'] or 5
-        avg_fuel_efficiency = feedback_data.aggregate(Avg('fuel_efficiency_rating'))['fuel_efficiency_rating__avg'] or 5
-        avg_safety = feedback_data.aggregate(Avg('safety_rating'))['safety_rating__avg'] or 5
-        avg_technology = feedback_data.aggregate(Avg('technology_rating'))['technology_rating__avg'] or 5
+	try:
+		car = UserCarDetails.objects.get(id=car_id)
+		
+		# Get feedback data for this specific car model and year
+		feedback_data = Feedback.objects.filter(
+			manufacturer_name=car.manufacturer.company_name,
+			model_name=car.model_name.model_name,
+			year=car.year
+		)
+		
+		# Calculate average ratings
+		avg_comfort = feedback_data.aggregate(Avg('comfort_rating'))['comfort_rating__avg'] or 0
+		avg_performance = feedback_data.aggregate(Avg('performance_rating'))['performance_rating__avg'] or 0
+		avg_fuel_efficiency = feedback_data.aggregate(Avg('fuel_efficiency_rating'))['fuel_efficiency_rating__avg'] or 0
+		avg_safety = feedback_data.aggregate(Avg('safety_rating'))['safety_rating__avg'] or 0
+		avg_technology = feedback_data.aggregate(Avg('technology_rating'))['technology_rating__avg'] or 0
 
-        # Calculate overall average rating
-        overall_avg_rating = (avg_comfort + avg_performance + avg_fuel_efficiency + avg_safety + avg_technology) / 5
+		# Calculate overall average rating
+		overall_avg_rating = (avg_comfort + avg_performance + avg_fuel_efficiency + avg_safety + avg_technology) / 5
 
-        # Add more debugging information
-        print(f"Average ratings: Comfort: {avg_comfort}, Performance: {avg_performance}, Fuel Efficiency: {avg_fuel_efficiency}, Safety: {avg_safety}, Technology: {avg_technology}")
+		try:
+			description = make_prediction(
+				str(car.manufacturer.company_name),
+				str(car.model_name.model_name),
+				int(car.year),
+				float(avg_comfort),
+				float(avg_performance),
+				float(avg_fuel_efficiency),
+				float(avg_safety),
+				float(avg_technology)
+			)
+		except Exception as e:
+			print(f"Error making prediction: {str(e)}")
+			description = "No prediction available."  # Default value if prediction fails
 
-        prediction, probability = make_prediction(
-            str(car.manufacturer.company_name),
-            str(car.model_name.model_name),
-            int(car.year),
-            float(avg_comfort),
-            float(avg_performance),
-            float(avg_fuel_efficiency),
-            float(avg_safety),
-            float(avg_technology)
-        )
+		predictions_html = f"""
+		<h4>{car.manufacturer.company_name} {car.model_name.model_name} ({car.year})</h4>
+		<p><strong>Overall Average Rating:</strong> {overall_avg_rating:.1f}/10</p>
+		<hr>
+		<h5>Average Ratings:</h5>
+		<ul>
+			<li>Comfort: {avg_comfort:.1f}/10</li>
+			<li>Performance: {avg_performance:.1f}/10</li>
+			<li>Fuel Efficiency: {avg_fuel_efficiency:.1f}/10</li>
+			<li>Safety: {avg_safety:.1f}/10</li>
+			<li>Technology: {avg_technology:.1f}/10</li>
+		</ul>
+		<hr>
+		<h5>Recommendation:</h5>
+		<p>{description}</p>
+		"""
 
-        predictions_html = f"""
-        <h4>{car.manufacturer.company_name} {car.model_name.model_name} ({car.year})</h4>
-        <p><strong>Overall Average Rating:</strong> {overall_avg_rating:.1f}/10</p>
-        <p><strong>Prediction:</strong> {'Recommended' if prediction == 1 else 'Not Recommended'}</p>
-        <p><strong>Confidence:</strong> {probability * 100:.2f}%</p>
-        <hr>
-        <h5>Average Ratings:</h5>
-        <ul>
-            <li>Comfort: {avg_comfort:.1f}/10</li>
-            <li>Performance: {avg_performance:.1f}/10</li>
-            <li>Fuel Efficiency: {avg_fuel_efficiency:.1f}/10</li>
-            <li>Safety: {avg_safety:.1f}/10</li>
-            <li>Technology: {avg_technology:.1f}/10</li>
-        </ul>
-        """
+		return JsonResponse({
+			'predictions_html': predictions_html,
+			'average_rating': overall_avg_rating
+		})
 
-        return JsonResponse({
-            'predictions_html': predictions_html,
-            'average_rating': overall_avg_rating
-        })
-    except UserCarDetails.DoesNotExist:
-        return JsonResponse({'error': 'Car not found'}, status=404)
-    except Exception as e:
-        print(f"Error in get_predictions: {str(e)}")
-        print(traceback.format_exc())
-        return JsonResponse({'error': 'An error occurred while processing the request'}, status=500)
-    
+	except UserCarDetails.DoesNotExist:
+		return JsonResponse({'error': 'Car not found'}, status=404)
+	except Exception as e:
+		print(f"Error in get_predictions: {str(e)}")
+		print(traceback.format_exc())
+		return JsonResponse({'error': 'An error occurred'}, status=500)
 
 
 from django.http import JsonResponse

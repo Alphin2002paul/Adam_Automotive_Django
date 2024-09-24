@@ -371,17 +371,13 @@
           url: '{% url 'get_predictions' car.id %}',
           type: 'GET',
           success: function(response) {
-            // Add the average rating to the modal body
-            const averageRating = response.average_rating || 'N/A';
-            const predictionsHtml = `
-              <p><strong>Average Rating:</strong> ${averageRating}</p>
-              ${response.predictions_html}
-            `;
-            $('#predictionsModalBody').html(predictionsHtml);
+            $('#predictionsModalBody').html(response.predictions_html);
             $('#predictionsModal').modal('show');
           },
           error: function(xhr, status, error) {
             console.error('Error fetching predictions:', error);
+            $('#predictionsModalBody').html('<p>Error fetching predictions. Please try again later.</p>');
+            $('#predictionsModal').modal('show');
           }
         });
       });

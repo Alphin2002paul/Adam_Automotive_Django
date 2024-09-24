@@ -64,7 +64,7 @@ urlpatterns = [
     path('feedback_dtl/', views.feedback_dtl, name='feedback_dtl'),
     # path('predict_recommendation/', views.predict_recommendation, name='predict_recommendation'),
     # path('prediction_result/', views.prediction_result, name='prediction_result'),
-    path('get_predictions/<int:car_id>/', views.get_predictions, name='get_predictions'),
+    # path('get_predictions/<int:car_id>/', views.get_predictions, name='get_predictions'),
     path('process_payment/', views.process_payment, name='process_payment'),
     path('book-test-drive/', views.book_test_drive, name='book_test_drive'),
     path('get-available-slots/', views.get_available_slots, name='get_available_slots'),
@@ -72,7 +72,7 @@ urlpatterns = [
     path('get-test-drive-user-details/<int:user_id>/', views.get_test_drive_user_details, name='get_test_drive_user_details'),
     path('approve-test-drive/', views.approve_test_drive, name='approve_test_drive'),
     path('mybookings/', views.mybookings, name='mybookings'),
-
+    path('get_predictions/<int:car_id>/', views.get_predictions, name='get_predictions'),
 
     
 
