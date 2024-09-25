@@ -980,20 +980,28 @@ def get_service_details(request, service_id):
     }
     return JsonResponse(data)
 
-def get_user_details(request, user_id):
-    User = get_user_model()
-    try:
-        user = User.objects.get(id=user_id)
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from .models import UserCarDetails, User
+
+def get_user_details(request, car_id):
+    car = get_object_or_404(SellCar, id=car_id)
+    user = car.user  # Assuming there's a user field in UserCarDetails model
+    
+    if user:
         data = {
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'username': user.username,
-            'email': user.email,
-            'phone_number': user.Phone_number,  # Changed from phone_number to Phone_number
+            'success': True,
+            'user': {
+                'name': f"{user.first_name} {user.last_name}",
+                'username': user.username,
+                'email': user.email,
+                'phone_number': user.Phone_number,
+            }
         }
-        return JsonResponse(data)
-    except User.DoesNotExist:
-        return JsonResponse({'error': 'User not found'}, status=404)
+    else:
+        data = {'success': False, 'error': 'User not found'}
+    
+    return JsonResponse(data)
 
 # views.py
 from django.core.mail import send_mail
