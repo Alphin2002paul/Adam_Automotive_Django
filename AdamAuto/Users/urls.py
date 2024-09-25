@@ -73,6 +73,9 @@ urlpatterns = [
     path('approve-test-drive/', views.approve_test_drive, name='approve_test_drive'),
     path('mybookings/', views.mybookings, name='mybookings'),
     path('get_predictions/<int:car_id>/', views.get_predictions, name='get_predictions'),
+    path('soldcars/', views.soldcars, name='soldcarinfo'),
+    path('salemore_dtl2/<int:car_id>/', views.salemore_dtl2, name='salemore_dtl2'),
+    path('get_user_details2/<int:user_id>/', views.get_user_details2, name='get_user_details2'),
 
     
 

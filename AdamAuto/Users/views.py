@@ -1690,4 +1690,47 @@ def mybookings(request):
     return render(request, 'mybookings.html', {'purchases': purchases})
 
 
+from django.shortcuts import render
+from django.core.paginator import Paginator
+from .models import UserCarDetails, CarImage
 
+def soldcars(request):
+    # Filter cars with 'Sold' status
+    sold_cars = UserCarDetails.objects.filter(car_status='Sold').order_by('-id')
+    
+    # Add images to each car
+    for car in sold_cars:
+        car.image_list = CarImage.objects.filter(car=car)
+    
+    # Pagination
+    paginator = Paginator(sold_cars, 6)  # Show 6 cars per page
+    page_number = request.GET.get('page')
+    sell_cars = paginator.get_page(page_number)
+    
+    context = {
+        'sell_cars': sell_cars,
+    }
+    return render(request, 'soldcars.html', context)
+
+def salemore_dtl2(request, car_id):
+    car = get_object_or_404(UserCarDetails, id=car_id)
+    images = CarImage.objects.filter(car=car)
+    return render(request, 'salemore_dtl2.html', {'car': car, 'images': images})    
+
+def get_user_details2(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    
+    if user:
+        data = {
+            'success': True,
+            'user': {
+                'name': f"{user.first_name} {user.last_name}",
+                'username': user.username,
+                'email': user.email,
+                'phone_number': user.Phone_number if hasattr(user, 'Phone_number') else 'N/A',
+            }
+        }
+    else:
+        data = {'success': False, 'error': 'User not found'}
+    
+    return JsonResponse(data)

@@ -165,7 +165,7 @@
             <a href="#"><i class="fas fa-tools"></i> Service Request</a>
           </li>
           <li>
-            <a href="#"><i class="fas fa-car-side"></i> Sold Cars</a>
+            <a href="{% url 'soldcarinfo' %}"><i class="fas fa-car-side"></i> Sold Cars</a>
           </li>
           <li>
             <a href="#"><i class="fas fa-question-circle"></i> Car Enquiry</a>
@@ -350,32 +350,34 @@
     .then(response => {
         console.log('Response received:', response);
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
         return response.json();
     })
     .then(data => {
         console.log('Data received:', data);
-        // Combine first name and last name for full name
-        const fullName = [data.first_name, data.last_name].filter(Boolean).join(' ') || 'N/A';
-        Swal.fire({
-            title: 'User Details',
-            html: `
-                <strong>Name:</strong> ${fullName}<br>
-                <strong>Username:</strong> ${data.username || 'N/A'}<br>
-                <strong>Email:</strong> ${data.email || 'N/A'}<br>
-                <strong>Phone Number:</strong> ${data.phone_number || 'N/A'}
-            `,
-            icon: 'info',
-            confirmButtonText: 'Okay'
-        });
+        if (data.success) {
+            const user = data.user;
+            Swal.fire({
+                title: 'User Details',
+                html: `
+                    <strong>Name:</strong> ${user.name}<br>
+                    <strong>Username:</strong> ${user.username}<br>
+                    <strong>Email:</strong> ${user.email}<br>
+                    <strong>Phone Number:</strong> ${user.phone_number}
+                `,
+                icon: 'info',
+                confirmButtonText: 'Okay'
+            });
+        } else {
+            throw new Error(data.error || 'Failed to fetch user details');
+        }
     })
     .catch(error => {
-        console.error('Error fetching user details:', error);
-        Swal.fire('Error', 'Failed to fetch user details', 'error');
+        console.error('Error in showUserDetails:', error);
+        Swal.fire('Error', `Failed to fetch user details: ${error.message}`, 'error');
     });
 }
-
 // ... rest of the code remains the same
 // ... existing code ...
 
