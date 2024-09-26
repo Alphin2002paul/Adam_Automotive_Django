@@ -266,7 +266,7 @@ def update_profile(request):
         user.first_name = request.POST.get('first_name')
         user.last_name = request.POST.get('last_name')
         user.Phone_number = request.POST.get('Phone_number')
-        user.street_address = request.POST.get('address')  # Changed from 'street_address' to 'address'
+        user.address = request.POST.get('street_address')  # Changed from 'street_address' to 'address'
         user.city = request.POST.get('city')
         user.state = request.POST.get('state')
         user.zipcode = request.POST.get('zipcode')
@@ -1499,11 +1499,16 @@ def process_payment(request):
             # Extract data from request
             payment_id = request.POST.get('payment_id')
             car_id = request.POST.get('car_id')
-            delivery_option = request.POST.get('delivery_option', 'showroom')  # Default to 'showroom' if not provided
+            delivery_option = request.POST.get('delivery_option', 'showroom')
             street = request.POST.get('street', '')
             city = request.POST.get('city', '')
             state = request.POST.get('state', '')
             pincode = request.POST.get('pincode', '')
+            owner_name = request.POST.get('owner_name', '')
+            aadhar_number = request.POST.get('aadhar_number', '')
+            pan_number = request.POST.get('pan_number', '')
+            payment_mode = request.POST.get('payment_mode', 'Online')  # Default to 'Online' if not provided
+            expected_delivery_date = request.POST.get('expected_delivery_date')
 
             # Get the car object
             car = get_object_or_404(UserCarDetails, id=car_id)
@@ -1518,7 +1523,12 @@ def process_payment(request):
                 city=city,
                 state=state,
                 pincode=pincode,
-                payment_id=payment_id
+                payment_id=payment_id,
+                owner_name=owner_name,
+                aadhar_number=aadhar_number,
+                pan_number=pan_number,
+                payment_mode=payment_mode,
+                expected_delivery_date=expected_delivery_date
             )
             purchase.save()
 
@@ -1734,3 +1744,164 @@ def get_user_details2(request, user_id):
         data = {'success': False, 'error': 'User not found'}
     
     return JsonResponse(data)
+
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, HRFlowable
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_JUSTIFY
+from io import BytesIO
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from .models import CarPurchase, User
+
+def generate_receipt_pdf(request, purchase_id):
+    purchase = get_object_or_404(CarPurchase, id=purchase_id)
+    user = get_object_or_404(User, id=purchase.user.id)
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=72)
+
+    elements = []
+
+    # Custom styles
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(name='Center', alignment=TA_CENTER))
+    styles.add(ParagraphStyle(name='Right', alignment=TA_RIGHT))
+    styles.add(ParagraphStyle(name='Left', alignment=TA_JUSTIFY))
+    styles.add(ParagraphStyle(name='CustomTitle', parent=styles['Title'], fontSize=24, textColor=colors.darkslategray, spaceAfter=12))
+    styles.add(ParagraphStyle(name='CustomSubtitle', parent=styles['Heading2'], fontSize=18, textColor=colors.darkslategray, spaceAfter=6))
+    styles.add(ParagraphStyle(name='CustomNormal', parent=styles['Normal'], fontSize=10, textColor=colors.black, spaceAfter=6))
+
+    # Company logo (replace with your actual logo path)
+    # elements.append(Image('path/to/your/logo.png', width=2*inch, height=1*inch))
+    elements.append(Spacer(1, 0.5*inch))
+
+    # Company details
+    elements.append(Paragraph("Adam Automotive", styles['CustomTitle']))
+    elements.append(Paragraph("	Adam Towers, Edappally Kochi , Kerala - 683544", styles['Center']))
+    elements.append(Paragraph("Phone: (999) 546-1423 | Email: adamautomotive3@gmail.com", styles['Center']))
+    elements.append(Spacer(1, 0.25*inch))
+
+    # Horizontal line
+    elements.append(HRFlowable(width="100%", thickness=1, lineCap='round', color=colors.darkgray, spaceBefore=1, spaceAfter=1))
+
+    # Invoice title
+    elements.append(Paragraph("CAR SALE INVOICE", styles['CustomSubtitle']))
+    elements.append(Spacer(1, 0.25*inch))
+
+    # Customer and invoice details
+    customer_data = [
+        ["Invoice Number:", f"{purchase.id}"],
+        ["Invoice Date:", purchase.purchase_date.strftime('%B %d, %Y')],
+        ["Customer Name:", f"{user.first_name} {user.last_name}"],
+        ["Email:", user.email],
+        ["Phone:", user.Phone_number],
+        ["Expected Delivery Date:", purchase.expected_delivery_date.strftime('%B %d, %Y')],
+    ]
+
+    if purchase.delivery_option == 'showroom':
+        
+        user_address = f"{user.address}, {user.city}, {user.state} {user.zipcode}"
+        customer_data.append(["Delivery Address:", user_address])
+    else:
+        home_delivery_address = f"{purchase.street}, {purchase.city}, {purchase.state} {purchase.pincode}"
+        customer_data.append(["Delivery Address:", home_delivery_address])
+
+    customer_table = Table(customer_data, colWidths=[2.5*inch, 3.5*inch])
+    customer_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('TEXTCOLOR', (0, 0), (0, -1), colors.darkslategray),
+        ('TEXTCOLOR', (1, 0), (1, -1), colors.black),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
+        ('ALIGN', (1, 0), (1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    elements.append(customer_table)
+    elements.append(Spacer(1, 0.25*inch))
+
+    # Invoice items
+    items_data = [
+        ["Description", "Quantity", "Unit Price", "Total"],
+        [f"{purchase.car.manufacturer} {purchase.car.model_name}", "1", f"{purchase.amount:,.2f}", f"${purchase.amount:,.2f}"],
+    ]
+
+    items_table = Table(items_data, colWidths=[2.5*inch, 1*inch, 1.5*inch, 1.5*inch])
+    items_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.darkslategray),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+        ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ('TOPPADDING', (0, 1), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
+        ('GRID', (0, 0), (-1, -1), 1, colors.lightgrey),
+    ]))
+    elements.append(items_table)
+    elements.append(Spacer(1, 0.25*inch))
+
+    # Total amount
+    elements.append(Paragraph(f"Total Amount: ₹{purchase.amount:,.2f}", styles['Right']))
+    elements.append(Spacer(1, 0.25*inch))
+
+    # Payment details
+    payment_data = [
+        ["Payment Method:", purchase.payment_mode.title() if purchase.payment_mode else "Online"],
+        ["Transaction ID:", purchase.payment_id],
+        ["Payment Status:", 'Success' if purchase.status else 'Failed'],
+    ]
+    payment_table = Table(payment_data, colWidths=[2.5*inch, 3.5*inch])
+    payment_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('TEXTCOLOR', (0, 0), (0, -1), colors.darkslategray),
+        ('TEXTCOLOR', (1, 0), (1, -1), colors.black),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
+        ('ALIGN', (1, 0), (1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    elements.append(payment_table)
+    elements.append(Spacer(1, 0.5*inch))
+
+    # Terms and conditions
+    elements.append(Paragraph("Terms & Conditions", styles['CustomSubtitle']))
+    elements.append(Paragraph("1. All sales are final.", styles['CustomNormal']))
+    elements.append(Paragraph("2. Warranty details are provided separately.", styles['CustomNormal']))
+    elements.append(Spacer(1, 1*inch))  # Increased space before thank you message
+
+    # Thank you message
+    elements.append(Paragraph("Thank you for your purchase From Adam Automotive!", styles['Center']))
+
+    # Footer and border
+    def add_footer_and_border(canvas, doc):
+        canvas.saveState()
+        # Add border
+        canvas.setStrokeColor(colors.darkslategray)
+        canvas.setLineWidth(2)
+        canvas.rect(doc.leftMargin - 5, doc.bottomMargin - 5,
+                    doc.width + 10, doc.height + 10, stroke=1, fill=0)
+        
+        # Add footer
+        canvas.setFont('Helvetica', 9)
+        canvas.setFillColor(colors.darkslategray)
+        footer_text = f"Invoice generated on {purchase.purchase_date.strftime('%B %d, %Y')} | Page 1 of 1"
+        canvas.drawRightString(doc.pagesize[0] - doc.rightMargin, doc.bottomMargin - 20, footer_text)
+        canvas.restoreState()
+
+    # Build the PDF
+    doc.build(elements, onFirstPage=add_footer_and_border, onLaterPages=add_footer_and_border)
+
+    buffer.seek(0)
+    return HttpResponse(buffer, content_type='application/pdf')

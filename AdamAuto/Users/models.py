@@ -212,13 +212,20 @@ class CarPurchase(models.Model):
     car = models.ForeignKey(UserCarDetails, on_delete=models.CASCADE)
     purchase_date = models.DateTimeField(auto_now_add=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    delivery_option = models.CharField(max_length=20, default='showroom')  # Add default value
+    delivery_option = models.CharField(max_length=20, default='showroom')
     street = models.CharField(max_length=255, blank=True, null=True)
     city = models.CharField(max_length=100, blank=True, null=True)
     state = models.CharField(max_length=100, blank=True, null=True)
     pincode = models.CharField(max_length=10, blank=True, null=True)
     payment_id = models.CharField(max_length=100)
     status = models.CharField(max_length=20, default='completed')
+    # New fields
+    owner_name = models.CharField(max_length=255, blank=True, null=True)
+    aadhar_number = models.CharField(max_length=12, blank=True, null=True)
+    pan_number = models.CharField(max_length=10, blank=True, null=True)
+    payment_mode = models.CharField(max_length=20, blank=True, null=True)
+    expected_delivery_date = models.DateField(blank=True, null=True)  # New field
+
 
     def __str__(self):
         return f"{self.user.username} - {self.car.manufacturer} {self.car.model_name} - {self.purchase_date}"

@@ -458,7 +458,17 @@ $(document).ready(function() {
       preConfirm: () => {
         return new Promise((resolve) => {
           if (validateAllFields()) {
-            resolve();
+            resolve({
+              deliveryOption: $('#deliveryOption').val(),
+              ownerName: $('#ownerName').val(),
+              aadharNumber: $('#aadharNumber').val(),
+              panNumber: $('#panNumber').val(),
+              expectedDeliveryDate: $('#expectedDeliveryDate').val(),
+              street: $('#street').val(),
+              city: $('#city').val(),
+              state: $('#state').val(),
+              pincode: $('#pincode').val()
+            });
           } else {
             Swal.showValidationMessage('Please fill all required fields correctly');
           }
@@ -467,12 +477,12 @@ $(document).ready(function() {
     }).then((result) => {
       if (result.isConfirmed) {
         console.log("Form submitted, creating Razorpay order...");
-        createRazorpayOrder();
+        createRazorpayOrder(result.value);
       }
     });
   });
 
-  function createRazorpayOrder() {
+  function createRazorpayOrder(formData) {
     // Use the car price as the amount
     const amount = {{ car.price }} * 100; // Convert to paise
 
@@ -493,11 +503,16 @@ $(document).ready(function() {
           data: {
             payment_id: response.razorpay_payment_id,
             car_id: '{{ car.id }}',
-            delivery_option: $('#deliveryOption').val() || 'showroom',  // Default to 'showroom' if not selected
-            street: $('#street').val() || '',
-            city: $('#city').val() || '',
-            state: $('#state').val() || '',
-            pincode: $('#pincode').val() || '',
+            delivery_option: formData.deliveryOption,
+            street: formData.street,
+            city: formData.city,
+            state: formData.state,
+            pincode: formData.pincode,
+            owner_name: formData.ownerName,
+            aadhar_number: formData.aadharNumber,
+            pan_number: formData.panNumber,
+            payment_mode: response.method, // Use the payment method from Razorpay response
+            expected_delivery_date: formData.expectedDeliveryDate,
             csrfmiddlewaretoken: '{{ csrf_token }}'
           },
           success: function(serverResponse) {

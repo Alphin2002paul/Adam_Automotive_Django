@@ -160,7 +160,7 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="street_address">Street Address</label>
-                            <input class="form-control" type="text" id="address" name="address" pattern="^.{5,100}$" title="Enter a valid street address (5-100 characters)" value="{{ user.address }}" required>
+                            <input class="form-control" type="text" id="street_address" name="street_address" pattern="^.{5,100}$" title="Enter a valid street address (5-100 characters)" value="{{ user.address|default_if_none:'' }}" required>
                             <span id="text_street"></span>
                         </div>
                     </div>

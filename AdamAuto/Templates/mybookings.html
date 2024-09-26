@@ -185,7 +185,7 @@
         {% if purchases %}
         {% for purchase in purchases %}
         <div class="col-md-6 mb-4">
-          <div class="purchase-card">
+          <div class="purchase-card" data-purchase-id="{{ purchase.id }}">
             <div class="purchase-card-header">
               {{ purchase.car.manufacturer }} {{ purchase.car.model_name }}
             </div>
@@ -215,12 +215,14 @@
               <p><strong>Amount:</strong> ${{ purchase.amount }}</p>
               <p><strong>Delivery Option:</strong> {{ purchase.delivery_option|title }}</p>
               {% if purchase.delivery_option != 'showroom' %}
-              <p><strong>Delivery Address:</strong> {{ purchase.street }}, {{ purchase.city }}, {{ purchase.state }} {{ purchase.pincode }}</p>
+    <p><strong>Delivery Address:</strong> {{ purchase.street }}, {{ purchase.city }}, {{ purchase.state }} {{ purchase.pincode }}</p>
+              {% else %}
+              <p><strong>Address:</strong> {{ user.address }}, {{ user.city }}, {{ user.state }} {{ user.zipcode }}</p>
               {% endif %}
               <p><strong>Status:</strong> {{ purchase.status|title }}</p>
             </div>
             <div class="purchase-card-footer">
-              <button class="btn-receipt">Receipt</button>
+              <a href="{% url 'generate_receipt_pdf' purchase.id %}" class="btn-receipt" target="_blank">Receipt</a>
               <a href="{% url 'feedback_dtl' %}" class="btn-feedback">Feedback</a>
             </div>
           </div>
