@@ -1790,6 +1790,7 @@ def generate_receipt_pdf(request, purchase_id):
     # Invoice title
     elements.append(Paragraph("CAR SALE INVOICE", styles['CustomSubtitle']))
     elements.append(Spacer(1, 0.25*inch))
+    elements.append(HRFlowable(width="100%", thickness=1, lineCap='round', color=colors.darkgray, spaceBefore=1, spaceAfter=1))
 
     # Customer and invoice details
     customer_data = [
@@ -1804,8 +1805,10 @@ def generate_receipt_pdf(request, purchase_id):
     if purchase.delivery_option == 'showroom':
         
         user_address = f"{user.address}, {user.city}, {user.state} {user.zipcode}"
-        customer_data.append(["Delivery Address:", user_address])
+        customer_data.append(["Customer Address:", user_address])
     else:
+        user_address = f"{user.address}, {user.city}, {user.state} {user.zipcode}"
+        customer_data.append(["Customer Address:", user_address])
         home_delivery_address = f"{purchase.street}, {purchase.city}, {purchase.state} {purchase.pincode}"
         customer_data.append(["Delivery Address:", home_delivery_address])
 
@@ -1827,7 +1830,7 @@ def generate_receipt_pdf(request, purchase_id):
     # Invoice items
     items_data = [
         ["Description", "Quantity", "Unit Price", "Total"],
-        [f"{purchase.car.manufacturer} {purchase.car.model_name}", "1", f"{purchase.amount:,.2f}", f"${purchase.amount:,.2f}"],
+        [f"{purchase.car.manufacturer} {purchase.car.model_name}", "1", f"{purchase.amount:,.2f} Rs", f"{purchase.amount:,.2f} Rs"],
     ]
 
     items_table = Table(items_data, colWidths=[2.5*inch, 1*inch, 1.5*inch, 1.5*inch])
@@ -1851,7 +1854,7 @@ def generate_receipt_pdf(request, purchase_id):
     elements.append(Spacer(1, 0.25*inch))
 
     # Total amount
-    elements.append(Paragraph(f"Total Amount: ₹{purchase.amount:,.2f}", styles['Right']))
+    elements.append(Paragraph(f"Total Amount:  {purchase.amount:,.2f} .Rs", styles['Right']))
     elements.append(Spacer(1, 0.25*inch))
 
     # Payment details
@@ -1873,13 +1876,19 @@ def generate_receipt_pdf(request, purchase_id):
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
     ]))
     elements.append(payment_table)
-    elements.append(Spacer(1, 0.5*inch))
+    elements.append(Spacer(0.1, 0.2*inch))
 
     # Terms and conditions
     elements.append(Paragraph("Terms & Conditions", styles['CustomSubtitle']))
+    elements.append(HRFlowable(width="100%", thickness=1, lineCap='round', color=colors.darkgray, spaceBefore=1, spaceAfter=1))
+    
+
     elements.append(Paragraph("1. All sales are final.", styles['CustomNormal']))
     elements.append(Paragraph("2. Warranty details are provided separately.", styles['CustomNormal']))
-    elements.append(Spacer(1, 1*inch))  # Increased space before thank you message
+    elements.append(Paragraph("3. Adam Automotive reserves the right to refuse service to anyone.", styles['CustomNormal']))
+
+
+    elements.append(Spacer(0.1, 0.2*inch))
 
     # Thank you message
     elements.append(Paragraph("Thank you for your purchase From Adam Automotive!", styles['Center']))
