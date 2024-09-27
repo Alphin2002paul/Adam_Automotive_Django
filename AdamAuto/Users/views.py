@@ -1333,29 +1333,33 @@ def approve_car_listing(request, car_id):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
     
 
-from django.shortcuts import render, redirect
+
+
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.conf import settings
-from .models import Feedback
+from .models import Feedback, UserCarDetails
 from django.core.exceptions import ValidationError
+from django.contrib.auth.decorators import login_required
 import os
 import csv
 
+@login_required
 def feedback_dtl(request):
+    car_id = request.GET.get('car_id')
+    
+    if not car_id:
+        messages.error(request, "Car ID is missing.")
+        return redirect('mybookings')
+    
+    try:
+        car = get_object_or_404(UserCarDetails, id=car_id)
+    except UserCarDetails.DoesNotExist:
+        messages.error(request, "The specified car does not exist.")
+        return redirect('mybookings')
+    
     if request.method == 'POST':
         # Get form data
-        car_id = request.POST.get('car_id') or request.GET.get('car_id')
-        
-        if not car_id:
-            messages.error(request, "Car ID is missing.")
-            return redirect('feedback_dtl')  # Redirect to the same page
-        
-        try:
-            car = UserCarDetails.objects.get(id=car_id)
-        except UserCarDetails.DoesNotExist:
-            messages.error(request, "The specified car does not exist.")
-            return redirect('feedback_dtl')  # Redirect to the same page
-        
         manufacturer_name = request.POST.get('manufacturer_name')
         model_name = request.POST.get('model_name')
         year = request.POST.get('year')
@@ -1390,9 +1394,6 @@ def feedback_dtl(request):
             # Save to CSV
             csv_file_path = os.path.join(settings.BASE_DIR, 'Users', 'car_reviews_with_feedback.csv')
 
-            print(f"Attempting to open file at: {csv_file_path}")  # Debugging line
-
-            # Check if the directory exists, if not, create it
             os.makedirs(os.path.dirname(csv_file_path), exist_ok=True)
 
             file_exists = os.path.isfile(csv_file_path)
@@ -1404,32 +1405,20 @@ def feedback_dtl(request):
                 writer.writerow(csv_data)
 
             messages.success(request, 'Feedback submitted successfully!')
-            return redirect('feedback_dtl')
+            return redirect('mybookings')
         
         except Exception as e:
-            print(f"Error details: {str(e)}")  # Add this line for more detailed error information
+            print(f"Error details: {str(e)}")
             messages.error(request, f'Error submitting feedback: {str(e)}')
 
-    # For GET requests
-    car_id = request.GET.get('car_id')
-    manufacturer = request.GET.get('manufacturer')
-    model = request.GET.get('model')
-    
-    if car_id:
-        try:
-            car = UserCarDetails.objects.get(id=car_id)
-        except UserCarDetails.DoesNotExist:
-            messages.error(request, "The specified car does not exist.")
-            return redirect('feedback_dtl')  # Redirect to the same page
-    else:
-        car = None
-
+    # For GET requests or if POST fails
     rating_list = ['comfort', 'performance', 'fuel_efficiency', 'safety', 'technology']
     context = {
         'rating_list': rating_list,
         'car': car,
-        'manufacturer': manufacturer,
-        'model': model,
+        'manufacturer': car.manufacturer.company_name,
+        'model': car.model_name.model_name,
+        'year': car.year,
         'car_id': car_id,
     }
     return render(request, 'feedback_dtl.html', context)
