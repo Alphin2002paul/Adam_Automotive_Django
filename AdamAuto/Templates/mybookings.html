@@ -235,7 +235,7 @@
                   </div>
                   <div class="purchase-card-footer">
                     <a href="{% url 'generate_receipt_pdf' purchase.id %}" class="btn-receipt" target="_blank">Receipt</a>
-                    <a href="{% url 'feedback_dtl' %}" class="btn-feedback">Feedback</a>
+                    <a href="{% url 'feedback_dtl' %}?car_id={{ purchase.car.id }}&manufacturer={{ purchase.car.manufacturer|urlencode }}&model={{ purchase.car.model_name|urlencode }}" class="btn-feedback">Feedback</a>
                   </div>
                 </div>
               {% endfor %}

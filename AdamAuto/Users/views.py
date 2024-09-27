@@ -1344,6 +1344,18 @@ import csv
 def feedback_dtl(request):
     if request.method == 'POST':
         # Get form data
+        car_id = request.POST.get('car_id') or request.GET.get('car_id')
+        
+        if not car_id:
+            messages.error(request, "Car ID is missing.")
+            return redirect('feedback_dtl')  # Redirect to the same page
+        
+        try:
+            car = UserCarDetails.objects.get(id=car_id)
+        except UserCarDetails.DoesNotExist:
+            messages.error(request, "The specified car does not exist.")
+            return redirect('feedback_dtl')  # Redirect to the same page
+        
         manufacturer_name = request.POST.get('manufacturer_name')
         model_name = request.POST.get('model_name')
         year = request.POST.get('year')
@@ -1357,6 +1369,7 @@ def feedback_dtl(request):
         try:
             # Save to database
             feedback = Feedback(
+                car=car,
                 user=request.user,
                 manufacturer_name=manufacturer_name,
                 model_name=model_name,
@@ -1397,8 +1410,29 @@ def feedback_dtl(request):
             print(f"Error details: {str(e)}")  # Add this line for more detailed error information
             messages.error(request, f'Error submitting feedback: {str(e)}')
 
+    # For GET requests
+    car_id = request.GET.get('car_id')
+    manufacturer = request.GET.get('manufacturer')
+    model = request.GET.get('model')
+    
+    if car_id:
+        try:
+            car = UserCarDetails.objects.get(id=car_id)
+        except UserCarDetails.DoesNotExist:
+            messages.error(request, "The specified car does not exist.")
+            return redirect('feedback_dtl')  # Redirect to the same page
+    else:
+        car = None
+
     rating_list = ['comfort', 'performance', 'fuel_efficiency', 'safety', 'technology']
-    return render(request, 'feedback_dtl.html', {'rating_list': rating_list})
+    context = {
+        'rating_list': rating_list,
+        'car': car,
+        'manufacturer': manufacturer,
+        'model': model,
+        'car_id': car_id,
+    }
+    return render(request, 'feedback_dtl.html', context)
 
 
 
