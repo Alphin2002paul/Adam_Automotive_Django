@@ -14,47 +14,55 @@
       body {
         background-color: #333; /* Darkish grey background */
         color: #fff; /* White text color for better contrast */
-        background-image: url('{% static 'images/car2.jpg' %}')
+        background-image: url("{% static 'images/car2.jpg' %}");
       }
       element.style {
         margin-left: 870px;
     }
     .purchase-card {
+      width: 80%; /* Further reduced width */
+      max-width: 350px; /* Smaller maximum width */
       background-color: #f8f9fa;
-      border-radius: 15px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       overflow: hidden;
       transition: transform 0.3s ease-in-out;
+      margin-bottom: 15px;
     }
 
     .purchase-card:hover {
-      transform: translateY(-5px);
+      transform: translateY(-3px);
     }
 
     .purchase-card-header {
       background-color: #007bff;
       color: white;
-      padding: 15px;
-      font-size: 1.2em;
+      padding: 8px 12px;
+      font-size: 1em;
       font-weight: bold;
     }
 
     .purchase-card-body {
-      padding: 20px;
+      padding: 12px;
+    }
+
+    .purchase-card-body p {
+      margin-bottom: 0.3rem;
+      font-size: 0.85em;
     }
 
     .purchase-card-footer {
       background-color: #f1f3f5;
-      padding: 15px;
+      padding: 8px 12px;
       text-align: right;
     }
 
     .btn-receipt, .btn-feedback {
-      padding: 8px 15px;
-      border-radius: 5px;
+      padding: 4px 8px;
+      border-radius: 4px;
       font-weight: bold;
       transition: all 0.3s ease;
+      font-size: 0.8em;
     }
 
     .btn-receipt {
@@ -78,6 +86,22 @@
       background-color: #e0a800;
     }
 
+    #pageIndicator {
+      margin: 0 15px;
+      font-weight: bold;
+    }
+
+    #prevButton, #nextButton {
+      min-width: 100px;
+    }
+
+    .car-image {
+      width: 100%;
+      height: 120px; /* Further reduced height */
+      object-fit: cover;
+      border-bottom: 1px solid #dee2e6;
+    }
+
     @keyframes fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
@@ -85,20 +109,6 @@
 
     .purchase-card {
       animation: fadeIn 0.5s ease-out;
-    }
-
-    .car-image {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-      border-bottom: 1px solid #dee2e6;
-      margin-bottom: 10px; /* Add some space between images */
-    }
-    .no-details {
-      text-align: center;
-      color: #ff0000; /* Red color for emphasis */
-      font-weight: bold;
-      margin-top: 20px;
     }
     </style>
     <meta charset="utf-8" />
@@ -122,7 +132,7 @@
           </div>
       {% endfor %}
   {% endif %}
-      <div class="row">
+      <div class="row justify-content-center">
         <div class="col-lg-4 pb-5">
           <!-- Account Sidebar -->
           <div class="author-card pb-3">
@@ -181,61 +191,100 @@
             </nav>
           </div>
         </div>
-        <!-- New Purchase Cards -->
-        {% if purchases %}
-        {% for purchase in purchases %}
-        <div class="col-md-6 mb-4">
-          <div class="purchase-card" data-purchase-id="{{ purchase.id }}">
-            <div class="purchase-card-header">
-              {{ purchase.car.manufacturer }} {{ purchase.car.model_name }}
-            </div>
-            <div id="carImageCarousel{{ purchase.id }}" class="carousel slide" data-ride="carousel">
-              <div class="carousel-inner">
-                {% for image in purchase.car.images.all %}
-                <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                  <img src="{{ image.image.url }}" alt="{{ purchase.car.manufacturer }} {{ purchase.car.model_name }}" class="d-block w-100 car-image">
-                </div>
-                {% empty %}
-                <div class="carousel-item active">
-                  <img src="{% static 'images/default_car.jpg' %}" alt="Default Car Image" class="d-block w-100 car-image">
-                </div>
-                {% endfor %}
-              </div>
-              <a class="carousel-control-prev" href="#carImageCarousel{{ purchase.id }}" role="button" data-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="sr-only">Previous</span>
-              </a>
-              <a class="carousel-control-next" href="#carImageCarousel{{ purchase.id }}" role="button" data-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="sr-only">Next</span>
-              </a>
-            </div>
-            <div class="purchase-card-body">
-              <p><strong>Purchase Date:</strong> {{ purchase.purchase_date|date:"F d, Y" }}</p>
-              <p><strong>Amount:</strong> ${{ purchase.amount }}</p>
-              <p><strong>Delivery Option:</strong> {{ purchase.delivery_option|title }}</p>
-              {% if purchase.delivery_option != 'showroom' %}
-    <p><strong>Delivery Address:</strong> {{ purchase.street }}, {{ purchase.city }}, {{ purchase.state }} {{ purchase.pincode }}</p>
-              {% else %}
-              <p><strong>Address:</strong> {{ user.address }}, {{ user.city }}, {{ user.state }} {{ user.zipcode }}</p>
-              {% endif %}
-              <p><strong>Status:</strong> {{ purchase.status|title }}</p>
-            </div>
-            <div class="purchase-card-footer">
-              <a href="{% url 'generate_receipt_pdf' purchase.id %}" class="btn-receipt" target="_blank">Receipt</a>
-              <a href="{% url 'feedback_dtl' %}" class="btn-feedback">Feedback</a>
-            </div>
-          </div>
-        </div>
-        {% endfor %}
-        {% else %}
+        <!-- New Purchase Cards with Pagination -->
         <div class="col-lg-8">
-          <div class="alert alert-info text-center">
-            No bookings available.
-          </div>
+          <h2 class="mb-4">Purchase History</h2><hr>
+          {% if purchases %}
+            <div id="purchaseContainer" class="d-flex justify-content-center">
+              {% for purchase in purchases %}
+                <div class="purchase-card" data-purchase-id="{{ purchase.id }}" {% if not forloop.first %}style="display: none;"{% endif %}>
+                  <div class="purchase-card-header">{{ purchase.car.manufacturer }} {{ purchase.car.model_name }}</div>
+                  <div id="carImageCarousel{{ purchase.id }}" class="carousel slide" data-ride="carousel">
+                    <div class="carousel-inner">
+                      {% for image in purchase.car.images.all %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                          <img src="{{ image.image.url }}" alt="{{ purchase.car.manufacturer }} {{ purchase.car.model_name }}" class="d-block w-100 car-image">
+                        </div>
+                      {% empty %}
+                        <div class="carousel-item active">
+                          <img src="{% static 'images/default_car.jpg' %}" alt="Default Car Image" class="d-block w-100 car-image">
+                        </div>
+                      {% endfor %}
+                    </div>
+                    {% if purchase.car.images.all|length > 1 %}
+                      <a class="carousel-control-prev" href="#carImageCarousel{{ purchase.id }}" role="button" data-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Previous</span>
+                      </a>
+                      <a class="carousel-control-next" href="#carImageCarousel{{ purchase.id }}" role="button" data-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Next</span>
+                      </a>
+                    {% endif %}
+                  </div>
+                  <div class="purchase-card-body">
+                    <p><strong>Purchase Date:</strong> {{ purchase.purchase_date|date:'F d, Y' }}</p>
+                    <p><strong>Amount:</strong> ${{ purchase.amount }}</p>
+                    <p><strong>Delivery Option:</strong> {{ purchase.delivery_option|title }}</p>
+                    {% if purchase.delivery_option != 'showroom' %}
+                      <p><strong>Delivery Address:</strong> {{ purchase.street }}, {{ purchase.city }}, {{ purchase.state }} {{ purchase.pincode }}</p>
+                    {% else %}
+                      <p><strong>Address:</strong> {{ user.address }}, {{ user.city }}, {{ user.state }} {{ user.zipcode }}</p>
+                    {% endif %}
+                    <p><strong>Status:</strong> {{ purchase.status|title }}</p>
+                  </div>
+                  <div class="purchase-card-footer">
+                    <a href="{% url 'generate_receipt_pdf' purchase.id %}" class="btn-receipt" target="_blank">Receipt</a>
+                    <a href="{% url 'feedback_dtl' %}" class="btn-feedback">Feedback</a>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+            <div class="text-center mt-3">
+              <button id="prevButton" class="btn btn-primary">&laquo; Previous</button>
+              <span id="pageIndicator">Page <span id="currentPage">1</span> of <span id="totalPages">{{ purchases|length }}</span></span>
+              <button id="nextButton" class="btn btn-primary">Next &raquo;</button>
+            </div>
+          {% else %}
+            <div class="alert alert-info text-center">No bookings available.</div>
+          {% endif %}
         </div>
-        {% endif %}
       </div>
     </div>
+    <script>
+      $(document).ready(function() {
+        var currentIndex = 0;
+        var totalPages = {{ purchases|length }};
+        var $purchaseCards = $('.purchase-card');
+        var $currentPage = $('#currentPage');
+        var $prevButton = $('#prevButton');
+        var $nextButton = $('#nextButton');
+
+        function showCard(index) {
+          $purchaseCards.hide();
+          $purchaseCards.eq(index).show();
+          $currentPage.text(index + 1);
+          $prevButton.prop('disabled', index === 0);
+          $nextButton.prop('disabled', index === totalPages - 1);
+        }
+
+        $prevButton.click(function() {
+          if (currentIndex > 0) {
+            currentIndex--;
+            showCard(currentIndex);
+          }
+        });
+
+        $nextButton.click(function() {
+          if (currentIndex < totalPages - 1) {
+            currentIndex++;
+            showCard(currentIndex);
+          }
+        });
+
+        // Initialize
+        showCard(currentIndex);
+      });
+    </script>
   </body>
 </html>

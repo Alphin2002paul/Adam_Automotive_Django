@@ -1829,7 +1829,7 @@ def generate_receipt_pdf(request, purchase_id):
 
     # Invoice items
     items_data = [
-        ["Description", "Quantity", "Unit Price", "Total"],
+        ["Description", "Quantity", "Car Price", "Total"],
         [f"{purchase.car.manufacturer} {purchase.car.model_name}", "1", f"{purchase.amount:,.2f} Rs", f"{purchase.amount:,.2f} Rs"],
     ]
 
