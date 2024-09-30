@@ -80,6 +80,11 @@ urlpatterns = [
     path('enquirecar/', views.enquire_car, name='enquirecar'),  # Changed from 'enquire-car/' to 'enquirecar/'
     path('submit-enquiry/', views.submit_enquiry, name='submit_enquiry'),
     path('check_existing_enquiry/', views.check_existing_enquiry, name='check_existing_enquiry'),
+    path('adminenquiry/', views.adminenquiry, name='adminenquiry'),
+    path('get_enquiry_details/<int:enquiry_id>/', views.get_enquiry_details, name='get_enquiry_details'),
+    path('approve_enquiry/', views.approve_enquiry, name='approve_enquiry'),
+    
+
     
 
 

@@ -1986,3 +1986,143 @@ def check_existing_enquiry(request):
     except Exception as e:
         logger.error(f"Error checking enquiry: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
+
+
+from .models import CarEnquiry
+
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+
+def get_enquiry_details(request, enquiry_id):
+    enquiry = get_object_or_404(CarEnquiry, id=enquiry_id)
+    data = {
+        'manufacturer': enquiry.manufacturer,
+        'model_name': enquiry.model_name,
+        'model_year': enquiry.model_year,
+        'color': enquiry.color,
+        'description': enquiry.description,
+    }
+    return JsonResponse(data)
+
+def adminenquiry(request):
+    car_enquiries = CarEnquiry.objects.all().select_related('user')
+    context = {
+        'car_enquiries': car_enquiries,
+    }
+    return render(request, 'adminenquiry.html', context)
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.core.mail import send_mail
+from django.conf import settings
+from .models import CarEnquiry
+import json
+
+@require_POST
+def approve_enquiry(request):
+    data = json.loads(request.body)
+    enquiry_id = data.get('enquiryId')
+    action = data.get('action')
+    reason = data.get('reason')
+
+    try:
+        enquiry = CarEnquiry.objects.get(id=enquiry_id)
+        
+        if action == 'approve':
+            enquiry.status = 'Approved'
+            enquiry.save()
+
+            # Send email to user
+            subject = 'Your Car Enquiry has been Approved'
+            message = f"""
+            Dear {enquiry.user.first_name} {enquiry.user.last_name},
+
+            Your enquiry request for {enquiry.manufacturer} {enquiry.model_name} has been approved.
+
+            Reason for approval: {reason}
+
+            Thank you for choosing Adam Automotive.
+
+            Best regards,
+            Adam Automotive Team
+            """
+            from_email = settings.DEFAULT_FROM_EMAIL
+            recipient_list = [enquiry.user.email]
+
+            send_mail(subject, message, from_email, recipient_list)
+
+        elif action == 'deny':
+            enquiry.status = 'Denied'
+            enquiry.save()
+            # You can add similar email logic for denial if needed
+
+        return JsonResponse({'success': True})
+    except CarEnquiry.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Enquiry not found'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+    
+    from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.core.mail import send_mail
+from django.conf import settings
+from .models import CarEnquiry
+import json
+
+@require_POST
+def approve_enquiry(request):
+    data = json.loads(request.body)
+    enquiry_id = data.get('enquiryId')
+    action = data.get('action')
+    reason = data.get('reason')
+
+    try:
+        enquiry = CarEnquiry.objects.get(id=enquiry_id)
+        
+        if action == 'approve':
+            enquiry.status = 'Approved'
+            subject = 'Your Car Enquiry has been Approved'
+            message = f"""
+            Dear {enquiry.user.first_name} {enquiry.user.last_name},
+
+            Your enquiry request for {enquiry.manufacturer} {enquiry.model_name} has been approved.
+
+            Reason for approval: {reason}
+
+            Thank you for choosing Adam Automotive.
+
+            Best regards,
+            Adam Automotive Team
+            """
+        elif action == 'deny':
+            enquiry.status = 'Denied'
+            subject = 'Your Car Enquiry has been Denied'
+            message = f"""
+            Dear {enquiry.user.first_name} {enquiry.user.last_name},
+
+            We regret to inform you that your enquiry request for {enquiry.manufacturer} {enquiry.model_name} has been denied.
+
+            Reason for denial: {reason}
+
+            If you have any questions or concerns, please don't hesitate to contact us.
+
+            Best regards,
+            Adam Automotive Team
+            """
+        
+        enquiry.save()
+
+        # Send email to user
+        from_email = settings.DEFAULT_FROM_EMAIL
+        recipient_list = [enquiry.user.email]
+
+        send_mail(subject, message, from_email, recipient_list)
+
+        return JsonResponse({'success': True})
+    except CarEnquiry.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Enquiry not found'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+    
+    
+    

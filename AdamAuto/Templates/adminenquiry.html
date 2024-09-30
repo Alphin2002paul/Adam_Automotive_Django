@@ -129,6 +129,9 @@
         bottom: -37px;
       }
     </style>
+    <!-- Add SweetAlert2 CSS and JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
   </head>
   <body>
     <div class="d-flex">
@@ -137,7 +140,7 @@
           <h3 class="mb-0">Adam</h3><h3><span style="color: #d39e00;">Automotive</span></h3>
         </div>
         <ul class="list-unstyled components">
-          <li class="active">
+          <li >
             <a href="{% url 'adminindex' %}"><i class="fas fa-user-circle"></i> User Details</a>
           </li>
           <li>
@@ -165,8 +168,8 @@
           <li>
             <a href="{% url 'soldcarinfo' %}"><i class="fas fa-car-side"></i> Sold Cars</a>
           </li>
-          <li>
-            <a href="{% url 'adminenquiry' %}"><i class="fas fa-question-circle"></i> Car Enquiry</a>
+          <li class="active">
+            <a href="#"><i class="fas fa-question-circle"></i> Car Enquiry</a>
           </li>
         </ul>
 
@@ -210,31 +213,38 @@
             <div class="col-md-12 mb-4">
               <div class="card">
                 <div class="card-header">
-                  <h2>User <span style="color: #d39e00;">Details</span></h2>                </div>
+                  <h2>Enquiry <span style="color: #d39e00;">Details</span></h2>                </div>
                 <div class="card-body">
                   <table id="myTable" class="display">
                     <thead>
                       <tr>
                         <th>Sl/No</th>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Email Id</th><th></th>
+                        <th>User Name</th><th></th>
+                        <th>Email</th><th></th>
                         <th>Phone Number</th>
-                        <th>More Details</th>
+                        <th>Enquiry Details</th>
+                        <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {% for user in users %}
-                        <tr>
-                          <td>{{ forloop.counter }}</td>
-                          <td>{{ user.first_name }}</td>
-                          <td>{{ user.last_name }}</td>
-                          <td>{{ user.email }}</td><td></td>
-                          <td>{{ user.Phone_number }}</td>
-                          <td>
-                            <a class="btn-darkish" href="{% url 'user_detail' user.id %}">More Details</a>
-                          </td>
-                        </tr>
+                      {% for enquiry in car_enquiries %}
+                        {% if enquiry.status == "Pending" %}
+                          <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ enquiry.user.first_name }} {{ enquiry.user.last_name }}</td><td></td>
+                            <td>{{ enquiry.user.email }}</td><td></td>
+                            <td>{{ enquiry.user.Phone_number }}</td>
+                            <td>
+                              <button class="btn btn-info btn-sm" onclick="showEnquiryDetails({{ enquiry.id }})">
+                                View Details
+                              </button>
+                            </td>
+                            <td>
+                              <button class="btn btn-success btn-sm" onclick="handleEnquiry({{ enquiry.id }}, 'approve')">Approve</button>
+                              <button class="btn btn-danger btn-sm" onclick="handleEnquiry({{ enquiry.id }}, 'deny')">Deny</button>
+                            </td>
+                          </tr>
+                        {% endif %}
                       {% endfor %}
                     </tbody>
                   </table>
@@ -256,7 +266,134 @@
         document.getElementById('sidebarCollapse').addEventListener('click', function () {
           document.getElementById('sidebar').classList.toggle('active')
         })
+        
+        // User Details SweetAlert
+        document.querySelectorAll('.user-details-btn').forEach(button => {
+          button.addEventListener('click', function() {
+            const name = this.getAttribute('data-name');
+            const email = this.getAttribute('data-email');
+            const phone = this.getAttribute('data-phone');
+
+            Swal.fire({
+              title: 'User Details',
+              html: `
+                <p><strong>Name:</strong> ${model_name}</p>
+                <p><strong>Email:</strong> ${email}</p>
+                <p><strong>Phone:</strong> ${phone}</p>
+              `,
+              icon: 'info',
+              confirmButtonText: 'Close'
+            });
+          });
+        });
       })
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    function showEnquiryDetails(enquiryId) {
+      fetch(`/get_enquiry_details/${enquiryId}/`)
+        .then(response => response.json())
+        .then(data => {
+          Swal.fire({
+            title: 'Enquiry Details',
+            html: `
+              <p><strong>Manufacturer:</strong> ${data.manufacturer}</p>
+              <p><strong>Model:</strong> ${data.model_name}</p>
+              <p><strong>Year:</strong> ${data.model_year}</p>
+              <p><strong>Color:</strong> ${data.color}</p><hr>
+              <p><strong>Description:</strong> ${data.description}</p>
+            `,
+            icon: 'info',
+            confirmButtonText: 'Close'
+          });
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          Swal.fire({
+            title: 'Error',
+            text: 'Failed to load enquiry details',
+            icon: 'error',
+            confirmButtonText: 'Close'
+          });
+        });
+    }
+    </script>
+    <script>
+    function handleEnquiry(enquiryId, action) {
+      const validateInput = (value) => {
+        if (value.length < 5) {
+          return 'The reason must be at least 5 characters long.';
+        }
+        if (/[^a-zA-Z0-9\s]/.test(value)) {
+          return 'Special characters are not allowed.';
+        }
+        return null;
+      };
+
+      const title = action === 'approve' ? 'Approve Enquiry' : 'Deny Enquiry';
+      const confirmButtonText = action === 'approve' ? 'Approve' : 'Deny';
+
+      Swal.fire({
+        title: title,
+        input: 'textarea',
+        inputLabel: `Reason for ${action}`,
+        inputPlaceholder: 'Enter your reason here...',
+        showCancelButton: true,
+        confirmButtonText: confirmButtonText,
+        cancelButtonText: 'Cancel',
+        inputValidator: (value) => {
+          return validateInput(value);
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Send the approval data to the backend
+          fetch('/approve_enquiry/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+              enquiryId: enquiryId,
+              action: action,
+              reason: result.value
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              Swal.fire('Success', 'Request processed successfully', 'success')
+              .then(() => {
+                // Reload the page to reflect the changes
+                location.reload();
+              });
+            } else {
+              Swal.fire('Error', 'Failed to process request', 'error');
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            Swal.fire('Error', 'An unexpected error occurred', 'error');
+          });
+        }
+      });
+    }
+
+    // Function to get CSRF token
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
     </script>
   </body>
 </html>

@@ -198,31 +198,35 @@
           <h2 class="mb-4">Enquire About a Car</h2><hr>
           <form id="enquireForm" method="post">
             {% csrf_token %}
-            <div class="form-group">
-              <label for="manufacturer">Manufacturer Name</label>
-              <input type="text" class="form-control" id="manufacturer" name="manufacturer" required>
-              <small class="error" id="manufacturer-error"></small>
+            <div class="row">
+              <div class="col-md-6 form-group">
+                <label for="manufacturer">Manufacturer Name</label>
+                <input type="text" class="form-control" id="manufacturer" name="manufacturer" required>
+                <small class="error" id="manufacturer-error"></small>
+              </div>
+              <div class="col-md-6 form-group">
+                <label for="model_name">Model Name</label>
+                <input type="text" class="form-control" id="model_name" name="model_name" required>
+                <small class="error" id="model_name-error"></small>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="model_name">Model Name</label>
-              <input type="text" class="form-control" id="model_name" name="model_name" required>
-              <small class="error" id="model_name-error"></small>
-            </div>
-            <div class="form-group">
-              <label for="model_year">Model Year</label>
-              <input type="number" class="form-control" id="model_year" name="model_year" required>
-              <small class="error" id="model_year-error"></small>
-            </div>
-            <div class="form-group">
-              <label for="color">Color</label>
-              <input type="text" class="form-control" id="color" name="color" required>
-              <small class="error" id="color-error"></small>
+            <div class="row">
+              <div class="col-md-6 form-group">
+                <label for="model_year">Model Year</label>
+                <input type="number" class="form-control" id="model_year" name="model_year" required>
+                <small class="error" id="model_year-error"></small>
+              </div>
+              <div class="col-md-6 form-group">
+                <label for="color">Color</label>
+                <input type="text" class="form-control" id="color" name="color" required>
+                <small class="error" id="color-error"></small>
+              </div>
             </div>
             <div class="form-group">
               <label for="description">Description</label>
               <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
               <small class="error" id="description-error"></small>
-            </div>
+            </div><br><br>
             <button type="submit" class="btn btn-primary" id="submitBtn" disabled>Submit Enquiry</button>
           </form>
         </div>

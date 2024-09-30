@@ -169,6 +169,116 @@
                     {% endfor %}
                 </tbody>
             </table>
+
+            <h2 class="mt-5">Sale Requests</h2>
+            <hr />
+            <table id="saleTable" class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Manufacturer</th>
+                        <th>Model</th>
+                        <th>Year</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in sales %}
+                        <tr data-id="{{ sale.id }}">
+                            <td>{{ sale.manufacturer }}</td>
+                            <td>{{ sale.model }}</td>
+                            <td>{{ sale.year }}</td>
+                            <td>{{ sale.price }}</td>
+                            <td>{{ sale.status }}</td>
+                            <td>
+                                <button class="btn btn-success" 
+                                        onclick="openEditSaleModal({{ sale.id }}, '{{ sale.manufacturer }}', '{{ sale.model }}', '{{ sale.year }}', '{{ sale.price }}', '{{ sale.status }}')" 
+                                        {% if sale.status != 'Pending' %}disabled{% endif %}>
+                                    Edit
+                                </button>
+                                <button class="btn btn-danger" 
+                                        onclick="denySale({{ sale.id }})" 
+                                        {% if sale.status != 'Pending' %}disabled{% endif %}>
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <h2 class="mt-5">Test Drive Requests</h2>
+            <hr />
+            <table id="testDriveTable" class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Manufacturer</th>
+                        <th>Model</th>
+                        <th>Preferred Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for testdrive in testdrives %}
+                        <tr data-id="{{ testdrive.id }}">
+                            <td>{{ testdrive.manufacturer }}</td>
+                            <td>{{ testdrive.model }}</td>
+                            <td>{{ testdrive.preferred_date }}</td>
+                            <td>{{ testdrive.status }}</td>
+                            <td>
+                                <button class="btn btn-success" 
+                                        onclick="openEditTestDriveModal({{ testdrive.id }}, '{{ testdrive.manufacturer }}', '{{ testdrive.model }}', '{{ testdrive.preferred_date }}', '{{ testdrive.status }}')" 
+                                        {% if testdrive.status != 'Pending' %}disabled{% endif %}>
+                                    Edit
+                                </button>
+                                <button class="btn btn-danger" 
+                                        onclick="denyTestDrive({{ testdrive.id }})" 
+                                        {% if testdrive.status != 'Pending' %}disabled{% endif %}>
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <h2 class="mt-5">Enquiry Requests</h2>
+            <hr />
+            <table id="enquiryTable" class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Manufacturer Name</th>
+                        <th>Model Name</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for enquiry in enquiries %}
+                        <tr data-id="{{ enquiry.id }}">
+                            <td>{{ enquiry.subject }}</td>
+                            <td>{{ enquiry.message|truncatechars:50 }}</td>
+                            <td>{{ enquiry.date }}</td>
+                            <td>{{ enquiry.status }}</td>
+                            <td>
+                                <button class="btn btn-success" 
+                                        onclick="openEditEnquiryModal({{ enquiry.id }}, '{{ enquiry.subject }}', '{{ enquiry.message }}', '{{ enquiry.date }}', '{{ enquiry.status }}')" 
+                                        {% if enquiry.status != 'Pending' %}disabled{% endif %}>
+                                    Edit
+                                </button>
+                                <button class="btn btn-danger" 
+                                        onclick="denyEnquiry({{ enquiry.id }})" 
+                                        {% if enquiry.status != 'Pending' %}disabled{% endif %}>
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </section>
 
@@ -240,7 +350,10 @@
     <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
     <script>
         $(document).ready(function () {
-            $('#serviceTable').DataTable(); // Initialize DataTable
+            $('#serviceTable').DataTable();
+            $('#saleTable').DataTable();
+            $('#testDriveTable').DataTable();
+            $('#enquiryTable').DataTable();
         });
     </script>
 
@@ -456,6 +569,101 @@
                 }
             });
         }
+
+        function openEditSaleModal(id, manufacturer, model, year, price, status) {
+            Swal.fire({
+                title: 'Edit Sale Request',
+                html: `
+                    <input id="swal-input1" class="swal2-input" placeholder="Manufacturer" value="${manufacturer || ''}" onkeypress="return /^[a-zA-Z0-9 ]*$/.test(event.key)">
+                    <input id="swal-input2" class="swal2-input" placeholder="Model" value="${model || ''}" onkeypress="return /^[a-zA-Z0-9 ]*$/.test(event.key)">
+                    <input id="swal-input3" class="swal2-input" placeholder="Year" value="${year || ''}" onkeypress="return /^[0-9]*$/.test(event.key)">
+                    <input id="swal-input4" class="swal2-input" placeholder="Price" value="${price || ''}" onkeypress="return /^[0-9]*$/.test(event.key)">
+                `,
+                showCancelButton: true,
+                cancelButtonText: 'Cancel',
+                focusConfirm: false,
+                preConfirm: () => {
+                    const updatedManufacturer = document.getElementById('swal-input1').value;
+                    const updatedModel = document.getElementById('swal-input2').value;
+                    const updatedYear = document.getElementById('swal-input3').value;
+                    const updatedPrice = document.getElementById('swal-input4').value;
+
+                    if (!updatedManufacturer || !updatedModel || !updatedYear || !updatedPrice) {
+                        Swal.showValidationMessage('Please fill in all fields');
+                        return false;
+                    }
+
+                    return updateSaleRequest(id, updatedManufacturer, updatedModel, updatedYear, updatedPrice);
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.reload();
+                }
+            });
+        }
+
+        function updateSaleRequest(id, manufacturer, model, year, price) {
+            return fetch(`/update_sale/${id}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: JSON.stringify({
+                    manufacturer: manufacturer,
+                    model: model,
+                    year: year,
+                    price: price
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    return Swal.fire('Updated!', 'Sale request has been updated.', 'success');
+                } else {
+                    return Swal.fire('Error!', data.message, 'error');
+                }
+            });
+        }
+
+        function denySale(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/delete_sale/${id}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const row = document.querySelector(`#saleTable tr[data-id="${id}"]`);
+                            if (row) {
+                                row.querySelector('td:nth-child(5)').textContent = 'Deleted';
+                                row.querySelector('td:nth-child(6)').innerHTML = '';
+                            }
+                            Swal.fire('Deleted!', 'Your sale request has been deleted.', 'success');
+                        } else {
+                            Swal.fire('Error!', data.message, 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        // Similar functions for Test Drive and Enquiry requests
+        // openEditTestDriveModal, updateTestDriveRequest, denyTestDrive
+        // openEditEnquiryModal, updateEnquiryRequest, denyEnquiry
+        // ... (implement these functions following the same pattern as above)
     </script>
 </body>
 
