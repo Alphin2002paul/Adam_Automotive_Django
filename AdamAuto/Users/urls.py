@@ -77,6 +77,9 @@ urlpatterns = [
     path('salemore_dtl2/<int:car_id>/', views.salemore_dtl2, name='salemore_dtl2'),
     path('get_user_details2/<int:user_id>/', views.get_user_details2, name='get_user_details2'),
     path('generate_receipt_pdf/<int:purchase_id>/', views.generate_receipt_pdf, name='generate_receipt_pdf'),
+    path('enquirecar/', views.enquire_car, name='enquirecar'),  # Changed from 'enquire-car/' to 'enquirecar/'
+    path('submit-enquiry/', views.submit_enquiry, name='submit_enquiry'),
+    path('check_existing_enquiry/', views.check_existing_enquiry, name='check_existing_enquiry'),
     
 
 

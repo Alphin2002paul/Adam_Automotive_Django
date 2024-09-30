@@ -1911,7 +1911,7 @@ def generate_receipt_pdf(request, purchase_id):
     elements.append(Paragraph("3. Adam Automotive reserves the right to refuse service to anyone.", styles['CustomNormal']))
 
 
-    elements.append(Spacer(0.1, 0.2*inch))
+    elements.append(Spacer(0.1, 0.1*inch))
 
     # Thank you message
     elements.append(Paragraph("Thank you for your purchase From Adam Automotive!", styles['Center']))
@@ -1937,3 +1937,52 @@ def generate_receipt_pdf(request, purchase_id):
 
     buffer.seek(0)
     return HttpResponse(buffer, content_type='application/pdf')
+
+from django.shortcuts import render
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
+from .models import CarEnquiry
+
+@login_required
+def enquire_car(request):
+    return render(request, 'enquirecar.html')
+
+@require_POST
+@login_required
+def submit_enquiry(request):
+    enquiry = CarEnquiry(
+        user=request.user,
+        manufacturer=request.POST['manufacturer'],
+        model_name=request.POST['model_name'],
+        model_year=request.POST['model_year'],
+        color=request.POST['color'],
+        description=request.POST['description']
+    )
+    enquiry.save()
+    return JsonResponse({'status': 'success'})
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+@login_required
+@require_POST
+def check_existing_enquiry(request):
+    logger.info("Checking existing enquiry")
+    manufacturer = request.POST.get('manufacturer')
+    model_name = request.POST.get('model_name')
+    
+    logger.info(f"Manufacturer: {manufacturer}, Model: {model_name}")
+    
+    try:
+        existing_enquiry = CarEnquiry.objects.filter(
+            user=request.user,
+            manufacturer__iexact=manufacturer,
+            model_name__iexact=model_name
+        ).exists()
+        logger.info(f"Existing enquiry: {existing_enquiry}")
+        return JsonResponse({'exists': existing_enquiry})
+    except Exception as e:
+        logger.error(f"Error checking enquiry: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)

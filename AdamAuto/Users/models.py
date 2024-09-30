@@ -231,3 +231,18 @@ class CarPurchase(models.Model):
         return f"{self.user.username} - {self.car.manufacturer} {self.car.model_name} - {self.purchase_date}"
 
 
+from django.db import models
+from django.conf import settings
+
+class CarEnquiry(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    manufacturer = models.CharField(max_length=100)
+    model_name = models.CharField(max_length=100)
+    model_year = models.IntegerField()
+    color = models.CharField(max_length=50)
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, default='Pending')
+
+    def __str__(self):
+        return f"{self.manufacturer} {self.model_name} - {self.user.username}"
