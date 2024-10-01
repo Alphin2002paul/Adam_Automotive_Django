@@ -184,7 +184,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for sale in sales %}
+                    {% for sale in sale_requests %}
                         <tr data-id="{{ sale.id }}">
                             <td>{{ sale.manufacturer }}</td>
                             <td>{{ sale.model }}</td>
@@ -193,13 +193,13 @@
                             <td>{{ sale.status }}</td>
                             <td>
                                 <button class="btn btn-success" 
-                                        onclick="openEditSaleModal({{ sale.id }}, '{{ sale.manufacturer }}', '{{ sale.model }}', '{{ sale.year }}', '{{ sale.price }}', '{{ sale.status }}')" 
-                                        {% if sale.status != 'Pending' %}disabled{% endif %}>
-                                    Edit
-                                </button>
+                                onclick="openEditSaleModal({{ sale.id }}, '{{ sale.manufacturer }}', '{{ sale.model }}', '{{ sale.year }}', '{{ sale.price }}', '{{ sale.color }}', '{{ sale.fuel_type }}', '{{ sale.kilometers }}', '{{ sale.transmission }}', '{{ sale.condition }}', '{{ sale.reg_number }}', '{{ sale.insurance_validity|date:"Y-m-d" }}', '{{ sale.pollution_validity|date:"Y-m-d" }}', '{{ sale.tax_validity|date:"Y-m-d" }}', '{{ sale.car_type }}', '{{ sale.owner_status }}', '{{ sale.car_cc }}')" 
+                                {% if sale.status != 'pending' %}disabled{% endif %}>
+                            Edit
+                        </button>
                                 <button class="btn btn-danger" 
                                         onclick="denySale({{ sale.id }})" 
-                                        {% if sale.status != 'Pending' %}disabled{% endif %}>
+                                        {% if sale.status != 'pending' %}disabled{% endif %}>
                                     Delete
                                 </button>
                             </td>
@@ -216,26 +216,28 @@
                         <th>Manufacturer</th>
                         <th>Model</th>
                         <th>Preferred Date</th>
+                        <th>Time Slot</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for testdrive in testdrives %}
+                    {% for testdrive in test_drive_requests %}
                         <tr data-id="{{ testdrive.id }}">
-                            <td>{{ testdrive.manufacturer }}</td>
-                            <td>{{ testdrive.model }}</td>
-                            <td>{{ testdrive.preferred_date }}</td>
+                            <td>{{ testdrive.car.manufacturer }}</td>
+                            <td>{{ testdrive.car.model_name }}</td>
+                            <td>{{ testdrive.date }}</td>
+                            <td>{{ testdrive.time }}</td>
                             <td>{{ testdrive.status }}</td>
                             <td>
                                 <button class="btn btn-success" 
-                                        onclick="openEditTestDriveModal({{ testdrive.id }}, '{{ testdrive.manufacturer }}', '{{ testdrive.model }}', '{{ testdrive.preferred_date }}', '{{ testdrive.status }}')" 
-                                        {% if testdrive.status != 'Pending' %}disabled{% endif %}>
+                                        onclick="openEditTestDriveModal({{ testdrive.id }}, '{{ testdrive.car.manufacturer }}', '{{ testdrive.car.model_name }}', '{{ testdrive.preferred_date }}', '{{ testdrive.status }}')" 
+                                        {% if testdrive.status != 'pending' %}disabled{% endif %}>
                                     Edit
                                 </button>
                                 <button class="btn btn-danger" 
                                         onclick="denyTestDrive({{ testdrive.id }})" 
-                                        {% if testdrive.status != 'Pending' %}disabled{% endif %}>
+                                        {% if testdrive.status != 'pending' %}disabled{% endif %}>
                                     Delete
                                 </button>
                             </td>
@@ -249,26 +251,30 @@
             <table id="enquiryTable" class="table table-striped table-bordered">
                 <thead>
                     <tr>
-                        <th>Manufacturer Name</th>
+                        <th>Manufacture Name</th>
                         <th>Model Name</th>
+                        <th>Year</th>
+                        <th>Color</th>
                         <th>Description</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for enquiry in enquiries %}
+                    {% for enquiry in enquiry_requests %}
                         <tr data-id="{{ enquiry.id }}">
-                            <td>{{ enquiry.subject }}</td>
-                            <td>{{ enquiry.message|truncatechars:50 }}</td>
-                            <td>{{ enquiry.date }}</td>
+                            <td>{{ enquiry.manufacturer }}</td>
+                            <td>{{ enquiry.model_name}}</td>
+                            <td>{{ enquiry.model_year }}</td>
+                            <td>{{ enquiry.color }}</td>
+                            <td>{{ enquiry.description }}</td>
                             <td>{{ enquiry.status }}</td>
                             <td>
                                 <button class="btn btn-success" 
-                                        onclick="openEditEnquiryModal({{ enquiry.id }}, '{{ enquiry.subject }}', '{{ enquiry.message }}', '{{ enquiry.date }}', '{{ enquiry.status }}')" 
-                                        {% if enquiry.status != 'Pending' %}disabled{% endif %}>
-                                    Edit
-                                </button>
+        onclick="openEditEnquiryModal('{{ enquiry.id }}', '{{ enquiry.manufacturer }}', '{{ enquiry.model_name }}', '{{ enquiry.model_year }}', '{{ enquiry.color }}', '{{ enquiry.description}}', '{{ enquiry.status }}')" 
+        {% if enquiry.status != 'Pending' %}disabled{% endif %}>
+    Edit
+</button>
                                 <button class="btn btn-danger" 
                                         onclick="denyEnquiry({{ enquiry.id }})" 
                                         {% if enquiry.status != 'Pending' %}disabled{% endif %}>
@@ -570,63 +576,189 @@
             });
         }
 
-        function openEditSaleModal(id, manufacturer, model, year, price, status) {
-            Swal.fire({
-                title: 'Edit Sale Request',
-                html: `
-                    <input id="swal-input1" class="swal2-input" placeholder="Manufacturer" value="${manufacturer || ''}" onkeypress="return /^[a-zA-Z0-9 ]*$/.test(event.key)">
-                    <input id="swal-input2" class="swal2-input" placeholder="Model" value="${model || ''}" onkeypress="return /^[a-zA-Z0-9 ]*$/.test(event.key)">
-                    <input id="swal-input3" class="swal2-input" placeholder="Year" value="${year || ''}" onkeypress="return /^[0-9]*$/.test(event.key)">
-                    <input id="swal-input4" class="swal2-input" placeholder="Price" value="${price || ''}" onkeypress="return /^[0-9]*$/.test(event.key)">
-                `,
-                showCancelButton: true,
-                cancelButtonText: 'Cancel',
-                focusConfirm: false,
-                preConfirm: () => {
-                    const updatedManufacturer = document.getElementById('swal-input1').value;
-                    const updatedModel = document.getElementById('swal-input2').value;
-                    const updatedYear = document.getElementById('swal-input3').value;
-                    const updatedPrice = document.getElementById('swal-input4').value;
+        function openEditSaleModal(id, manufacturer, model, year, price, color, fuelType, kilometers, transmission, condition, regNumber, insuranceValidity, pollutionValidity, taxValidity, carType, ownerStatus, carCC) {
+            console.log("openEditSaleModal called with id:", id);
+            
+            // Get the date 20 days from now
+            const minDate = new Date();
+            minDate.setDate(minDate.getDate() + 20);
+            const minDateString = minDate.toISOString().split('T')[0];
+    Swal.fire({
+        title: 'Edit Sale Request',
+        html: `
+           <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+                <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                    <input id="swal-input1" class="swal2-input" placeholder="Manufacturer" value="${manufacturer}" onkeypress="return /^[a-zA-Z0-9 ]*$/.test(event.key)">
+                </div>
+                <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                    <input id="swal-input2" class="swal2-input" placeholder="Model" value="${model}" onkeypress="return /^[a-zA-Z0-9 ]*$/.test(event.key)">
+                </div>
+                <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                    <input id="swal-input3" class="swal2-input" placeholder="Year" value="${year}" onkeypress="return /^[0-9]*$/.test(event.key)">
+                </div>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+                <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                    <input id="swal-input4" class="swal2-input" placeholder="Price" value="${price}" onkeypress="return /^[0-9]*$/.test(event.key)">
+                </div>
+                <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                    <input id="swal-input5" class="swal2-input" placeholder="Color" value="${color}">
+                </div>
+                <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                    <select id="swal-input6" class="swal2-select">
+                        <option value="" disabled>Select Fuel Type</option>
+                        <option value="Petrol" ${fuelType === 'Petrol' ? 'selected' : ''}>Petrol</option>
+                        <option value="Diesel" ${fuelType === 'Diesel' ? 'selected' : ''}>Diesel</option>
+                        <option value="Electric" ${fuelType === 'Electric' ? 'selected' : ''}>Electric</option>
+                    </select>
+                </div>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+                <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                    <input id="swal-input7" class="swal2-input" placeholder="Kilometers" value="${kilometers}" onkeypress="return /^[0-9]*$/.test(event.key)">
+                </div>
+                <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                    <select id="swal-input8" class="swal2-select">
+                        <option value="" disabled>Select Transmission Type</option>
+                        <option value="Manual" ${transmission === 'Manual' ? 'selected' : ''}>Manual</option>
+                        <option value="Automatic" ${transmission === 'Automatic' ? 'selected' : ''}>Automatic</option>
+                    </select>
+                </div>
+                <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                    <input id="swal-input10" class="swal2-input" placeholder="Registration Number" value="${regNumber}">
+                </div>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+                <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                    <input id="swal-input11" class="swal2-input" placeholder="Insurance Validity" type="date" value="${insuranceValidity}">
+                </div>
+                <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                    <input id="swal-input12" class="swal2-input" placeholder="Pollution Validity" type="date" value="${pollutionValidity}">
+                </div>
+                <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                    <input id="swal-input13" class="swal2-input" placeholder="Tax Validity" type="date" value="${taxValidity}">
+                </div>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+                <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                    <select id="swal-input14" class="swal2-select">
+                        <option value="" disabled>Select Car Type</option>
+                        <option value="SUV" ${carType === 'SUV' ? 'selected' : ''}>SUV</option>
+                        <option value="MPV" ${carType === 'MPV' ? 'selected' : ''}>MPV</option>
+                        <option value="Sedan" ${carType === 'Sedan' ? 'selected' : ''}>Sedan</option>
+                        <option value="Hatchback" ${carType === 'Hatchback' ? 'selected' : ''}>Hatchback</option>
+                        <option value="Compact SUV" ${carType === 'Compact SUV' ? 'selected' : ''}>Compact SUV</option>
+                        <option value="Coupe" ${carType === 'Coupe' ? 'selected' : ''}>Coupe</option>
+                    </select>
+                </div>
+                <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                    <input id="swal-input15" class="swal2-input" placeholder="Owner Status" type="number" min="1" max="9" value="${ownerStatus}">
+                </div>
+                <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                    <input id="swal-input16" class="swal2-input" placeholder="Car CC" value="${carCC}" onkeypress="return /^[0-9]*$/.test(event.key)">
+                </div>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+                <div style="flex: 0 0 100%; margin-bottom: 10px;">
+                    <textarea id="swal-input9" class="swal2-textarea" placeholder="Condition" style="width: 100%; height: 100px;">${condition}</textarea>
+                </div>
+            </div>
+        `,
+        showCancelButton: true,
+        cancelButtonText: 'Cancel',
+        confirmButtonText: 'Update',
+        focusConfirm: false,
+        preConfirm: () => {
+            const updatedManufacturer = document.getElementById('swal-input1').value;
+            const updatedModel = document.getElementById('swal-input2').value;
+            const updatedYear = document.getElementById('swal-input3').value;
+            const updatedPrice = document.getElementById('swal-input4').value;
+            const updatedColor = document.getElementById('swal-input5').value;
+            const updatedFuelType = document.getElementById('swal-input6').value;
+            const updatedKilometers = document.getElementById('swal-input7').value;
+            const updatedTransmission = document.getElementById('swal-input8').value;
+            const updatedCondition = document.getElementById('swal-input9').value;
+            const updatedRegNumber = document.getElementById('swal-input10').value;
+            const updatedInsuranceValidity = document.getElementById('swal-input11').value;
+            const updatedPollutionValidity = document.getElementById('swal-input12').value;
+            const updatedTaxValidity = document.getElementById('swal-input13').value;
+            const updatedCarType = document.getElementById('swal-input14').value;
+            const updatedOwnerStatus = document.getElementById('swal-input15').value;
+            const updatedCarCC = document.getElementById('swal-input16').value;
 
-                    if (!updatedManufacturer || !updatedModel || !updatedYear || !updatedPrice) {
-                        Swal.showValidationMessage('Please fill in all fields');
-                        return false;
-                    }
+            // Validate inputs
+            if (!updatedManufacturer || !updatedModel || !updatedYear || !updatedPrice) {
+                Swal.showValidationMessage('Please fill in all required fields');
+                return false;
+            }
 
-                    return updateSaleRequest(id, updatedManufacturer, updatedModel, updatedYear, updatedPrice);
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.reload();
-                }
-            });
+            // Call the function to update the sale request
+            return updateSaleRequest(id, updatedManufacturer, updatedModel, updatedYear, updatedPrice, updatedColor, updatedFuelType, updatedKilometers, updatedTransmission, updatedCondition, updatedRegNumber, updatedInsuranceValidity, updatedPollutionValidity, updatedTaxValidity, updatedCarType, updatedOwnerStatus, updatedCarCC);
         }
-
-        function updateSaleRequest(id, manufacturer, model, year, price) {
-            return fetch(`/update_sale/${id}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}',
-                },
-                body: JSON.stringify({
-                    manufacturer: manufacturer,
-                    model: model,
-                    year: year,
-                    price: price
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    return Swal.fire('Updated!', 'Sale request has been updated.', 'success');
-                } else {
-                    return Swal.fire('Error!', data.message, 'error');
-                }
-            });
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.reload(); // Reload the page if the modal is confirmed
         }
+    });
+}
 
+function updateSaleRequest(id, manufacturer, model, year, price, color, fuelType, kilometers, transmission, condition, regNumber, insuranceValidity, pollutionValidity, taxValidity, carType, ownerStatus, carCC) {
+    // Make an AJAX request to update the sale request
+    return fetch(`/update_sale/${id}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify({
+            manufacturer: manufacturer,
+            model: model,
+            year: year,
+            price: price,
+            color: color,
+            fuel_type: fuelType,
+            kilometers: kilometers,
+            transmission: transmission,
+            condition: condition,
+            reg_number: regNumber,
+            insurance_validity: insuranceValidity,
+            pollution_validity: pollutionValidity,
+            tax_validity: taxValidity,
+            car_type: carType,
+            owner_status: ownerStatus,
+            car_cc: carCC
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            return Swal.fire({
+                title: 'Updated!',
+                text: 'Sale request has been updated.',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+        } else {
+            throw new Error(data.message || 'Cannot update this sale request.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        return Swal.fire({
+            title: 'Error!',
+            text: 'Cannot update this sale request.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    });
+}
         function denySale(id) {
+            // Show confirmation dialog
             Swal.fire({
                 title: 'Are you sure?',
                 text: "You won't be able to revert this!",
@@ -637,6 +769,7 @@
                 confirmButtonText: 'Yes, delete it!'
             }).then((result) => {
                 if (result.isConfirmed) {
+                    // Make an AJAX request to delete the sale request
                     fetch(`/delete_sale/${id}/`, {
                         method: 'POST',
                         headers: {
@@ -646,12 +779,167 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
+                            // Update the status in the sale table to "Deleted"
                             const row = document.querySelector(`#saleTable tr[data-id="${id}"]`);
                             if (row) {
-                                row.querySelector('td:nth-child(5)').textContent = 'Deleted';
-                                row.querySelector('td:nth-child(6)').innerHTML = '';
+                                row.querySelector('td:nth-child(5)').textContent = 'Deleted'; // Update status cell
+                                row.querySelector('td:nth-child(6)').innerHTML = ''; // Clear action buttons
                             }
-                            Swal.fire('Deleted!', 'Your sale request has been deleted.', 'success');
+                            Swal.fire(
+                                'Deleted!',
+                                'Your sale request has been deleted.',
+                                'success'
+                            );
+                        } else {
+                            Swal.fire('Error!', data.message, 'error');
+                        }
+                    });
+                }
+            });
+        }
+        function openEditTestDriveModal(id, manufacturer, modelName, preferredDate, status) {
+                // Get tomorrow's date
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const minDate = tomorrow.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+            
+                // Calculate the maximum date (10 days from tomorrow)
+                const maxDate = new Date(tomorrow);
+                maxDate.setDate(maxDate.getDate() + 9);
+                const maxDateString = maxDate.toISOString().split('T')[0];
+            
+                Swal.fire({
+                    title: 'Edit Test Drive Request',
+                    html: `
+                        <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+                            <div style="flex: 1; margin-right: 10px;">
+                                <input id="swal-input1" class="swal2-input" placeholder="Manufacturer" value="${manufacturer}" readonly>
+                            </div>
+                            <div style="flex: 1; margin-right: 10px;">
+                                <input id="swal-input2" class="swal2-input" placeholder="Model Name" value="${modelName}" readonly>
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; margin-top: 10px;">
+                            <div style="flex: 1; margin-right: 10px;">
+                                <input id="swal-input3" class="swal2-input" placeholder="Preferred Date" type="date" value="${preferredDate}" min="${minDate}" max="${maxDateString}">
+                            </div>
+                            <div style="flex: 1; margin-right: 10px;">
+                                <select id="swal-input4" class="swal2-input">
+                                    <option value="">Select Time Slot</option>
+                                </select>
+                            </div>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    cancelButtonText: 'Cancel',
+                    confirmButtonText: 'Update',
+                    focusConfirm: false,
+                    didOpen: () => {
+                        const dateInput = document.getElementById('swal-input3');
+                        const timeSlotSelect = document.getElementById('swal-input4');
+            
+                        // Function to update time slots based on selected date
+                        const updateTimeSlots = (selectedDate) => {
+                            fetch(`/get_available_time_slots/${id}/${selectedDate}/`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    timeSlotSelect.innerHTML = '<option value="">Select Time Slot</option>';
+                                    data.available_slots.forEach(slot => {
+                                        const option = document.createElement('option');
+                                        option.value = slot;
+                                        option.textContent = slot;
+                                        timeSlotSelect.appendChild(option);
+                                    });
+                                });
+                        };
+            
+                        // Initial update of time slots
+                        updateTimeSlots(dateInput.value);
+            
+                        // Update time slots when date changes
+                        dateInput.addEventListener('change', (e) => updateTimeSlots(e.target.value));
+                    },
+                    preConfirm: () => {
+                        const updatedDate = document.getElementById('swal-input3').value;
+                        const updatedTimeSlot = document.getElementById('swal-input4').value;
+            
+                        // Validate inputs
+                        if (!updatedDate || !updatedTimeSlot) {
+                            Swal.showValidationMessage('Please fill in all required fields');
+                            return false;
+                        }
+            
+                        // Call the function to update the test drive request
+                        return updateTestDriveRequest(id, updatedDate, updatedTimeSlot);
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.reload(); // Reload the page if the modal is confirmed
+                    }
+                });
+            }
+            
+        
+        function updateTestDriveRequest(id, date, timeSlot) {
+            return fetch(`/update_test_drive/${id}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: JSON.stringify({
+                    date: date,
+                    time: timeSlot
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    return Swal.fire({
+                        title: 'Updated!',
+                        text: 'Test drive request has been updated.',
+                        icon: 'success',
+                        confirmButtonText: 'Okay'
+                    });
+                } else {
+                    return Swal.fire('Error!', data.message, 'error');
+                }
+            });
+        }
+        
+        function denyTestDrive(id) {
+            // Show confirmation dialog
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Make an AJAX request to delete the test drive request
+                    fetch(`/delete_test_drive/${id}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update the status in the test drive table to "Deleted"
+                            const row = document.querySelector(`#testDriveTable tr[data-id="${id}"]`);
+                            if (row) {
+                                row.querySelector('td:nth-child(5)').textContent = 'Deleted'; // Update status cell
+                                row.querySelector('td:nth-child(6)').innerHTML = ''; // Clear action buttons
+                            }
+                            Swal.fire(
+                                'Deleted!',
+                                'Your test drive request has been deleted.',
+                                'success'
+                            );
                         } else {
                             Swal.fire('Error!', data.message, 'error');
                         }
@@ -660,10 +948,130 @@
             });
         }
 
-        // Similar functions for Test Drive and Enquiry requests
-        // openEditTestDriveModal, updateTestDriveRequest, denyTestDrive
-        // openEditEnquiryModal, updateEnquiryRequest, denyEnquiry
-        // ... (implement these functions following the same pattern as above)
+        function openEditEnquiryModal(id, manufacturer, modelName, modelYear, color, description, status) {
+    Swal.fire({
+        title: 'Edit Enquiry Request',
+        html: `
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+                <div style="flex: 1; margin-right: 10px;">
+                    <input id="swal-input1" class="swal2-input" placeholder="Manufacturer" value="${manufacturer}" onkeypress="return /^[a-zA-Z0-9 ]*$/.test(event.key)">
+                </div>
+                <div style="flex: 1; margin-right: 10px;">
+                    <input id="swal-input2" class="swal2-input" placeholder="Model Name" value="${modelName}" onkeypress="return /^[a-zA-Z0-9 ]*$/.test(event.key)">
+                </div>
+                <div style="flex: 1; margin-right: 10px;">
+                    <input id="swal-input3" class="swal2-input" placeholder="Model Year" value="${modelYear}" onkeypress="return /^[0-9]*$/.test(event.key)">
+                </div>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; margin-top: 10px;">
+                <div style="flex: 1; margin-right: 10px;">
+                    <input id="swal-input4" class="swal2-input" placeholder="Color" value="${color}" onkeypress="return /^[a-zA-Z ]*$/.test(event.key)">
+                </div>
+                <div style="flex: 1; margin-right: 10px;">
+                    <textarea id="swal-input5" class="swal2-textarea" placeholder="Description">${description || ''}</textarea>
+                </div>
+            </div>
+        `,
+        showCancelButton: true,
+        cancelButtonText: 'Cancel',
+        confirmButtonText: 'Update',
+        focusConfirm: false,
+        preConfirm: () => {
+            const updatedManufacturer = document.getElementById('swal-input1').value;
+            const updatedModelName = document.getElementById('swal-input2').value;
+            const updatedModelYear = document.getElementById('swal-input3').value;
+            const updatedColor = document.getElementById('swal-input4').value;
+            const updatedDescription = document.getElementById('swal-input5').value;
+
+            // Validate inputs
+            if (!updatedManufacturer || !updatedModelName || !updatedModelYear || !updatedColor) {
+                Swal.showValidationMessage('Please fill in all required fields');
+                return false;
+            }
+
+            // Call the function to update the enquiry request
+            return updateEnquiryRequest(id, updatedManufacturer, updatedModelName, updatedModelYear, updatedColor, updatedDescription);
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.reload(); // Reload the page if the modal is confirmed
+        }
+    });
+}
+        
+        function updateEnquiryRequest(id, manufacturer, modelName, modelYear, color, description) {
+            // Make an AJAX request to update the enquiry request
+            return fetch(`/update_enquiry/${id}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: JSON.stringify({
+                    manufacturer: manufacturer,
+                    model_name: modelName,
+                    model_year: modelYear,
+                    color: color,
+                    description: description
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    return Swal.fire({
+                        title: 'Updated!',
+                        text: 'Enquiry request has been updated.',
+                        icon: 'success',
+                        confirmButtonText: 'Okay'
+                    });
+                } else {
+                    return Swal.fire('Error!', data.message, 'error');
+                }
+            });
+        }
+        
+        function denyEnquiry(id) {
+            // Show confirmation dialog
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Make an AJAX request to delete the enquiry request
+                    fetch(`/delete_enquiry/${id}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update the status in the enquiry table to "Deleted"
+                            const row = document.querySelector(`#enquiryTable tr[data-id="${id}"]`);
+                            if (row) {
+                                row.querySelector('td:nth-child(6)').textContent = 'Deleted'; // Update status cell
+                                row.querySelector('td:nth-child(7)').innerHTML = ''; // Clear action buttons
+                            }
+                            Swal.fire(
+                                'Deleted!',
+                                'Your enquiry request has been deleted.',
+                                'success'
+                            );
+                        } else {
+                            Swal.fire('Error!', data.message, 'error');
+                        }
+                    });
+                }
+            });
+        }
+        
     </script>
 </body>
 

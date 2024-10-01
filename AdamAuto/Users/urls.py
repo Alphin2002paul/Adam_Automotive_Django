@@ -83,7 +83,14 @@ urlpatterns = [
     path('adminenquiry/', views.adminenquiry, name='adminenquiry'),
     path('get_enquiry_details/<int:enquiry_id>/', views.get_enquiry_details, name='get_enquiry_details'),
     path('approve_enquiry/', views.approve_enquiry, name='approve_enquiry'),
-    
+    path('update_sale/<int:sale_id>/', views.update_sale, name='update_sale'),
+    path('delete_sale/<int:sale_id>/', views.delete_sale, name='delete_sale'),
+    path('update_test_drive/<int:id>/', views.update_test_drive, name='update_test_drive'),
+    path('delete_test_drive/<int:test_drive_id>/', views.delete_test_drive, name='delete_test_drive'),
+    path('update_enquiry/<int:id>/', views.update_enquiry, name='update_enquiry'),
+    path('delete_enquiry/<int:enquiry_id>/', views.delete_enquiry, name='delete_enquiry'),
+    path('check-existing-booking/', views.check_existing_booking, name='check_existing_booking'),
+    path('get_available_time_slots/<int:id>/<str:date>/', views.get_available_time_slots, name='get_available_time_slots'),
 
     
 

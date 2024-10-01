@@ -1102,7 +1102,23 @@ def deny_service(request, service_id):
 def request_dtl(request):
     # Fetch services for the logged-in user, excluding those with status 'Deleted'
     services = Service.objects.filter(user=request.user).exclude(status='Deleted')
-    return render(request, 'request_dtl.html', {'services': services})
+    
+    # Fetch sale requests for the logged-in user
+    sale_requests = SellCar.objects.filter(user=request.user)
+    
+    # Fetch test drive requests for the logged-in user
+    test_drive_requests = TestDriveBooking.objects.filter(user=request.user)
+    
+    # Fetch enquiry requests for the logged-in user
+    enquiry_requests = CarEnquiry.objects.filter(user=request.user)
+    
+    context = {
+        'services': services,
+        'sale_requests': sale_requests,
+        'test_drive_requests': test_drive_requests,
+        'enquiry_requests': enquiry_requests,
+    }
+    return render(request, 'request_dtl.html', context)
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -2125,4 +2141,159 @@ def approve_enquiry(request):
         return JsonResponse({'success': False, 'error': str(e)})
     
     
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
+from .models import SellCar, TestDriveBooking, CarEnquiry
+
+@login_required
+@require_POST
+def update_sale(request, sale_id):
+    sale = get_object_or_404(SellCar, id=sale_id, user=request.user)
+    if sale.status == 'Pending':
+        sale.manufacturer = request.POST.get('manufacturer')
+        sale.model = request.POST.get('model')
+        sale.year = request.POST.get('year')
+        sale.price = request.POST.get('price')
+        sale.save()
+        return JsonResponse({'success': True, 'message': 'Sale request updated successfully.'})
+    return JsonResponse({'success': False, 'message': 'Cannot update this sale request.'})
+
+@login_required
+@require_POST
+def delete_sale(request, sale_id):
+    sale = get_object_or_404(SellCar, id=sale_id, user=request.user)
+    if sale.status == 'Pending':
+        sale.delete()
+        return JsonResponse({'success': True, 'message': 'Sale request deleted successfully.'})
+    return JsonResponse({'success': False, 'message': 'Cannot delete this sale request.'})
+
+# In your views.py file
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+@csrf_exempt
+@require_POST
+def update_test_drive(request, id):
+    try:
+        data = json.loads(request.body)
+        test_drive = TestDriveBooking.objects.get(id=id)
+        
+        # Update the fields
+        test_drive.date = data.get('date')
+        test_drive.time = data.get('time')
+        test_drive.save()
+        
+        return JsonResponse({'success': True})
+    except TestDriveBooking.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Test drive not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
+@login_required
+@require_POST
+def delete_test_drive(request, test_drive_id):
+    test_drive = get_object_or_404(TestDriveBooking, id=test_drive_id, user=request.user)
+    if test_drive.status == 'Pending':
+        test_drive.delete()
+        return JsonResponse({'success': True, 'message': 'Test drive request deleted successfully.'})
+    return JsonResponse({'success': False, 'message': 'Cannot delete this test drive request.'})
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+import json
+from .models import CarEnquiry  # Import your EnquiryRequest model
+
+@require_POST
+@csrf_exempt
+def update_enquiry(request, id):
+    try:
+        data = json.loads(request.body)
+        enquiry = CarEnquiry.objects.get(id=id)
+        
+        # Update the fields
+        enquiry.manufacturer = data['manufacturer']
+        enquiry.model_name = data['model_name']
+        enquiry.model_year = data['model_year']
+        enquiry.color = data['color']
+        enquiry.description = data['description']
+        
+        enquiry.save()
+        
+        return JsonResponse({'success': True, 'message': 'Enquiry updated successfully'})
+    except CarEnquiry.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Enquiry not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+@login_required
+@require_POST
+def delete_enquiry(request, enquiry_id):
+    enquiry = get_object_or_404(CarEnquiry, id=enquiry_id, user=request.user)
+    if enquiry.status == 'Pending':
+        enquiry.delete()
+        return JsonResponse({'success': True, 'message': 'Enquiry deleted successfully.'})
+    return JsonResponse({'success': False, 'message': 'Cannot delete this enquiry.'})
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+from .models import TestDriveBooking
+
+@require_GET
+def get_available_slots(request):
+    car_id = request.GET.get('car_id')
+    date = request.GET.get('date')
     
+    booked_slots = TestDriveBooking.objects.filter(
+        car_id=car_id,
+        date=date
+    ).values_list('time', flat=True)
+    
+    return JsonResponse({'booked_slots': list(booked_slots)})
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+from .models import TestDriveBooking
+
+@require_GET
+def check_existing_booking(request):
+    car_id = request.GET.get('car_id')
+    user = request.user
+
+    existing_booking = TestDriveBooking.objects.filter(
+        car_id=car_id,
+        user=user
+    ).exists()
+
+    return JsonResponse({'has_booking': existing_booking})
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+from .models import TestDriveBooking, UserCarDetails
+
+@require_GET
+def get_available_time_slots(request, id, date):
+    all_slots = [
+        '09:00am - 10:00am', '10:00am - 11:00am', '11:00am - 12:00pm',
+        '12:00pm - 01:00pm', '02:00pm - 03:00pm', '03:00pm - 04:00pm',
+        '04:00pm - 05:00pm'
+    ]
+    
+    # Get the car associated with this test drive request
+    test_drive = TestDriveBooking.objects.get(id=id)
+    car = test_drive.car
+
+    # Get all booked slots for this car on the given date
+    booked_slots = TestDriveBooking.objects.filter(
+        car=car,
+        date=date,
+        status__in=['pending', 'approved']
+    ).values_list('time', flat=True)
+
+    # Calculate available slots
+    available_slots = [slot for slot in all_slots if slot not in booked_slots]
+
+    return JsonResponse({'available_slots': available_slots})
