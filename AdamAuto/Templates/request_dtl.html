@@ -423,8 +423,18 @@
         function openEditModal(id, manufacturer, model, serviceDate, status, transmission, fuel, year, problem) {
             // Get today's date
             const today = new Date();
-            const minDate = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-
+            const currentYear = today.getFullYear();
+            
+            // Calculate the minimum allowed date (10 days from today)
+            const minDate = new Date(today);
+            minDate.setDate(minDate.getDate() + 10);
+            const minDateString = minDate.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+            
+            // Calculate the maximum allowed date (1 month from today)
+            const maxDate = new Date(today);
+            maxDate.setMonth(maxDate.getMonth() + 1);
+            const maxDateString = maxDate.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+        
             Swal.fire({
                 title: 'Edit Service Request',
                 html: `
@@ -436,7 +446,7 @@
                             <input id="swal-input2" class="swal2-input" placeholder="Model" value="${model || ''}" onkeypress="return /^[a-zA-Z0-9 ]*$/.test(event.key)">
                         </div>
                         <div style="flex: 1; margin-right: 10px;">
-                            <input id="swal-input3" class="swal2-input" placeholder="Service Date" type="date" value="${serviceDate || ''}" min="${minDate}">
+                            <input id="swal-input3" class="swal2-input" placeholder="Service Date" type="date" value="${serviceDate || ''}" min="${minDateString}" max="${maxDateString}">
                         </div>
                     </div>
                     <div style="display: flex; flex-wrap: wrap; justify-content: space-between; margin-top: 10px;">
@@ -455,7 +465,7 @@
                             </select>
                         </div>
                         <div style="flex: 1; margin-right: 10px;">
-                            <input id="swal-input6" class="swal2-input" placeholder="Year" value="${year || ''}" onkeypress="return /^[0-9]*$/.test(event.key)">
+                            <input id="swal-input6" class="swal2-input" placeholder="Year" value="${year || ''}" onkeypress="return /^[0-9]*$/.test(event.key)" maxlength="4">
                         </div>
                     </div>
                     <div style="display: flex; flex-wrap: wrap; justify-content: space-between; margin-top: 10px;">
@@ -475,22 +485,29 @@
                     const updatedFuel = document.getElementById('swal-input5').value;
                     const updatedYear = document.getElementById('swal-input6').value;
                     const updatedProblem = document.getElementById('swal-input7').value;
-
+        
                     // Validate inputs
                     if (!updatedManufacturer || !updatedModel || !updatedServiceDate) {
                         Swal.showValidationMessage('Please fill in all required fields');
                         return false;
                     }
-
-                    // Check if the selected date is within a month from today
-                    const selectedDate = new Date(updatedServiceDate);
-                    const oneMonthLater = new Date(today);
-                    oneMonthLater.setMonth(today.getMonth() + 1);
-                    if (selectedDate > oneMonthLater) {
-                        Swal.showValidationMessage('Please select a date within one month from today');
+        
+                    // Check if the selected date is within the allowed range
+                    if (updatedServiceDate !== serviceDate) {
+                        const selectedDate = new Date(updatedServiceDate);
+                        if (selectedDate < minDate || selectedDate > maxDate) {
+                            Swal.showValidationMessage('Please select a date between 10 days and 1 month from today');
+                            return false;
+                        }
+                    }L
+        
+                    // Validate year
+                    const yearRegex = /^(20\d{2})$/;
+                    if (!yearRegex.test(updatedYear) || parseInt(updatedYear) < 2000 || parseInt(updatedYear) > currentYear) {
+                        Swal.showValidationMessage('Please enter a valid year between 2000 and the current year');
                         return false;
                     }
-
+        
                     // Call the function to update the service request
                     return updateServiceRequest(id, updatedManufacturer, updatedModel, updatedServiceDate, updatedTransmission, updatedFuel, updatedYear, updatedProblem);
                 }
@@ -500,6 +517,9 @@
                 }
             });
         }
+        
+    
+    
 
         function updateServiceRequest(id, manufacturer, model, serviceDate, transmission, fuel, year, problem) {
             // Make an AJAX request to update the service request
@@ -583,124 +603,178 @@
             const minDate = new Date();
             minDate.setDate(minDate.getDate() + 20);
             const minDateString = minDate.toISOString().split('T')[0];
-    Swal.fire({
-        title: 'Edit Sale Request',
-        html: `
-           <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
-                <div style="flex: 0 0 32%; margin-bottom: 10px;">
-                    <input id="swal-input1" class="swal2-input" placeholder="Manufacturer" value="${manufacturer}" onkeypress="return /^[a-zA-Z0-9 ]*$/.test(event.key)">
-                </div>
-                <div style="flex: 0 0 32%; margin-bottom: 10px;">
-                    <input id="swal-input2" class="swal2-input" placeholder="Model" value="${model}" onkeypress="return /^[a-zA-Z0-9 ]*$/.test(event.key)">
-                </div>
-                <div style="flex: 0 0 32%; margin-bottom: 10px;">
-                    <input id="swal-input3" class="swal2-input" placeholder="Year" value="${year}" onkeypress="return /^[0-9]*$/.test(event.key)">
-                </div>
-            </div>
-            <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
-                <div style="flex: 0 0 32%; margin-bottom: 10px;">
-                    <input id="swal-input4" class="swal2-input" placeholder="Price" value="${price}" onkeypress="return /^[0-9]*$/.test(event.key)">
-                </div>
-                <div style="flex: 0 0 32%; margin-bottom: 10px;">
-                    <input id="swal-input5" class="swal2-input" placeholder="Color" value="${color}">
-                </div>
-                <div style="flex: 0 0 32%; margin-bottom: 10px;">
-                    <select id="swal-input6" class="swal2-select">
-                        <option value="" disabled>Select Fuel Type</option>
-                        <option value="Petrol" ${fuelType === 'Petrol' ? 'selected' : ''}>Petrol</option>
-                        <option value="Diesel" ${fuelType === 'Diesel' ? 'selected' : ''}>Diesel</option>
-                        <option value="Electric" ${fuelType === 'Electric' ? 'selected' : ''}>Electric</option>
-                    </select>
-                </div>
-            </div>
-            <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
-                <div style="flex: 0 0 32%; margin-bottom: 10px;">
-                    <input id="swal-input7" class="swal2-input" placeholder="Kilometers" value="${kilometers}" onkeypress="return /^[0-9]*$/.test(event.key)">
-                </div>
-                <div style="flex: 0 0 32%; margin-bottom: 10px;">
-                    <select id="swal-input8" class="swal2-select">
-                        <option value="" disabled>Select Transmission Type</option>
-                        <option value="Manual" ${transmission === 'Manual' ? 'selected' : ''}>Manual</option>
-                        <option value="Automatic" ${transmission === 'Automatic' ? 'selected' : ''}>Automatic</option>
-                    </select>
-                </div>
-                <div style="flex: 0 0 32%; margin-bottom: 10px;">
-                    <input id="swal-input10" class="swal2-input" placeholder="Registration Number" value="${regNumber}">
-                </div>
-            </div>
-            <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
-                <div style="flex: 0 0 32%; margin-bottom: 10px;">
-                    <input id="swal-input11" class="swal2-input" placeholder="Insurance Validity" type="date" value="${insuranceValidity}">
-                </div>
-                <div style="flex: 0 0 32%; margin-bottom: 10px;">
-                    <input id="swal-input12" class="swal2-input" placeholder="Pollution Validity" type="date" value="${pollutionValidity}">
-                </div>
-                <div style="flex: 0 0 32%; margin-bottom: 10px;">
-                    <input id="swal-input13" class="swal2-input" placeholder="Tax Validity" type="date" value="${taxValidity}">
-                </div>
-            </div>
-            <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
-                <div style="flex: 0 0 32%; margin-bottom: 10px;">
-                    <select id="swal-input14" class="swal2-select">
-                        <option value="" disabled>Select Car Type</option>
-                        <option value="SUV" ${carType === 'SUV' ? 'selected' : ''}>SUV</option>
-                        <option value="MPV" ${carType === 'MPV' ? 'selected' : ''}>MPV</option>
-                        <option value="Sedan" ${carType === 'Sedan' ? 'selected' : ''}>Sedan</option>
-                        <option value="Hatchback" ${carType === 'Hatchback' ? 'selected' : ''}>Hatchback</option>
-                        <option value="Compact SUV" ${carType === 'Compact SUV' ? 'selected' : ''}>Compact SUV</option>
-                        <option value="Coupe" ${carType === 'Coupe' ? 'selected' : ''}>Coupe</option>
-                    </select>
-                </div>
-                <div style="flex: 0 0 32%; margin-bottom: 10px;">
-                    <input id="swal-input15" class="swal2-input" placeholder="Owner Status" type="number" min="1" max="9" value="${ownerStatus}">
-                </div>
-                <div style="flex: 0 0 32%; margin-bottom: 10px;">
-                    <input id="swal-input16" class="swal2-input" placeholder="Car CC" value="${carCC}" onkeypress="return /^[0-9]*$/.test(event.key)">
-                </div>
-            </div>
-            <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
-                <div style="flex: 0 0 100%; margin-bottom: 10px;">
-                    <textarea id="swal-input9" class="swal2-textarea" placeholder="Condition" style="width: 100%; height: 100px;">${condition}</textarea>
-                </div>
-            </div>
-        `,
-        showCancelButton: true,
-        cancelButtonText: 'Cancel',
-        confirmButtonText: 'Update',
-        focusConfirm: false,
-        preConfirm: () => {
-            const updatedManufacturer = document.getElementById('swal-input1').value;
-            const updatedModel = document.getElementById('swal-input2').value;
-            const updatedYear = document.getElementById('swal-input3').value;
-            const updatedPrice = document.getElementById('swal-input4').value;
-            const updatedColor = document.getElementById('swal-input5').value;
-            const updatedFuelType = document.getElementById('swal-input6').value;
-            const updatedKilometers = document.getElementById('swal-input7').value;
-            const updatedTransmission = document.getElementById('swal-input8').value;
-            const updatedCondition = document.getElementById('swal-input9').value;
-            const updatedRegNumber = document.getElementById('swal-input10').value;
-            const updatedInsuranceValidity = document.getElementById('swal-input11').value;
-            const updatedPollutionValidity = document.getElementById('swal-input12').value;
-            const updatedTaxValidity = document.getElementById('swal-input13').value;
-            const updatedCarType = document.getElementById('swal-input14').value;
-            const updatedOwnerStatus = document.getElementById('swal-input15').value;
-            const updatedCarCC = document.getElementById('swal-input16').value;
-
-            // Validate inputs
-            if (!updatedManufacturer || !updatedModel || !updatedYear || !updatedPrice) {
-                Swal.showValidationMessage('Please fill in all required fields');
-                return false;
-            }
-
-            // Call the function to update the sale request
-            return updateSaleRequest(id, updatedManufacturer, updatedModel, updatedYear, updatedPrice, updatedColor, updatedFuelType, updatedKilometers, updatedTransmission, updatedCondition, updatedRegNumber, updatedInsuranceValidity, updatedPollutionValidity, updatedTaxValidity, updatedCarType, updatedOwnerStatus, updatedCarCC);
+        
+            // Get the current year
+            const currentYear = new Date().getFullYear();
+        
+            Swal.fire({
+                title: 'Edit Sale Request',
+                html: `
+                   <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+                        <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                            <input id="swal-input1" class="swal2-input" placeholder="Manufacturer" value="${manufacturer}" onkeypress="return /^[a-zA-Z0-9 ]*$/.test(event.key)">
+                        </div>
+                        <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                            <input id="swal-input2" class="swal2-input" placeholder="Model" value="${model}" onkeypress="return /^[a-zA-Z0-9 ]*$/.test(event.key)">
+                        </div>
+                        <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                            <input id="swal-input3" class="swal2-input" placeholder="Year" value="${year}" type="number" min="2000" max="${currentYear}">
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+                        <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                            <input id="swal-input4" class="swal2-input" placeholder="Price" value="${price}" type="number" min="1">
+                        </div>
+                        <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                            <input id="swal-input5" class="swal2-input" placeholder="Color" value="${color}" onkeypress="return /^[a-zA-Z ]*$/.test(event.key)">
+                        </div>
+                        <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                            <select id="swal-input6" class="swal2-select">
+                                <option value="" disabled>Select Fuel Type</option>
+                                <option value="Petrol" ${fuelType === 'Petrol' ? 'selected' : ''}>Petrol</option>
+                                <option value="Diesel" ${fuelType === 'Diesel' ? 'selected' : ''}>Diesel</option>
+                                <option value="Electric" ${fuelType === 'Electric' ? 'selected' : ''}>Electric</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+                        <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                            <input id="swal-input7" class="swal2-input" placeholder="Kilometers" value="${kilometers}" onkeypress="return /^[0-9]*$/.test(event.key)">
+                        </div>
+                        <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                            <select id="swal-input8" class="swal2-select">
+                                <option value="" disabled>Select Transmission Type</option>
+                                <option value="Manual" ${transmission === 'Manual' ? 'selected' : ''}>Manual</option>
+                                <option value="Automatic" ${transmission === 'Automatic' ? 'selected' : ''}>Automatic</option>
+                            </select>
+                        </div>
+                        <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                            <input id="swal-input10" class="swal2-input" placeholder="Registration Number" value="${regNumber}" pattern="^[A-Z]{2}-\d{2}-[A-Z]-\d{4}$">
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+                        <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                            <input id="swal-input11" class="swal2-input" placeholder="Insurance Validity" type="date" value="${insuranceValidity}" min="${minDateString}">
+                        </div>
+                        <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                            <input id="swal-input12" class="swal2-input" placeholder="Pollution Validity" type="date" value="${pollutionValidity}" min="${minDateString}">
+                        </div>
+                        <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                            <input id="swal-input13" class="swal2-input" placeholder="Tax Validity" type="date" value="${taxValidity}" min="${minDateString}">
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+                        <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                            <select id="swal-input14" class="swal2-select">
+                                <option value="" disabled>Select Car Type</option>
+                                <option value="SUV" ${carType === 'SUV' ? 'selected' : ''}>SUV</option>
+                                <option value="MPV" ${carType === 'MPV' ? 'selected' : ''}>MPV</option>
+                                <option value="Sedan" ${carType === 'Sedan' ? 'selected' : ''}>Sedan</option>
+                                <option value="Hatchback" ${carType === 'Hatchback' ? 'selected' : ''}>Hatchback</option>
+                                <option value="Compact SUV" ${carType === 'Compact SUV' ? 'selected' : ''}>Compact SUV</option>
+                                <option value="Coupe" ${carType === 'Coupe' ? 'selected' : ''}>Coupe</option>
+                            </select>
+                        </div>
+                        <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                            <input id="swal-input15" class="swal2-input" placeholder="Owner Status" type="number" min="1" max="9" value="${ownerStatus}">
+                        </div>
+                        <div style="flex: 0 0 32%; margin-bottom: 10px;">
+                            <input id="swal-input16" class="swal2-input" placeholder="Car CC" value="${carCC}" type="number" min="1000" max="9999">
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+                        <div style="flex: 0 0 100%; margin-bottom: 10px;">
+                            <textarea id="swal-input9" class="swal2-textarea" placeholder="Condition" style="width: 100%; height: 100px;">${condition}</textarea>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                cancelButtonText: 'Cancel',
+                confirmButtonText: 'Update',
+                focusConfirm: false,
+                preConfirm: () => {
+                    const updatedManufacturer = document.getElementById('swal-input1').value;
+                    const updatedModel = document.getElementById('swal-input2').value;
+                    const updatedYear = document.getElementById('swal-input3').value;
+                    const updatedPrice = document.getElementById('swal-input4').value;
+                    const updatedColor = document.getElementById('swal-input5').value;
+                    const updatedFuelType = document.getElementById('swal-input6').value;
+                    const updatedKilometers = document.getElementById('swal-input7').value;
+                    const updatedTransmission = document.getElementById('swal-input8').value;
+                    const updatedCondition = document.getElementById('swal-input9').value;
+                    const updatedRegNumber = document.getElementById('swal-input10').value;
+                    const updatedInsuranceValidity = document.getElementById('swal-input11').value;
+                    const updatedPollutionValidity = document.getElementById('swal-input12').value;
+                    const updatedTaxValidity = document.getElementById('swal-input13').value;
+                    const updatedCarType = document.getElementById('swal-input14').value;
+                    const updatedOwnerStatus = document.getElementById('swal-input15').value;
+                    const updatedCarCC = document.getElementById('swal-input16').value;
+        
+                    // Validate inputs
+                    if (!updatedManufacturer || !updatedModel || !updatedYear || !updatedPrice) {
+                        Swal.showValidationMessage('Please fill in all required fields');
+                        return false;
+                    }
+        
+                    // Validate year
+                    if (updatedYear < 2000 || updatedYear > currentYear) {
+                        Swal.showValidationMessage(`Year must be between 2000 and ${currentYear}`);
+                        return false;
+                    }
+        
+                    // Validate price
+                    if (updatedPrice <= 0) {
+                        Swal.showValidationMessage('Price must be greater than zero');
+                        return false;
+                    }
+        
+                    // Validate owner status
+                    if (updatedOwnerStatus < 1 || updatedOwnerStatus > 9) {
+                        Swal.showValidationMessage('Owner status must be between 1 and 9');
+                        return false;
+                    }
+        
+                    // Validate car CC
+                    if (updatedCarCC < 1000 || updatedCarCC > 9999) {
+                        Swal.showValidationMessage('Car CC must be between 1000 and 9999');
+                        return false;
+                    }
+        
+                    // Validate dates
+                    const today = new Date();
+                    const minValidDate = new Date(today.setDate(today.getDate() + 20));
+                    
+                    if (new Date(updatedInsuranceValidity) < minValidDate) {
+                        Swal.showValidationMessage('Insurance validity date must be at least 20 days from today');
+                        return false;
+                    }
+                    
+                    if (new Date(updatedPollutionValidity) < minValidDate) {
+                        Swal.showValidationMessage('Pollution validity date must be at least 20 days from today');
+                        return false;
+                    }
+                    
+                    if (new Date(updatedTaxValidity) < minValidDate) {
+                        Swal.showValidationMessage('Tax validity date must be at least 20 days from today');
+                        return false;
+                    }
+        
+                    // Validate registration number format
+                    const regNumberPattern = /^[A-Z]{2}-\d{2}-[A-Z]-\d{4}$/;
+                    if (!regNumberPattern.test(updatedRegNumber)) {
+                        Swal.showValidationMessage('Registration number must be in the format KL-07-Z-2001');
+                        return false;
+                    }
+        
+                    // Call the function to update the sale request
+                    return updateSaleRequest(id, updatedManufacturer, updatedModel, updatedYear, updatedPrice, updatedColor, updatedFuelType, updatedKilometers, updatedTransmission, updatedCondition, updatedRegNumber, updatedInsuranceValidity, updatedPollutionValidity, updatedTaxValidity, updatedCarType, updatedOwnerStatus, updatedCarCC);
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.reload(); // Reload the page if the modal is confirmed
+                }
+            });
         }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.reload(); // Reload the page if the modal is confirmed
-        }
-    });
-}
 
 function updateSaleRequest(id, manufacturer, model, year, price, color, fuelType, kilometers, transmission, condition, regNumber, insuranceValidity, pollutionValidity, taxValidity, carType, ownerStatus, carCC) {
     // Make an AJAX request to update the sale request
