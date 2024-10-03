@@ -737,6 +737,15 @@ function updateSaleRequest(id, manufacturer, model, year, price, color, fuelType
     })
     .then(data => {
         if (data.success) {
+            // Update the row in the table
+            const row = document.querySelector(`#saleTable tr[data-id="${id}"]`);
+            if (row) {
+                row.querySelector('td:nth-child(1)').textContent = manufacturer;
+                row.querySelector('td:nth-child(2)').textContent = model;
+                row.querySelector('td:nth-child(3)').textContent = year;
+                row.querySelector('td:nth-child(4)').textContent = price;
+            }
+            
             return Swal.fire({
                 title: 'Updated!',
                 text: 'Sale request has been updated.',
@@ -751,7 +760,7 @@ function updateSaleRequest(id, manufacturer, model, year, price, color, fuelType
         console.error('Error:', error);
         return Swal.fire({
             title: 'Error!',
-            text: 'Cannot update this sale request.',
+            text: error.message || 'Cannot update this sale request.',
             icon: 'error',
             confirmButtonText: 'OK'
         });

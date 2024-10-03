@@ -2141,35 +2141,61 @@ def approve_enquiry(request):
         return JsonResponse({'success': False, 'error': str(e)})
     
     
-from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from django.contrib.auth.decorators import login_required
-from .models import SellCar, TestDriveBooking, CarEnquiry
+from django.views.decorators.csrf import csrf_exempt
+from .models import SellCar
+
+@require_POST
+@csrf_exempt
+def update_sale(request, id):
+    try:
+        sale_request = SellCar.objects.get(id=id)
+        data = json.loads(request.body)
+        
+        # Update fields
+        sale_request.manufacturer = data.get('manufacturer', sale_request.manufacturer)
+        sale_request.model = data.get('model', sale_request.model)
+        sale_request.year = data.get('year', sale_request.year)
+        sale_request.price = data.get('price', sale_request.price)
+        sale_request.color = data.get('color', sale_request.color)
+        sale_request.fuel_type = data.get('fuel_type', sale_request.fuel_type)
+        sale_request.kilometers = data.get('kilometers', sale_request.kilometers)
+        sale_request.transmission = data.get('transmission', sale_request.transmission)
+        sale_request.condition = data.get('condition', sale_request.condition)
+        sale_request.reg_number = data.get('reg_number', sale_request.reg_number)
+        sale_request.insurance_validity = data.get('insurance_validity', sale_request.insurance_validity)
+        sale_request.pollution_validity = data.get('pollution_validity', sale_request.pollution_validity)
+        sale_request.tax_validity = data.get('tax_validity', sale_request.tax_validity)
+        sale_request.car_type = data.get('car_type', sale_request.car_type)
+        sale_request.owner_status = data.get('owner_status', sale_request.owner_status)
+        sale_request.car_cc = data.get('car_cc', sale_request.car_cc)
+        
+        sale_request.save()
+        
+        return JsonResponse({'success': True})
+    except SellCar.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Sale request not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
 @login_required
 @require_POST
-def update_sale(request, sale_id):
-    sale = get_object_or_404(SellCar, id=sale_id, user=request.user)
-    if sale.status == 'Pending':
-        sale.manufacturer = request.POST.get('manufacturer')
-        sale.model = request.POST.get('model')
-        sale.year = request.POST.get('year')
-        sale.price = request.POST.get('price')
-        sale.save()
-        return JsonResponse({'success': True, 'message': 'Sale request updated successfully.'})
-    return JsonResponse({'success': False, 'message': 'Cannot update this sale request.'})
-
-@login_required
-@require_POST
-def delete_sale(request, sale_id):
-    sale = get_object_or_404(SellCar, id=sale_id, user=request.user)
-    if sale.status == 'Pending':
-        sale.delete()
+def delete_sale(request, id):
+    try:
+        sale = SellCar.objects.get(id=id)
+        
+        if sale.user != request.user:
+            return JsonResponse({'success': False, 'message': 'You do not have permission to delete this sale request.'})
+        
+        if sale.status == 'pending':
+            sale.delete()
+        
         return JsonResponse({'success': True, 'message': 'Sale request deleted successfully.'})
-    return JsonResponse({'success': False, 'message': 'Cannot delete this sale request.'})
-
-# In your views.py file
+    except SellCar.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Sale request not found.'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'An error occurred: {str(e)}'})
 
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
