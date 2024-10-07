@@ -128,6 +128,13 @@
       .sidebar-footer {
         bottom: -37px;
       }
+      /* Add these new styles */
+      .swal2-popup {
+        color: black;
+      }
+      .swal2-input, .swal2-textarea {
+        color: black !important;
+      }
     </style>
   </head>
   <body>
@@ -522,5 +529,96 @@
 
   // ... existing code ...
 </script>
+<!-- ... existing code ... -->
+
+<script>
+  // ... existing code ...
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    // ... existing approve button code ...
+  
+    // Add event listener for deny buttons
+    const denyButtons = document.querySelectorAll('.deny-btn');
+    denyButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const bookingId = this.getAttribute('data-booking-id');
+        const manufacturer = this.getAttribute('data-manufacturer');
+        const model = this.getAttribute('data-model');
+  
+        Swal.fire({
+          title: 'Enter Reason for Denial',
+          input: 'textarea',
+          inputLabel: 'Reason',
+          inputPlaceholder: 'Enter the reason for denying the test drive request...',
+          inputAttributes: {
+            'aria-label': 'Reason for denial'
+          },
+          showCancelButton: true,
+          confirmButtonText: 'Submit',
+          cancelButtonText: 'Cancel',
+          preConfirm: (reason) => {
+            // Validate the reason
+            if (reason.length < 5) {
+              Swal.showValidationMessage('Reason must be at least 5 characters long');
+            }
+            if (/[^a-zA-Z0-9\s]/.test(reason)) {
+              Swal.showValidationMessage('Reason should not contain special characters');
+            }
+            return reason;
+          }
+        }).then((result) => {
+          if (result.isConfirmed) {
+            const reason = result.value;
+            // Send AJAX request to deny the booking
+            fetch('/deny-test-drive/', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+              },
+              body: JSON.stringify({
+                booking_id: bookingId,
+                reason: reason,
+                manufacturer: manufacturer,
+                model: model
+              })
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                Swal.fire(
+                  'Denied!',
+                  'The test drive request has been denied and the user has been notified.',
+                  'success'
+                ).then(() => {
+                  // Reload the page to reflect the changes
+                  location.reload();
+                });
+              } else {
+                Swal.fire(
+                  'Error!',
+                  'There was an error denying the request: ' + (data.error || 'Unknown error'),
+                  'error'
+                );
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              Swal.fire(
+                'Error!',
+                'There was an error processing your request: ' + error.message,
+                'error'
+              );
+            });
+          }
+        });
+      });
+    });
+  });
+  
+  // ... existing code ...
+  </script>
+  
+  <!-- ... existing code ... -->
   </body>
 </html>

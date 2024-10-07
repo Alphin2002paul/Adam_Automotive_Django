@@ -2505,9 +2505,51 @@ def change_password(request):
     else:
         return JsonResponse({'success': False, 'error': 'Old password is incorrect.'})
     
-from django.shortcuts import render
-from .models import Feedback
-
 def adminfeedback(request):
     feedbacks = Feedback.objects.all().order_by('-created_at')
     return render(request, 'adminfeedback.html', {'feedbacks': feedbacks})
+
+from django.http import JsonResponse
+from django.core.mail import send_mail
+from django.conf import settings
+from .models import TestDriveBooking
+
+def deny_test_drive(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        booking_id = data.get('booking_id')
+        reason = data.get('reason')
+        manufacturer = data.get('manufacturer')
+        model = data.get('model')
+
+        try:
+            booking = TestDriveBooking.objects.get(id=booking_id)
+            booking.status = 'Denied'
+            booking.save()
+
+            # Send email to user
+            subject = 'Test Drive Request Denied'
+            message = f"""
+            Dear {booking.user.first_name},
+
+            We regret to inform you that your test drive request for the {manufacturer} {model} on {booking.date} at {booking.time} has been denied.
+
+            Reason for denial: {reason}
+
+            If you have any questions, please don't hesitate to contact us.
+
+            Best regards,
+            Adam Automotive Team
+            """
+            from_email = settings.DEFAULT_FROM_EMAIL
+            recipient_list = [booking.user.email]
+
+            send_mail(subject, message, from_email, recipient_list)
+
+            return JsonResponse({'success': True})
+        except TestDriveBooking.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Booking not found'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})

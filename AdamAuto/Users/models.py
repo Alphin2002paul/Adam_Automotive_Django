@@ -189,12 +189,7 @@ class TestDriveBooking(models.Model):
             ['car', 'date', 'time'],
             ['user', 'car', 'date']
         ]
-
-    def clean(self):
-        # Check if the user has already booked a test drive for this car on this date
-        if TestDriveBooking.objects.filter(user=self.user, car=self.car, date=self.date).exists():
-            raise ValidationError("You have already booked a test drive for this car on this date.")
-
+    
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)

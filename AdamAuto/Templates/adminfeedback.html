@@ -102,6 +102,7 @@
         box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.2);
       }
       
+      
       .navbar-btn {
         box-shadow: none;
         outline: none !important;
@@ -126,7 +127,7 @@
         box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
       }
       .sidebar-footer {
-        bottom: -37px;
+        bottom: -48px;
       }
     </style>
     <!-- Make sure Bootstrap JS is loaded after jQuery -->
@@ -273,8 +274,7 @@
               <li><strong>Date:</strong> {{ feedback.created_at }}</li>
               <li><strong>Comfort Rating:</strong> {{ feedback.comfort_rating }}</li>
               <li><strong>Performance Rating:</strong> {{ feedback.performance_rating }}</li>
-              <li><strong>Interior Rating:</strong> {{ feedback.interior_rating }}</li>
-              <li><strong>Exterior Rating:</strong> {{ feedback.exterior_rating }}</li>
+              <li><strong>Fuel Efficiency Rateing:</strong> {{ feedback.fuel_efficiency_rating }}</li>
               <li><strong>Technology Rating:</strong> {{ feedback.technology_rating }}</li>
               <li><strong>Safety Rating:</strong> {{ feedback.safety_rating }}</li>
 

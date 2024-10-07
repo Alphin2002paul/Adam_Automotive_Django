@@ -94,7 +94,8 @@ urlpatterns = [
     path('download_receipt/<int:car_id>/', views.download_receipt, name='download_receipt'),
     path('change-password/', views.change_password, name='change_password'),
     path('adminfeedback/', views.adminfeedback, name='adminfeedback'),
-    
+    path('deny-test-drive/', views.deny_test_drive, name='deny_test_drive'),
+
 
     
 
