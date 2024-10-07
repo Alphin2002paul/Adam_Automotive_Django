@@ -193,7 +193,7 @@
                 <div class="d-flex flex-wrap justify-content-between align-items-center">
                     <div class="custom-control custom-checkbox d-block">
                         <input class="custom-control-input" type="checkbox" id="subscribe_me" checked="">
-                        <a href="{% url 'main' %}" class="btn btn-style-1 btn-primary">Back</a>
+                        <button type="button" class="btn btn-style-1 btn-primary" data-toggle="modal" data-target="#changePasswordModal">Change Password</button>
                     </div>
                     <button type="submit" class="btn btn-style-1 btn-primary">Update</button>
                 </div>
@@ -205,5 +205,82 @@
         </div>
       </div>
     </div>
+    <!-- Change Password Modal -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="changePasswordForm">
+              <div class="form-group">
+                <label for="oldPassword">Old Password</label>
+                <input type="password" class="form-control" id="oldPassword" required>
+              </div>
+              <div class="form-group">
+                <label for="newPassword">New Password</label>
+                <input type="password" class="form-control" id="newPassword" required>
+              </div>
+              <div class="form-group">
+                <label for="confirmPassword">Confirm New Password</label>
+                <input type="password" class="form-control" id="confirmPassword" required>
+              </div>
+              <div id="passwordError" class="text-danger"></div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" id="changePasswordBtn">Change Password</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+    $(document).ready(function() {
+      $('#changePasswordBtn').click(function() {
+        var oldPassword = $('#oldPassword').val();
+        var newPassword = $('#newPassword').val();
+        var confirmPassword = $('#confirmPassword').val();
+        var passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.{6,})/;
+
+        if (newPassword !== confirmPassword) {
+          $('#passwordError').text('New passwords do not match.');
+          return;
+        }
+
+        if (!passwordRegex.test(newPassword)) {
+          $('#passwordError').text('Password must be at least 6 characters long, contain at least one special character, and one capital letter.');
+          return;
+        }
+
+        // AJAX call to check old password and update new password
+        $.ajax({
+          url: '{% url "change_password" %}',  // You'll need to create this URL
+          method: 'POST',
+          data: {
+            old_password: oldPassword,
+            new_password: newPassword,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+          },
+          success: function(response) {
+            if (response.success) {
+              alert('Password changed successfully!');
+              $('#changePasswordModal').modal('hide');
+            } else {
+              $('#passwordError').text(response.error || 'Old password is incorrect.');
+            }
+          },
+          error: function() {
+            $('#passwordError').text('An error occurred. Please try again.');
+          }
+        });
+      });
+    });
+    </script>
   </body>
 </html>

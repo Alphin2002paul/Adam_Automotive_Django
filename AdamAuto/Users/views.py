@@ -2486,3 +2486,21 @@ urlpatterns = [
     # ... other URL patterns ...
     path('download_receipt/<int:car_id>/', views.download_receipt, name='download_receipt'),
 ]
+
+
+from django.contrib.auth import update_session_auth_hash
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+
+@require_POST
+def change_password(request):
+    old_password = request.POST.get('old_password')
+    new_password = request.POST.get('new_password')
+    
+    if request.user.check_password(old_password):
+        request.user.set_password(new_password)
+        request.user.save()
+        update_session_auth_hash(request, request.user)  # Important to keep the user logged in
+        return JsonResponse({'success': True})
+    else:
+        return JsonResponse({'success': False, 'error': 'Old password is incorrect.'})
