@@ -2323,3 +2323,166 @@ def get_available_time_slots(request, id, date):
     available_slots = [slot for slot in all_slots if slot not in booked_slots]
 
     return JsonResponse({'available_slots': available_slots})
+
+
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, HRFlowable
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_JUSTIFY
+from io import BytesIO
+from django.http import FileResponse
+from django.shortcuts import get_object_or_404
+from .models import CarPurchase, User, UserCarDetails
+
+def download_receipt(request, car_id):
+    car = get_object_or_404(UserCarDetails, id=car_id)
+    purchase = get_object_or_404(CarPurchase, car=car)
+    user = get_object_or_404(User, id=purchase.user.id)
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=72)
+
+    elements = []
+
+    # Custom styles
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(name='Center', alignment=TA_CENTER))
+    styles.add(ParagraphStyle(name='Right', alignment=TA_RIGHT))
+    styles.add(ParagraphStyle(name='Left', alignment=TA_JUSTIFY))
+    styles.add(ParagraphStyle(name='CustomTitle', parent=styles['Title'], fontSize=24, textColor=colors.darkslategray, spaceAfter=12))
+    styles.add(ParagraphStyle(name='CustomSubtitle', parent=styles['Heading2'], fontSize=18, textColor=colors.darkslategray, spaceAfter=6))
+    styles.add(ParagraphStyle(name='CustomNormal', parent=styles['Normal'], fontSize=10, textColor=colors.black, spaceAfter=6))
+
+    elements.append(Spacer(1, 0.5*inch))
+
+    # Company details
+    elements.append(Paragraph("Adam Automotive", styles['CustomTitle']))
+    elements.append(Paragraph("Adam Towers, Edappally Kochi, Kerala - 683544", styles['Center']))
+    elements.append(Paragraph("Phone: (999) 546-1423 | Email: adamautomotive3@gmail.com", styles['Center']))
+    elements.append(Spacer(1, 0.25*inch))
+
+    # Horizontal line
+    elements.append(HRFlowable(width="100%", thickness=1, lineCap='round', color=colors.darkgray, spaceBefore=1, spaceAfter=1))
+
+    # Invoice title
+    elements.append(Paragraph("CAR SALE INVOICE", styles['CustomSubtitle']))
+    elements.append(Spacer(1, 0.25*inch))
+    elements.append(HRFlowable(width="100%", thickness=1, lineCap='round', color=colors.darkgray, spaceBefore=1, spaceAfter=1))
+
+    # Customer and invoice details
+    customer_data = [
+        ["Invoice Number:", f"{purchase.id}"],
+        ["Invoice Date:", purchase.purchase_date.strftime('%B %d, %Y')],
+        ["Customer Name:", f"{user.first_name} {user.last_name}"],
+        ["Email:", user.email],
+        ["Phone:", user.Phone_number],
+    ]
+
+    if hasattr(purchase, 'expected_delivery_date'):
+        customer_data.append(["Expected Delivery Date:", purchase.expected_delivery_date.strftime('%B %d, %Y')])
+
+    if hasattr(purchase, 'delivery_option'):
+        if purchase.delivery_option == 'showroom':
+            user_address = f"{user.address}, {user.city}, {user.state} {user.zipcode}"
+            customer_data.append(["Customer Address:", user_address])
+        else:
+            user_address = f"{user.address}, {user.city}, {user.state} {user.zipcode}"
+            customer_data.append(["Customer Address:", user_address])
+            home_delivery_address = f"{purchase.street}, {purchase.city}, {purchase.state} {purchase.pincode}"
+            customer_data.append(["Delivery Address:", home_delivery_address])
+
+    customer_table = Table(customer_data, colWidths=[2.5*inch, 3.5*inch])
+    customer_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('TEXTCOLOR', (0, 0), (0, -1), colors.darkslategray),
+        ('TEXTCOLOR', (1, 0), (1, -1), colors.black),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
+        ('ALIGN', (1, 0), (1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    elements.append(customer_table)
+    elements.append(Spacer(1, 0.25*inch))
+
+    # Invoice items
+    items_data = [
+        ["Description", "Quantity", "Car Price", "Total"],
+        [f"{car.manufacturer} {car.model_name}", "1", f"{purchase.amount:,.2f} Rs", f"{purchase.amount:,.2f} Rs"],
+    ]
+
+    items_table = Table(items_data, colWidths=[2.5*inch, 1*inch, 1.5*inch, 1.5*inch])
+    items_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.darkslategray),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+        ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ('TOPPADDING', (0, 1), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
+        ('GRID', (0, 0), (-1, -1), 1, colors.lightgrey),
+    ]))
+    elements.append(items_table)
+    elements.append(Spacer(1, 0.25*inch))
+
+    # Total amount
+    elements.append(Paragraph(f"Total Amount: {purchase.amount:,.2f} Rs", styles['Right']))
+    elements.append(Spacer(1, 0.25*inch))
+
+    # Payment details
+    payment_data = [
+        ["Payment Method:", purchase.payment_mode.title() if hasattr(purchase, 'payment_mode') else "Online"],
+        ["Transaction ID:", purchase.payment_id],
+        ["Payment Status:", 'Success' if purchase.status else 'Failed'],
+    ]
+    payment_table = Table(payment_data, colWidths=[2.5*inch, 3.5*inch])
+    payment_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('TEXTCOLOR', (0, 0), (0, -1), colors.darkslategray),
+        ('TEXTCOLOR', (1, 0), (1, -1), colors.black),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
+        ('ALIGN', (1, 0), (1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    elements.append(payment_table)
+    elements.append(Spacer(0.1, 0.2*inch))
+
+    # Terms and conditions
+    elements.append(Paragraph("Terms & Conditions", styles['CustomSubtitle']))
+    elements.append(HRFlowable(width="100%", thickness=1, lineCap='round', color=colors.darkgray, spaceBefore=1, spaceAfter=1))
+
+    elements.append(Paragraph("1. All sales are final.", styles['CustomNormal']))
+    elements.append(Paragraph("2. Warranty details are provided separately.", styles['CustomNormal']))
+    elements.append(Paragraph("3. Adam Automotive reserves the right to refuse service to anyone.", styles['CustomNormal']))
+
+    elements.append(Spacer(0.1, 0.1*inch))
+
+    # Thank you message
+    elements.append(Paragraph("Thank you for your purchase from Adam Automotive!", styles['Center']))
+
+    # Build the PDF
+    doc.build(elements)
+
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=True, filename=f'receipt_{car.id}.pdf')
+
+# In your urls.py file
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    # ... other URL patterns ...
+    path('download_receipt/<int:car_id>/', views.download_receipt, name='download_receipt'),
+]
