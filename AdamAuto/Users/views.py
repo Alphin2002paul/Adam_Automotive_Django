@@ -2345,7 +2345,6 @@ def download_receipt(request, car_id):
     doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=72)
 
     elements = []
-    
 
     # Custom styles
     styles = getSampleStyleSheet()
