@@ -2345,6 +2345,7 @@ def download_receipt(request, car_id):
     doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=72)
 
     elements = []
+    
 
     # Custom styles
     styles = getSampleStyleSheet()
@@ -2504,3 +2505,10 @@ def change_password(request):
         return JsonResponse({'success': True})
     else:
         return JsonResponse({'success': False, 'error': 'Old password is incorrect.'})
+    
+from django.shortcuts import render
+from .models import Feedback
+
+def adminfeedback(request):
+    feedbacks = Feedback.objects.all().order_by('-created_at')
+    return render(request, 'adminfeedback.html', {'feedbacks': feedbacks})

@@ -93,6 +93,8 @@ urlpatterns = [
     path('get_available_time_slots/<int:id>/<str:date>/', views.get_available_time_slots, name='get_available_time_slots'),
     path('download_receipt/<int:car_id>/', views.download_receipt, name='download_receipt'),
     path('change-password/', views.change_password, name='change_password'),
+    path('adminfeedback/', views.adminfeedback, name='adminfeedback'),
+    
 
     
 
