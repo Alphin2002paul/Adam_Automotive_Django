@@ -95,6 +95,7 @@ urlpatterns = [
     path('change-password/', views.change_password, name='change_password'),
     path('adminfeedback/', views.adminfeedback, name='adminfeedback'),
     path('deny-test-drive/', views.deny_test_drive, name='deny_test_drive'),
+    
 
 
     

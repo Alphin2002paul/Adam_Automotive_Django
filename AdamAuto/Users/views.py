@@ -1531,6 +1531,14 @@ from django.shortcuts import get_object_or_404
 from .models import UserCarDetails, CarPurchase
 from django.db import transaction
 
+from django.core.mail import send_mail
+from django.conf import settings
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.db import transaction
+from .models import UserCarDetails, CarPurchase
+
 @require_POST
 def process_payment(request):
     try:
@@ -1575,8 +1583,54 @@ def process_payment(request):
             car.car_status = 'Sold'
             car.save()
 
-        # Return success response
-        return JsonResponse({'status': 'success'})
+            # Send confirmation email
+            subject = 'Your Car Purchase Confirmation - Adam Automotive'
+            message = f"""
+            Dear {request.user.first_name} {request.user.last_name},
+
+            Thank you for your purchase from Adam Automotive. Here are the details of your transaction:
+
+            Car Details:
+            - Manufacturer: {car.manufacturer}
+            - Model: {car.model_name}
+            - Year: {car.year}
+            - Price: ₹{car.price}
+
+            Purchase Details:
+            - Transaction ID: {payment_id}
+            - Payment Mode: {payment_mode}
+            - Expected Delivery Date: {expected_delivery_date}
+
+            Buyer Information:
+            - Name: {owner_name}
+            - Aadhar Number: {aadhar_number}
+            - PAN Number: {pan_number}
+
+            {"Delivery Option: Home Delivery" if delivery_option == 'home' else "Delivery Option: Showroom Pickup"}
+
+            {f'''Shipping Address:
+            {street}
+            {city}, {state}
+            Pincode: {pincode}''' if delivery_option == 'home' else ''}
+
+            You can download a detailed bill from your profile on our website.
+
+            Thank you for choosing Adam Automotive. We hope you enjoy your new car!
+
+            Best regards,
+            The Adam Automotive Team
+            """
+
+            from_email = settings.DEFAULT_FROM_EMAIL
+            recipient_list = [request.user.email]
+
+            try:
+                send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+                return JsonResponse({'status': 'success', 'message': 'Payment processed and confirmation email sent'})
+            except Exception as e:
+                print(f"Error sending email: {str(e)}")
+                return JsonResponse({'status': 'error', 'message': 'Payment processed but failed to send confirmation email'})
+
     except Exception as e:
         # Log the error for debugging
         print(f"Error processing payment: {str(e)}")
