@@ -1456,70 +1456,83 @@ class CustomTokenGenerator(PasswordResetTokenGenerator):
 
 token_generator = CustomTokenGenerator()
 
+import pandas as pd
+from django.http import JsonResponse
+from .models import UserCarDetails
+from .ml import make_prediction
+import traceback
+import os
+from django.conf import settings
+
 def get_predictions(request, car_id):
-	try:
-		car = UserCarDetails.objects.get(id=car_id)
-		
-		# Get feedback data for this specific car model and year
-		feedback_data = Feedback.objects.filter(
-			manufacturer_name=car.manufacturer.company_name,
-			model_name=car.model_name.model_name,
-			year=car.year
-		)
-		
-		# Calculate average ratings
-		avg_comfort = feedback_data.aggregate(Avg('comfort_rating'))['comfort_rating__avg'] or 0
-		avg_performance = feedback_data.aggregate(Avg('performance_rating'))['performance_rating__avg'] or 0
-		avg_fuel_efficiency = feedback_data.aggregate(Avg('fuel_efficiency_rating'))['fuel_efficiency_rating__avg'] or 0
-		avg_safety = feedback_data.aggregate(Avg('safety_rating'))['safety_rating__avg'] or 0
-		avg_technology = feedback_data.aggregate(Avg('technology_rating'))['technology_rating__avg'] or 0
+    try:
+        car = UserCarDetails.objects.get(id=car_id)
+        
+        # Read the CSV file
+        csv_file_path = os.path.join(settings.BASE_DIR, 'Users', 'car_reviews_with_feedback.csv')
+        df = pd.read_csv(csv_file_path)
+        
+        # Filter the dataframe for the specific car
+        car_data = df[(df['manufacturer'] == car.manufacturer.company_name) & 
+                      (df['model'] == car.model_name.model_name) & 
+                      (df['year'] == car.year)]
+        
+        if car_data.empty:
+            return JsonResponse({'error': 'No ratings available for this car'}, status=404)
+        
+        # Calculate average ratings
+        avg_comfort = car_data['comfort'].mean()
+        avg_performance = car_data['performance'].mean()
+        avg_fuel_efficiency = car_data['fuel_efficiency'].mean()
+        avg_safety = car_data['safety'].mean()
+        avg_technology = car_data['technology'].mean()
 
-		# Calculate overall average rating
-		overall_avg_rating = (avg_comfort + avg_performance + avg_fuel_efficiency + avg_safety + avg_technology) / 5
+        # Calculate overall average rating
+        overall_avg_rating = car_data[['comfort', 'performance', 'fuel_efficiency', 'safety', 'technology']].mean().mean()
 
-		try:
-			description = make_prediction(
-				str(car.manufacturer.company_name),
-				str(car.model_name.model_name),
-				int(car.year),
-				float(avg_comfort),
-				float(avg_performance),
-				float(avg_fuel_efficiency),
-				float(avg_safety),
-				float(avg_technology)
-			)
-		except Exception as e:
-			print(f"Error making prediction: {str(e)}")
-			description = "No prediction available."  # Default value if prediction fails
+        try:
+            description = make_prediction(
+                str(car.manufacturer.company_name),
+                str(car.model_name.model_name),
+                int(car.year),
+                float(avg_comfort),
+                float(avg_performance),
+                float(avg_fuel_efficiency),
+                float(avg_safety),
+                float(avg_technology)
+            )
+        except Exception as e:
+            print(f"Error making prediction: {str(e)}")
+            description = "No prediction available."  # Default value if prediction fails
 
-		predictions_html = f"""
-		<h4>{car.manufacturer.company_name} {car.model_name.model_name} ({car.year})</h4>
-		<p><strong>Overall Average Rating:</strong> {overall_avg_rating:.1f}/10</p>
-		<hr>
-		<h5>Average Ratings:</h5>
-		<ul>
-			<li>Comfort: {avg_comfort:.1f}/10</li>
-			<li>Performance: {avg_performance:.1f}/10</li>
-			<li>Fuel Efficiency: {avg_fuel_efficiency:.1f}/10</li>
-			<li>Safety: {avg_safety:.1f}/10</li>
-			<li>Technology: {avg_technology:.1f}/10</li>
-		</ul>
-		<hr>
-		<h5>Recommendation:</h5>
-		<p>{description}</p>
-		"""
+        predictions_html = f"""
+        <h4>{car.manufacturer.company_name} {car.model_name.model_name} ({car.year})</h4>
+        <p><strong>Overall Average Rating:</strong> {overall_avg_rating:.1f}/10</p>
+        <hr>
+        <h5>Average Ratings:</h5>
+        <ul>
+            <li>Comfort: {avg_comfort:.1f}/10</li>
+            <li>Performance: {avg_performance:.1f}/10</li>
+            <li>Fuel Efficiency: {avg_fuel_efficiency:.1f}/10</li>
+            <li>Safety: {avg_safety:.1f}/10</li>
+            <li>Technology: {avg_technology:.1f}/10</li>
+        </ul>
+        <hr>
+        <h5>Recommendation:</h5>
+        <p>{description}</p>
+        """
 
-		return JsonResponse({
-			'predictions_html': predictions_html,
-			'average_rating': overall_avg_rating
-		})
+        return JsonResponse({
+            'predictions_html': predictions_html,
+            'average_rating': overall_avg_rating
+        })
 
-	except UserCarDetails.DoesNotExist:
-		return JsonResponse({'error': 'Car not found'}, status=404)
-	except Exception as e:
-		print(f"Error in get_predictions: {str(e)}")
-		print(traceback.format_exc())
-		return JsonResponse({'error': 'An error occurred'}, status=500)
+    except UserCarDetails.DoesNotExist:
+        return JsonResponse({'error': 'Car not found'}, status=404)
+    except Exception as e:
+        print(f"Error in get_predictions: {str(e)}")
+        print(traceback.format_exc())
+        return JsonResponse({'error': 'An error occurred'}, status=500)
 
 
 from django.http import JsonResponse

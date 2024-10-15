@@ -4,6 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 import joblib
+import numpy as np
 
 # Get the current directory
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -13,8 +14,8 @@ def train_model():
     data = pd.read_csv(os.path.join(BASE_DIR, 'car_reviews_with_feedback.csv'))
 
     # Prepare the features and target
-    X = data[['manufacturer', 'model', 'year', 'comfort', 'performance', 'fuel_efficiency', 'safety', 'technology']]
-    y = data['description']  # Use description as the target
+    X = data[['manufacturer', 'model', 'year', 'comfort', 'performance', 'fuel_efficiency', 'safety', 'technology']].copy()
+    y = data['description'].copy()  # Use description as the target
 
     # Encode categorical variables
     le_manufacturer = LabelEncoder()
@@ -43,7 +44,7 @@ def train_model():
 
 def make_prediction(manufacturer, model, year, comfort, performance, fuel_efficiency, safety, technology):
     # Load the trained model and label encoders
-    model = joblib.load(os.path.join(BASE_DIR, 'feedback_model.joblib'))
+    clf = joblib.load(os.path.join(BASE_DIR, 'feedback_model.joblib'))
     le_manufacturer = joblib.load(os.path.join(BASE_DIR, 'le_manufacturer.joblib'))
     le_model = joblib.load(os.path.join(BASE_DIR, 'le_model.joblib'))
     le_description = joblib.load(os.path.join(BASE_DIR, 'le_description.joblib'))
@@ -60,15 +61,28 @@ def make_prediction(manufacturer, model, year, comfort, performance, fuel_effici
         'technology': [technology]
     })
 
-    # Encode categorical variables
-    input_data['manufacturer'] = le_manufacturer.transform(input_data['manufacturer'])
-    input_data['model'] = le_model.transform(input_data['model'])
+    # Encode categorical variables, handling unseen labels
+    input_data['manufacturer'] = le_manufacturer.transform([manufacturer]) if manufacturer in le_manufacturer.classes_ else [-1]
+    input_data['model'] = le_model.transform([model]) if model in le_model.classes_ else [-1]
 
     # Make prediction
-    prediction = model.predict(input_data)
+    prediction = clf.predict(input_data)
     description = le_description.inverse_transform(prediction)[0]
 
     return description
 
 if __name__ == "__main__":
     train_model()
+    
+    # Sample prediction
+    sample_prediction = make_prediction(
+        manufacturer="Toyota",
+        model="Camry",
+        year=2022,
+        comfort=8,
+        performance=7,
+        fuel_efficiency=9,
+        safety=8,
+        technology=7
+    )
+    print(f"Sample prediction: {sample_prediction}")
