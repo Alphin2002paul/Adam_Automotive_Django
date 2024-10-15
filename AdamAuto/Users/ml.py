@@ -49,6 +49,10 @@ def make_prediction(manufacturer, model, year, comfort, performance, fuel_effici
     le_model = joblib.load(os.path.join(BASE_DIR, 'le_model.joblib'))
     le_description = joblib.load(os.path.join(BASE_DIR, 'le_description.joblib'))
 
+    # Check if manufacturer and model are in the trained data
+    if manufacturer not in le_manufacturer.classes_ or model not in le_model.classes_:
+        return "Prediction for this car is not currently available"
+
     # Prepare the input data
     input_data = pd.DataFrame({
         'manufacturer': [manufacturer],
@@ -61,9 +65,9 @@ def make_prediction(manufacturer, model, year, comfort, performance, fuel_effici
         'technology': [technology]
     })
 
-    # Encode categorical variables, handling unseen labels
-    input_data['manufacturer'] = le_manufacturer.transform([manufacturer]) if manufacturer in le_manufacturer.classes_ else [-1]
-    input_data['model'] = le_model.transform([model]) if model in le_model.classes_ else [-1]
+    # Encode categorical variables
+    input_data['manufacturer'] = le_manufacturer.transform([manufacturer])
+    input_data['model'] = le_model.transform([model])
 
     # Make prediction
     prediction = clf.predict(input_data)
