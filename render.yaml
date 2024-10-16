@@ -3,7 +3,8 @@ services:
     name: adamauto
     env: python
     buildCommand: "/AdamAuto/build.sh"
-    startCommand: "gunicorn AdamAuto.wsgi:application"
+    startCommand: "python -m gunicorn AdamAuto.asgi:application -k uvicorn.workers.UvicornWorker"
+
     envVars:
       - key: SECRET_KEY
         generateValue: true
