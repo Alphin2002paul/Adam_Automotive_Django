@@ -19,7 +19,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'default_secret_key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [".vercel.app","localhost","127.0.0.1"]
 
 
 # Application definition
@@ -84,8 +84,7 @@ DATABASES = {
         'PASSWORD':'7303f598f6e95884111a27f4f952b63b62a3f5c3',
         'HOST':'xurwz.h.filess.io',
         'PORT':'3305',
-        'CONN_MAX_AGE': 60,
-
+        'CONN_MAX_AGE': None,  # This keeps the connection open indefinitely
     }
 }
 
