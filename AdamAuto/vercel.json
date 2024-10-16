@@ -22,5 +22,10 @@
       "src": "/(.*)",
       "dest": "AdamAuto/wsgi.py"
     }
-  ]
+  ],
+  "build": {
+    "env": {
+      "PIP_EXTRA_INDEX_URL": "https://wheels.vercel.app"
+    }
+  }
 }
