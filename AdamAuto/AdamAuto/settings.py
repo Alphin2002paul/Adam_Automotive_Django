@@ -79,11 +79,13 @@ WSGI_APPLICATION = 'AdamAuto.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME':'adamautodb',
-        'USER':'adamauto',
-        'PASSWORD':'adamauto',
-        'HOST':'localhost',
-        'PORT':'3306',
+        'NAME':'adamautomotive_wrotelook',
+        'USER':'adamautomotive_wrotelook',
+        'PASSWORD':'7303f598f6e95884111a27f4f952b63b62a3f5c3',
+        'HOST':'xurwz.h.filess.io',
+        'PORT':'3305',
+        'CONN_MAX_AGE': 60,
+
     }
 }
 
