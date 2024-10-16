@@ -2,7 +2,7 @@ services:
   - type: web
     name: adamauto
     env: python
-    buildCommand: "./build.sh"
+    buildCommand: "/AdamAuto/build.sh"
     startCommand: "gunicorn AdamAuto.wsgi:application"
     envVars:
       - key: SECRET_KEY
