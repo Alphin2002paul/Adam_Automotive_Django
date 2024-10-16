@@ -3,7 +3,8 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-
+import pymysql
+pymysql.install_as_MySQLdb()
 # Load environment variables from .env file if it exists
 load_dotenv()
 
@@ -85,6 +86,10 @@ DATABASES = {
         'HOST':'xurwz.h.filess.io',
         'PORT':'3305',
         'CONN_MAX_AGE': None,  # This keeps the connection open indefinitely
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+            'use_unicode': True,
+        },
     }
 }
 
